@@ -23,6 +23,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <style>
 /* =============================================================
@@ -2589,6 +2590,8 @@ a.contact-card:hover {
                         </label>
                     </div>
 
+                    <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" style="margin: 4px 0 16px; display: flex; justify-content: center;"></div>
+
                     <button type="submit" class="btn btn-accent btn-block-arrow" id="login-btn">
                         <span>Se connecter</span>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -3895,6 +3898,15 @@ $('#login-form').addEventListener('submit', async (e) => {
     const password = $('#login-password').value;
     const clientCode = $('#login-code').value.trim().toUpperCase();
 
+    // Vérification reCAPTCHA "Je ne suis pas un robot"
+    if (typeof grecaptcha !== 'undefined') {
+        const captchaResponse = grecaptcha.getResponse();
+        if (!captchaResponse) {
+            toast("Merci de confirmer que vous n'êtes pas un robot", 'warning');
+            return;
+        }
+    }
+
     btn.disabled = true;
     btn.innerHTML = '<span class="loader"></span>';
 
@@ -3958,6 +3970,10 @@ $('#login-form').addEventListener('submit', async (e) => {
         await enterApp();
     } catch (err) {
         toast(err.message || "Erreur de connexion", 'error');
+        // Reset le reCAPTCHA pour permettre une nouvelle tentative
+        if (typeof grecaptcha !== 'undefined') {
+            try { grecaptcha.reset(); } catch (e) {}
+        }
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<span>Se connecter</span>';
