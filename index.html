@@ -23,7 +23,43 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script>
+// reCAPTCHA — rendu différé : un widget ne peut être rendu QUE s'il est visible.
+console.log('%c[ZÉNITH] build captcha-v3 chargé', 'color:#FC6100;font-weight:bold');
+window.RECAPTCHA_SITEKEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+window.recaptchaWidgets = { login: null, anon: null };
+window.grecaptchaReady = false;
+window.renderCaptchaWidget = function (which, force) {
+    if (!window.grecaptchaReady || typeof grecaptcha === 'undefined') return;
+    if (window.recaptchaWidgets[which] !== null) return; // déjà rendu
+    var el = document.getElementById(which + '-recaptcha');
+    if (!el) return;
+    // Pour le widget anonyme : visible dès que l'étape Description n'est plus masquée
+    if (!force && which === 'anon') {
+        var step = document.getElementById('anon-step-desc');
+        if (step && !step.classList.contains('hidden')) force = true;
+    }
+    if (!force && el.offsetParent === null) return; // invisible (sauf si force)
+    try {
+        window.recaptchaWidgets[which] = grecaptcha.render(which + '-recaptcha', { sitekey: window.RECAPTCHA_SITEKEY });
+        console.log('[reCAPTCHA] widget rendu:', which);
+    } catch (e) { console.warn('[reCAPTCHA] echec render ' + which + ':', e); }
+};
+window.onRecaptchaLoad = function () {
+    window.grecaptchaReady = true;
+    window.renderCaptchaWidget('login');
+    window.renderCaptchaWidget('anon');
+    // Filet de sécurité : retente le rendu des widgets dès qu'ils deviennent visibles
+    var tries = 0;
+    var iv = setInterval(function () {
+        window.renderCaptchaWidget('login');
+        window.renderCaptchaWidget('anon');
+        tries++;
+        if (tries > 30) clearInterval(iv);
+    }, 400);
+};
+</script>
+<script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit" async defer></script>
 
 <style>
 /* =============================================================
@@ -1203,6 +1239,71 @@ a.contact-card:hover {
     padding: 32px 48px;
     overflow-y: auto;
 }
+
+/* =====================================================
+   CASE "Je ne suis pas un robot" maison (sans dépendance externe)
+   ===================================================== */
+.captcha-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    background: #f9f9f9;
+    border: 1px solid #d3d3d3;
+    border-radius: 4px;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 14px;
+    color: #222;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    transition: border-color var(--t-fast);
+    min-width: 260px;
+}
+.captcha-box:hover { border-color: #b0b0b0; }
+.captcha-checkbox {
+    width: 26px; height: 26px;
+    border: 2px solid #c1c1c1;
+    border-radius: 3px;
+    background: white;
+    flex-shrink: 0;
+    position: relative;
+    transition: all var(--t-fast);
+}
+.captcha-box.loading .captcha-checkbox {
+    border-color: transparent;
+}
+.captcha-box.loading .captcha-checkbox::before {
+    content: '';
+    position: absolute; inset: 0;
+    border: 3px solid rgba(70,168,77,0.2);
+    border-top-color: var(--nx-green);
+    border-radius: 50%;
+    animation: anonSpin 0.7s linear infinite;
+}
+.captcha-box.checked .captcha-checkbox {
+    border-color: var(--nx-green);
+    background: var(--nx-green);
+}
+.captcha-box.checked .captcha-checkbox::after {
+    content: '';
+    position: absolute;
+    left: 8px; top: 3px;
+    width: 7px; height: 13px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+}
+.captcha-label { flex: 1; }
+.captcha-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    opacity: 0.7;
+}
+.captcha-logo svg { width: 26px; height: 26px; }
+.captcha-logo span { font-size: 8px; color: #9aa0a6; letter-spacing: 0.5px; }
 
 /* =====================================================
    VUE PUBLIQUE ANONYME (via QR site)
@@ -2425,6 +2526,11 @@ a.contact-card:hover {
                 </button>
 
                 <div id="anon-photos-grid" class="anon-photos-grid"></div>
+
+                <label id="anon-no-photo-wrap" style="display:none; align-items:center; gap:8px; margin-top:14px; font-size:13px; color:var(--text); cursor:pointer;">
+                    <input id="anon-no-photo" type="checkbox" style="width:16px; height:16px; flex-shrink:0;">
+                    <span>Je n'ai pas de photo du problème</span>
+                </label>
             </section>
 
             <!-- Étape 4 : Description -->
@@ -2440,6 +2546,13 @@ a.contact-card:hover {
                         <span id="anon-desc-count">0</span> / 2000 caractères
                     </p>
                 </div>
+
+                <label id="anon-no-desc-wrap" style="display:none; align-items:center; gap:8px; margin:4px 0 14px; font-size:13px; color:var(--text); cursor:pointer;">
+                    <input id="anon-no-desc" type="checkbox" style="width:16px; height:16px; flex-shrink:0;">
+                    <span>Envoyer sans description</span>
+                </label>
+
+                <div id="anon-recaptcha" style="margin: 4px 0 16px; display: flex; justify-content: center;"></div>
 
                 <button id="anon-submit-btn" class="btn btn-accent btn-block-arrow" style="width:100%; padding:14px;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -2555,16 +2668,6 @@ a.contact-card:hover {
                 </div>
 
                 <form id="login-form" autocomplete="on">
-                    <div class="field" id="field-client-code">
-                        <label class="field-label" for="login-code">Code entreprise</label>
-                        <div class="input-wrap">
-                            <input id="login-code" class="input" type="text" placeholder="NTX-XXXX" autocapitalize="characters">
-                            <span class="input-icon-validate" id="login-code-check">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                            </span>
-                        </div>
-                    </div>
-
                     <div class="field">
                         <label class="field-label" for="login-email">Email</label>
                         <input id="login-email" class="input" type="email" placeholder="votre.email@exemple.com" required autocomplete="email">
@@ -2590,7 +2693,7 @@ a.contact-card:hover {
                         </label>
                     </div>
 
-                    <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" style="margin: 4px 0 16px; display: flex; justify-content: center;"></div>
+                    <div id="login-recaptcha" style="margin: 4px 0 16px; display: flex; justify-content: center;"></div>
 
                     <button type="submit" class="btn btn-accent btn-block-arrow" id="login-btn">
                         <span>Se connecter</span>
@@ -3219,9 +3322,6 @@ a.contact-card:hover {
                         <p class="sub">Gérez les sites physiques de chaque entreprise et leurs QR codes d'accès</p>
                     </div>
                     <div class="page-header-actions">
-                        <select id="sites-filter-entreprise" class="select" style="min-width:240px;">
-                            <option value="">Toutes les entreprises</option>
-                        </select>
                         <button class="btn btn-accent" id="new-site-btn">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                             <span>Nouveau site</span>
@@ -3229,21 +3329,28 @@ a.contact-card:hover {
                     </div>
                 </div>
 
-                <div class="table-card">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Nom du site</th>
-                                <th>Entreprise</th>
-                                <th>Statut</th>
-                                <th>Créé le</th>
-                                <th style="width:220px;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sites-tbody">
-                            <tr><td colspan="5" style="text-align:center; padding:32px; color:var(--text-muted);">Chargement...</td></tr>
-                        </tbody>
-                    </table>
+                <div class="table-wrap">
+                    <div class="table-toolbar">
+                        <select id="sites-filter-entreprise" class="select" style="min-width:240px; max-width:320px;">
+                            <option value="">Toutes les entreprises</option>
+                        </select>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Nom du site</th>
+                                    <th>Entreprise</th>
+                                    <th>Statut</th>
+                                    <th>Créé le</th>
+                                    <th style="width:160px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sites-tbody">
+                                <tr><td colspan="5"><div class="empty-state"><p>Chargement…</p></div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -3493,7 +3600,37 @@ const AnonState = {
     description: '',
     scannerActive: false,
     codeReader: null,
+    optionsFacultatives: false,  // l'entreprise autorise-t-elle "sans photo"/"sans description"
 };
+
+// Polling robuste : rend le widget anon dès que grecaptcha est réellement
+// disponible ET que l'étape Description est visible. Ne dépend d'aucun flag.
+function ensureAnonCaptcha() {
+    console.log('[reCAPTCHA] ensureAnonCaptcha() démarré — polling lancé');
+    let attempts = 0;
+    const iv = setInterval(() => {
+        attempts++;
+        const step = document.getElementById('anon-step-desc');
+        const el = document.getElementById('anon-recaptcha');
+        const visible = step && !step.classList.contains('hidden');
+        const grOk = (typeof grecaptcha !== 'undefined' && grecaptcha && typeof grecaptcha.render === 'function');
+
+        if (visible && grOk && el && window.recaptchaWidgets.anon === null) {
+            try {
+                window.recaptchaWidgets.anon = grecaptcha.render('anon-recaptcha', { sitekey: window.RECAPTCHA_SITEKEY });
+                console.log('[reCAPTCHA] anon rendu (polling), attempt', attempts);
+            } catch (e) {
+                console.warn('[reCAPTCHA] anon echec (polling):', e);
+            }
+        }
+        // Stop si rendu, ou après 30s, ou diagnostic si grecaptcha jamais dispo
+        if (window.recaptchaWidgets.anon !== null) { clearInterval(iv); }
+        else if (attempts > 100) {
+            clearInterval(iv);
+            console.warn('[reCAPTCHA] abandon — grecaptcha dispo?', (typeof grecaptcha !== 'undefined'), 'etape visible?', visible, 'element?', !!el);
+        }
+    }, 300);
+}
 
 async function initAnonView() {
     const params = new URLSearchParams(window.location.search);
@@ -3520,6 +3657,7 @@ async function initAnonView() {
 
         AnonState.site = data.site;
         AnonState.entreprise = data.entreprise;
+        AnonState.optionsFacultatives = !!data.entreprise.sans_photo_desc;
 
         // Affichage header
         $('#anon-entreprise-nom').textContent = data.entreprise.nom || '—';
@@ -3535,6 +3673,7 @@ async function initAnonView() {
         $('#anon-loading').classList.add('hidden');
         $('#anon-form').classList.remove('hidden');
         bindAnonHandlers();
+        ensureAnonCaptcha(); // démarre le polling de rendu du reCAPTCHA
     } catch (err) {
         $('#anon-loading').classList.add('hidden');
         $('#anon-error').classList.remove('hidden');
@@ -3584,7 +3723,11 @@ function bindAnonHandlers() {
         }
         renderAnonPhotos();
         e.target.value = '';
-        if (AnonState.photos.length > 0) $('#anon-step-desc').classList.remove('hidden');
+        if (AnonState.photos.length > 0) {
+            $('#anon-step-desc').classList.remove('hidden');
+            // L'étape devient visible → on force le rendu du reCAPTCHA
+            setTimeout(() => window.renderCaptchaWidget('anon', true), 150);
+        }
     });
 
     // Description
@@ -3595,6 +3738,33 @@ function bindAnonHandlers() {
 
     // Submit
     $('#anon-submit-btn').addEventListener('click', submitAnonRequest);
+
+    // Options "sans photo" / "sans description" (si l'entreprise les autorise)
+    if (AnonState.optionsFacultatives) {
+        const noPhotoWrap = $('#anon-no-photo-wrap');
+        const noDescWrap  = $('#anon-no-desc-wrap');
+        if (noPhotoWrap) noPhotoWrap.style.display = 'flex';
+        if (noDescWrap)  noDescWrap.style.display = 'flex';
+
+        const noPhotoCb = $('#anon-no-photo');
+        if (noPhotoCb) noPhotoCb.addEventListener('change', () => {
+            const on = noPhotoCb.checked;
+            $('#anon-add-photo-btn').style.display = on ? 'none' : '';
+            $('#anon-photos-grid').style.display = on ? 'none' : '';
+            if (on) {
+                // Sans photo : on révèle directement l'étape description pour pouvoir envoyer
+                $('#anon-step-desc').classList.remove('hidden');
+                setTimeout(() => window.renderCaptchaWidget('anon', true), 150);
+            }
+        });
+
+        const noDescCb = $('#anon-no-desc');
+        if (noDescCb) noDescCb.addEventListener('change', () => {
+            const ta = $('#anon-description');
+            ta.disabled = noDescCb.checked;
+            ta.style.opacity = noDescCb.checked ? '0.5' : '';
+        });
+    }
 
     // Nouvelle demande
     $('#anon-new-demande').addEventListener('click', () => {
@@ -3707,18 +3877,33 @@ async function submitAnonRequest() {
     const porteur = $('#anon-porteur').value.trim();
     const desc = $('#anon-description').value.trim();
 
+    const noPhoto = AnonState.optionsFacultatives && $('#anon-no-photo') && $('#anon-no-photo').checked;
+    const noDesc  = AnonState.optionsFacultatives && $('#anon-no-desc')  && $('#anon-no-desc').checked;
+
     if (!AnonState.barcode) return toast("Scannez ou saisissez un code-barres", 'warning');
     if (!porteur)              return toast("Indiquez le nom du porteur", 'warning');
-    if (AnonState.photos.length === 0) return toast("Ajoutez au moins une photo", 'warning');
-    if (!desc)                 return toast("Décrivez le défaut", 'warning');
+    if (!noPhoto && AnonState.photos.length === 0) return toast("Ajoutez au moins une photo (ou cochez « sans photo »)", 'warning');
+    if (!noDesc && !desc)      return toast("Décrivez le défaut (ou cochez « sans description »)", 'warning');
+
+    // Vérification reCAPTCHA "Je ne suis pas un robot"
+    if (window.recaptchaWidgets.anon !== null && typeof grecaptcha !== 'undefined') {
+        if (!grecaptcha.getResponse(window.recaptchaWidgets.anon)) {
+            return toast("Merci de confirmer que vous n'êtes pas un robot", 'warning');
+        }
+    }
 
     const btn = $('#anon-submit-btn');
     btn.disabled = true;
     btn.innerHTML = '<div class="anon-spinner-sm"></div> <span>Envoi en cours…</span>';
 
     try {
-        // Préparer les photos en base64
-        const photos = await Promise.all(AnonState.photos.map(async p => ({
+        // Préparer les photos en base64.
+        // "Sans photo" exclut les photos du problème ajoutées à la main,
+        // mais conserve TOUJOURS la photo prise automatiquement au scan (scan.jpg).
+        const photosSource = noPhoto
+            ? AnonState.photos.filter(p => p.name === 'scan.jpg')
+            : AnonState.photos;
+        const photos = await Promise.all(photosSource.map(async p => ({
             b64: (await blobToDataUrl(p.blob)).split(',')[1],
             content_type: 'image/jpeg',
         })));
@@ -3733,7 +3918,7 @@ async function submitAnonRequest() {
                 nom_porteur: porteur,
                 nom_porteur_source: AnonState.porteurAuto && porteur === AnonState.porteur ? 'auto' :
                                     AnonState.porteurAuto ? 'corrected' : 'manual',
-                description: desc,
+                description: noDesc ? '' : desc,
                 photos,
             }),
         });
@@ -3749,6 +3934,9 @@ async function submitAnonRequest() {
         $('#anon-ticket').textContent = data.ticket_number || (data.id || '').slice(0, 8).toUpperCase();
     } catch (err) {
         toast(err.message || "Erreur lors de l'envoi", 'error');
+        if (window.recaptchaWidgets.anon !== null && typeof grecaptcha !== 'undefined') {
+            try { grecaptcha.reset(window.recaptchaWidgets.anon); } catch (e) {}
+        }
         btn.disabled = false;
         btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> <span>Envoyer la demande</span>';
     }
@@ -3799,20 +3987,15 @@ function fillFromUrlParams() {
 
     if (!code && !email && !pwd) return;
 
-    // Pré-remplir les champs
-    if (code) {
-        $('#login-code').value = code.toUpperCase();
-        $('#login-code').dispatchEvent(new Event('input')); // active le ✓ vert
-    }
+    // Pré-remplir les champs (le code entreprise n'est plus demandé à la connexion)
     if (email) $('#login-email').value = email;
     if (pwd)   $('#login-password').value = pwd;
 
-    // Si on a au moins l'email + mdp, on est sûr du mode client (pas admin)
-    if (code) {
+    // QR de connexion = compte utilisateur entreprise → on bascule sur l'onglet client
+    if (email || pwd) {
         $$('.auth-tab').forEach(t => t.classList.remove('active'));
         $$('.auth-tab[data-tab="client"]').forEach(t => t.classList.add('active'));
         authMode = 'client';
-        $('#field-client-code').classList.remove('hidden');
     }
 
     // Nettoyer l'URL pour ne pas garder les credentials visibles dans la barre d'adresse
@@ -3865,7 +4048,6 @@ $$('.auth-tab').forEach(tab => {
         $$('.auth-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         authMode = tab.dataset.tab;
-        $('#field-client-code').classList.toggle('hidden', authMode === 'admin');
     });
 });
 
@@ -3879,12 +4061,6 @@ $('#toggle-pwd')?.addEventListener('click', () => {
         : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
 });
 
-// Validation visuelle du code client (✓ vert quand au moins 3 caractères)
-$('#login-code')?.addEventListener('input', e => {
-    const ok = e.target.value.trim().length >= 3;
-    $('#login-code-check').classList.toggle('show', ok);
-});
-
 // Lien "Mot de passe oublié"
 $('#forgot-pwd-link')?.addEventListener('click', e => {
     e.preventDefault();
@@ -3896,12 +4072,10 @@ $('#login-form').addEventListener('submit', async (e) => {
     const btn = $('#login-btn');
     const email = $('#login-email').value.trim();
     const password = $('#login-password').value;
-    const clientCode = $('#login-code').value.trim().toUpperCase();
 
     // Vérification reCAPTCHA "Je ne suis pas un robot"
-    if (typeof grecaptcha !== 'undefined') {
-        const captchaResponse = grecaptcha.getResponse();
-        if (!captchaResponse) {
+    if (window.recaptchaWidgets.login !== null && typeof grecaptcha !== 'undefined') {
+        if (!grecaptcha.getResponse(window.recaptchaWidgets.login)) {
             toast("Merci de confirmer que vous n'êtes pas un robot", 'warning');
             return;
         }
@@ -3943,10 +4117,6 @@ $('#login-form').addEventListener('submit', async (e) => {
                 await sb.auth.signOut();
                 throw new Error("Ce compte n'est pas un compte utilisateur entreprise.");
             }
-            if (clientCode && entreprise?.code_entreprise !== clientCode) {
-                await sb.auth.signOut();
-                throw new Error("Le code entreprise ne correspond pas.");
-            }
         } else if (authMode === 'admin' && profile.role !== 'admin') {
             await sb.auth.signOut();
             throw new Error("Accès administrateur refusé.");
@@ -3971,8 +4141,8 @@ $('#login-form').addEventListener('submit', async (e) => {
     } catch (err) {
         toast(err.message || "Erreur de connexion", 'error');
         // Reset le reCAPTCHA pour permettre une nouvelle tentative
-        if (typeof grecaptcha !== 'undefined') {
-            try { grecaptcha.reset(); } catch (e) {}
+        if (window.recaptchaWidgets.login !== null && typeof grecaptcha !== 'undefined') {
+            try { grecaptcha.reset(window.recaptchaWidgets.login); } catch (e) {}
         }
     } finally {
         btn.disabled = false;
@@ -5047,16 +5217,35 @@ function renderClientsTable() {
 $('#clients-search').addEventListener('input', renderClientsTable);
 $('#new-entreprise-btn').addEventListener('click', () => editEntreprise(null));
 
-function editEntreprise(id) {
+// Calcule le prochain code entreprise (NTX + numéro incrémenté)
+async function nextEntrepriseCode() {
+    let max = 0;
+    try {
+        const { data } = await sb.from('entreprises').select('code_entreprise');
+        (data || []).forEach(e => {
+            const m = (e.code_entreprise || '').match(/(\d+)/);
+            if (m) { const n = parseInt(m[1], 10); if (n > max) max = n; }
+        });
+    } catch (e) { /* fallback à 0 */ }
+    return 'NTX' + String(max + 1).padStart(4, '0');
+}
+
+async function editEntreprise(id) {
     const c = id ? State.entreprisesCache.find(x => x.id === id) : {};
+    const autoCode = id ? '' : await nextEntrepriseCode();
     const body = `
         <div class="field">
             <label class="field-label">Code entreprise</label>
-            <input id="ent-code" class="input" value="${escapeHtml(c.code_entreprise || '')}" placeholder="NTX-XXXX" ${id ? 'readonly' : ''}>
+            <input id="ent-code" class="input" value="${escapeHtml(id ? (c.code_entreprise || '') : autoCode)}" readonly style="background:var(--bg); cursor:not-allowed;">
+            ${id ? '' : '<small style="display:block; margin-top:6px; color:var(--text-muted); font-size:11px;">Attribué automatiquement</small>'}
         </div>
         <div class="field">
             <label class="field-label">Nom de l'entreprise</label>
             <input id="ent-nom" class="input" value="${escapeHtml(c.nom || '')}">
+        </div>
+        <div class="field">
+            <label class="field-label">Code client SIS (optionnel)</label>
+            <input id="ent-sis" class="input" value="${escapeHtml(c.code_client_sis || '')}" placeholder="Ex: SIS-12345">
         </div>
         <div class="field">
             <label class="field-label">Email de contact</label>
@@ -5072,6 +5261,13 @@ function editEntreprise(id) {
                 <span>Client actif</span>
             </label>
         </div>
+        <div class="field">
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text);">
+                <input id="ent-sans-oblig" type="checkbox" ${c.autoriser_sans_photo_desc ? 'checked' : ''}>
+                <span>Autoriser les demandes sans photo ni description</span>
+            </label>
+            <small style="display:block; margin-top:6px; color:var(--text-muted); font-size:11px;">Affiche au porteur les options « sans photo » et « sans description »</small>
+        </div>
     `;
     const footer = `
         <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
@@ -5082,14 +5278,16 @@ function editEntreprise(id) {
 
 async function saveEntreprise(id) {
     const payload = {
-        code_entreprise: $('#ent-code').value.trim().toUpperCase(),
+        code_entreprise: id ? $('#ent-code').value.trim().toUpperCase() : await nextEntrepriseCode(),
         nom: $('#ent-nom').value.trim(),
+        code_client_sis: $('#ent-sis').value.trim() || null,
         email_contact: $('#ent-email').value.trim() || null,
         logo_url: $('#ent-logo').value.trim() || null,
         actif: $('#ent-actif').checked,
+        autoriser_sans_photo_desc: $('#ent-sans-oblig').checked,
     };
-    if (!payload.code_entreprise || !payload.nom) {
-        return toast("Code et nom requis", 'warning');
+    if (!payload.nom) {
+        return toast("Le nom est requis", 'warning');
     }
     try {
         if (id) {
@@ -5140,12 +5338,12 @@ async function loadSites() {
     const { data: sites, error } = await query;
 
     if (error) {
-        tbody.innerHTML = `<tr><td colspan="5" style="color:var(--nx-red); padding:32px; text-align:center;">${escapeHtml(error.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><p style="color:var(--nx-red);">${escapeHtml(error.message)}</p></div></td></tr>`;
         return;
     }
 
     if (!sites || sites.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:48px; color:var(--text-muted);">Aucun site. Cliquez sur "Nouveau site" pour commencer.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><p>Aucun site. Cliquez sur « Nouveau site » pour commencer.</p></div></td></tr>`;
         return;
     }
 
@@ -5153,23 +5351,26 @@ async function loadSites() {
         const ent = s.entreprises || {};
         const date = new Date(s.created_at).toLocaleDateString('fr-FR');
         const statut = s.actif
-            ? `<span class="badge badge-success">Actif</span>`
-            : `<span class="badge badge-muted">Inactif</span>`;
+            ? `<span class="badge badge-accepted">Actif</span>`
+            : `<span class="badge badge-closed">Inactif</span>`;
         return `
             <tr>
                 <td><strong>${escapeHtml(s.nom)}</strong></td>
-                <td>${escapeHtml(ent.nom || '—')}<div style="font-size:11px; color:var(--text-muted); font-family:var(--font-display);">${escapeHtml(ent.code_entreprise || '')}</div></td>
+                <td>
+                    <div>${escapeHtml(ent.nom || '—')}</div>
+                    <div style="font-size:11px; color:var(--text-muted); font-family:var(--font-display); letter-spacing:0.5px;">${escapeHtml(ent.code_entreprise || '')}</div>
+                </td>
                 <td>${statut}</td>
                 <td style="color:var(--text-muted); font-size:12px;">${date}</td>
                 <td>
-                    <div style="display:flex; gap:6px;">
-                        <button class="btn btn-ghost btn-sm" onclick="showQrForSite('${s.id}', '${escapeHtml(s.nom)}', '${escapeHtml(ent.nom || '')}', '${escapeHtml(ent.code_entreprise || '')}')" title="QR code du site" style="color:var(--nx-orange);">
+                    <div class="flex-row" style="gap:4px;">
+                        <button class="btn btn-ghost btn-icon" onclick="showQrForSite('${s.id}', '${escapeHtml(s.nom)}', '${escapeHtml(ent.nom || '')}', '${escapeHtml(ent.code_entreprise || '')}')" title="QR code du site" style="color:var(--nx-orange);">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="14" y2="14.01"/><line x1="17.5" y1="14" x2="21" y2="14"/><line x1="14" y1="17.5" x2="14" y2="21"/><line x1="17.5" y1="17.5" x2="21" y2="17.5"/><line x1="21" y1="21" x2="21" y2="17.5"/></svg>
                         </button>
-                        <button class="btn btn-ghost btn-sm" onclick="editSite('${s.id}')" title="Modifier">
+                        <button class="btn btn-ghost btn-icon" onclick="editSite('${s.id}')" title="Modifier">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
-                        <button class="btn btn-ghost btn-sm" onclick="deleteSite('${s.id}', '${escapeHtml(s.nom)}')" title="Supprimer" style="color:var(--nx-red);">
+                        <button class="btn btn-danger btn-icon" onclick="deleteSite('${s.id}', '${escapeHtml(s.nom)}')" title="Supprimer">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
                         </button>
                     </div>
@@ -5214,6 +5415,10 @@ async function editSite(id) {
             <input id="site-nom" class="input" value="${escapeHtml(s.nom || '')}" placeholder="Ex: Atelier Lyon, Usine Boulogne...">
         </div>
         <div class="field">
+            <label class="field-label">Code client livré ATLAS (optionnel)</label>
+            <input id="site-atlas" class="input" value="${escapeHtml(s.code_client_livre || '')}" placeholder="Ex: ATLAS-12345">
+        </div>
+        <div class="field">
             <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text);">
                 <input id="site-actif" type="checkbox" ${s.actif !== false ? 'checked' : ''}>
                 <span>Site actif</span>
@@ -5232,12 +5437,13 @@ async function editSite(id) {
 async function saveSite(id) {
     const entreprise_id = $('#site-ent').value;
     const nom = $('#site-nom').value.trim();
+    const code_client_livre = $('#site-atlas').value.trim() || null;
     const actif = $('#site-actif').checked;
 
     if (!entreprise_id) return toast("Sélectionnez une entreprise", 'warning');
     if (!nom)           return toast("Le nom du site est requis", 'warning');
 
-    const payload = { entreprise_id, nom, actif };
+    const payload = { entreprise_id, nom, code_client_livre, actif };
     let res;
     if (id) {
         res = await sb.from('sites').update(payload).eq('id', id);
@@ -5367,6 +5573,9 @@ function renderUsersTable() {
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="14" y2="14.01"/><line x1="17.5" y1="14" x2="21" y2="14"/><line x1="14" y1="17.5" x2="14" y2="21"/><line x1="17.5" y1="17.5" x2="21" y2="17.5"/><line x1="21" y1="21" x2="21" y2="17.5"/></svg>
                         </button>
                         ` : ''}
+                        <button class="btn btn-ghost btn-sm" onclick="editUser('${u.id}')" title="Modifier l'utilisateur">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
                         <button class="btn btn-ghost btn-sm" onclick="resetUserPassword('${u.id}', '${escapeHtml(u.email)}')" title="Réinitialiser le mot de passe">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         </button>
@@ -5394,7 +5603,8 @@ document.addEventListener('change', e => {
 
 $('#new-user-btn')?.addEventListener('click', () => openUserModal());
 
-async function openUserModal() {
+async function openUserModal(user = null, assignedSites = []) {
+    const isEdit = !!user;
     // Charger les clients pour le dropdown
     let clientsOptions = '<option value="">— Sélectionner —</option>';
     if (!State.entreprisesCache || !State.entreprisesCache.length) {
@@ -5402,18 +5612,26 @@ async function openUserModal() {
         State.entreprisesCache = data || [];
     }
     State.entreprisesCache.forEach(c => {
-        clientsOptions += `<option value="${c.id}">${escapeHtml(c.nom)} (${escapeHtml(c.code_entreprise)})</option>`;
+        const sel = isEdit && user.entreprise_id === c.id ? ' selected' : '';
+        clientsOptions += `<option value="${c.id}"${sel}>${escapeHtml(c.nom)} (${escapeHtml(c.code_entreprise)})</option>`;
     });
 
-    const body = `
+    // Charger la liste des admins (pour le choix de l'admin référent)
+    const { data: adminsData } = await sb.from('users').select('id, nom_complet, email').eq('role', 'admin').order('nom_complet');
+    let adminOptions = '<option value="">— Sélectionner —</option>';
+    (adminsData || []).forEach(a => {
+        const label = a.nom_complet ? `${a.nom_complet} (${a.email})` : a.email;
+        const sel = isEdit && user.admin_referent_id === a.id ? ' selected' : '';
+        adminOptions += `<option value="${a.id}"${sel}>${escapeHtml(label)}</option>`;
+    });
+
+    const pwdField = isEdit ? `
         <div class="field">
-            <label class="field-label">Email</label>
-            <input id="usr-email" class="input" type="email" placeholder="jean.dupont@entreprise.com" autocomplete="off">
-        </div>
-        <div class="field">
-            <label class="field-label">Nom complet</label>
-            <input id="usr-nom" class="input" type="text" placeholder="Jean Dupont">
-        </div>
+            <label class="field-label">Mot de passe</label>
+            <div style="background:var(--bg); padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border); font-size:12px; color:var(--text-muted);">
+                Pour changer le mot de passe, utilisez le bouton 🔒 « Réinitialiser » dans la liste.
+            </div>
+        </div>` : `
         <div class="field">
             <label class="field-label">Mot de passe initial</label>
             <div style="display:flex; gap:8px;">
@@ -5423,18 +5641,34 @@ async function openUserModal() {
                 </button>
             </div>
             <small style="display:block; margin-top:6px; color:var(--text-muted); font-size:11px;">Sera communiqué au nouvel utilisateur — pourra être modifié ensuite</small>
+        </div>`;
+
+    const body = `
+        <div class="field">
+            <label class="field-label">Email</label>
+            <input id="usr-email" class="input" type="email" placeholder="jean.dupont@entreprise.com" autocomplete="off" value="${escapeHtml(isEdit ? (user.email || '') : '')}">
         </div>
+        <div class="field">
+            <label class="field-label">Nom complet</label>
+            <input id="usr-nom" class="input" type="text" placeholder="Jean Dupont" value="${escapeHtml(isEdit ? (user.nom_complet || '') : '')}">
+        </div>
+        ${pwdField}
         <div class="field">
             <label class="field-label">Rôle</label>
             <select id="usr-role" class="input">
-                <option value="client">Utilisateur entreprise</option>
-                <option value="admin">Administrateur (accès complet)</option>
+                <option value="client"${isEdit && user.role === 'client' ? ' selected' : ''}>Utilisateur entreprise</option>
+                <option value="admin"${isEdit && user.role === 'admin' ? ' selected' : ''}>Administrateur (accès complet)</option>
             </select>
         </div>
         <div class="field" id="usr-entreprise-field">
             <label class="field-label">Entreprise cliente</label>
             <select id="usr-entreprise" class="input">${clientsOptions}</select>
             <small style="display:block; margin-top:6px; color:var(--text-muted); font-size:11px;">L'entreprise à laquelle ce compte sera rattaché</small>
+        </div>
+        <div class="field" id="usr-admin-referent-field">
+            <label class="field-label">Adresse mail référente</label>
+            <select id="usr-admin-referent" class="input">${adminOptions}</select>
+            <small style="display:block; margin-top:6px; color:var(--text-muted); font-size:11px;">Recevra les demandes pré-validées par cet utilisateur. L'admin de base reçoit également tout.</small>
         </div>
         <div class="field" id="usr-sites-field" style="display:none;">
             <label class="field-label">Sites accessibles</label>
@@ -5444,29 +5678,87 @@ async function openUserModal() {
             <small style="display:block; margin-top:6px; color:var(--text-muted); font-size:11px;">Aucune case cochée = accès à <strong>tous</strong> les sites de l'entreprise</small>
         </div>
     `;
-    const footer = `
+    const footer = isEdit ? `
+        <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+        <button class="btn btn-accent" onclick="saveUserEdit('${user.id}')">Enregistrer</button>
+    ` : `
         <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
         <button class="btn btn-accent" onclick="saveUser()">Créer l'utilisateur</button>
     `;
-    openModal('Nouvel utilisateur', body, footer);
+    openModal(isEdit ? "Modifier l'utilisateur" : 'Nouvel utilisateur', body, footer);
 
     // Gérer l'affichage des champs entreprise/sites selon le rôle
     const roleSelect = $('#usr-role');
     const entrepriseField = $('#usr-entreprise-field');
     const sitesField = $('#usr-sites-field');
+    const adminRefField = $('#usr-admin-referent-field');
     const entrepriseSelect = $('#usr-entreprise');
 
     function updateRoleFields() {
         const isClient = roleSelect.value === 'client';
         entrepriseField.style.display = isClient ? '' : 'none';
         sitesField.style.display = isClient ? '' : 'none';
+        if (adminRefField) adminRefField.style.display = isClient ? '' : 'none';
     }
     roleSelect.addEventListener('change', updateRoleFields);
     updateRoleFields();
 
     // Charger les sites quand l'entreprise change
     entrepriseSelect.addEventListener('change', () => loadSitesForUserModal(entrepriseSelect.value));
+
+    // En édition d'un utilisateur entreprise : pré-cocher ses sites assignés
+    if (isEdit && user.role === 'client' && user.entreprise_id) {
+        loadSitesForUserModal(user.entreprise_id, assignedSites);
+    }
 }
+
+// Ouvre la modale en mode édition (récupère d'abord les sites assignés)
+async function editUser(id) {
+    const u = (State.usersCache || []).find(x => x.id === id);
+    if (!u) return toast("Utilisateur introuvable", 'error');
+    let assigned = [];
+    if (u.role === 'client') {
+        const { data } = await sb.from('user_sites').select('site_id').eq('user_id', id);
+        assigned = (data || []).map(r => r.site_id);
+    }
+    openUserModal(u, assigned);
+}
+
+async function saveUserEdit(id) {
+    const email = $('#usr-email').value.trim();
+    const nom   = $('#usr-nom').value.trim();
+    const role  = $('#usr-role').value;
+    const entreprise_id = role === 'client' ? $('#usr-entreprise').value : null;
+    const admin_referent_id = role === 'client' ? $('#usr-admin-referent').value : null;
+    const site_ids = role === 'client'
+        ? Array.from(document.querySelectorAll('.usr-site-cb:checked')).map(cb => cb.value)
+        : [];
+
+    if (!email || !email.includes('@')) return toast("Email invalide", 'warning');
+    if (role === 'client' && !entreprise_id) return toast("Sélectionnez une entreprise cliente", 'warning');
+    if (role === 'client' && !admin_referent_id) return toast("Sélectionnez une adresse mail référente", 'warning');
+
+    const btn = event?.target;
+    if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement...'; }
+
+    try {
+        const res = await apiCall('/admin/update-user', {
+            method: 'POST',
+            body: JSON.stringify({ user_id: id, email, nom_complet: nom, role, entreprise_id, admin_referent_id, site_ids })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || "Erreur inconnue");
+
+        toast("Utilisateur mis à jour", 'success');
+        closeModal();
+        loadUsers();
+    } catch (err) {
+        toast(err.message || "Erreur lors de la mise à jour", 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+    }
+}
+
 
 // Charge les sites d'une entreprise sous forme de checkboxes dans la modal user
 async function loadSitesForUserModal(entrepriseId, preselected = []) {
@@ -5512,6 +5804,7 @@ async function saveUser() {
     const password  = $('#usr-pwd').value;
     const role      = $('#usr-role').value;
     const entreprise_id = role === 'client' ? $('#usr-entreprise').value : null;
+    const admin_referent_id = role === 'client' ? $('#usr-admin-referent').value : null;
     const site_ids  = role === 'client'
         ? Array.from(document.querySelectorAll('.usr-site-cb:checked')).map(cb => cb.value)
         : [];
@@ -5519,6 +5812,7 @@ async function saveUser() {
     if (!email || !email.includes('@')) return toast("Email invalide", 'warning');
     if (!password || password.length < 6) return toast("Mot de passe trop court (min. 6 caractères)", 'warning');
     if (role === 'client' && !entreprise_id) return toast("Sélectionnez une entreprise cliente", 'warning');
+    if (role === 'client' && !admin_referent_id) return toast("Sélectionnez une adresse mail référente", 'warning');
 
     const btn = event?.target;
     if (btn) { btn.disabled = true; btn.textContent = 'Création...'; }
@@ -5526,7 +5820,7 @@ async function saveUser() {
     try {
         const res = await apiCall('/admin/create-user', {
             method: 'POST',
-            body: JSON.stringify({ email, password, nom_complet: nom, role, entreprise_id, site_ids })
+            body: JSON.stringify({ email, password, nom_complet: nom, role, entreprise_id, admin_referent_id, site_ids })
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error || "Erreur inconnue");
@@ -5806,6 +6100,8 @@ window.openLightbox = openLightbox;
 window.closeLightbox = closeLightbox;
 window.closeModal = closeModal;
 window.deleteUser = deleteUser;
+window.editUser = editUser;
+window.saveUserEdit = saveUserEdit;
 window.resetUserPassword = resetUserPassword;
 window.saveUser = saveUser;
 window.loadSitesForUserModal = loadSitesForUserModal;

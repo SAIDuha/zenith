@@ -59,6 +59,13 @@ SMTP_FROM_NAME        = os.getenv("SMTP_FROM_NAME", "ZÉNITH by NETEXIAL")
 
 SERVICE_EMAIL         = os.getenv("SERVICE_EMAIL", "reparations@netexial.com")
 
+# Admin "de base" : reçoit TOUJOURS les notifications de pré-validation,
+# quel que soit l'admin référent de l'utilisateur. Surchargeable via env.
+BASE_ADMIN_ID         = os.getenv("BASE_ADMIN_ID", "55e0117b-b885-415c-9c9a-c1253ea6c9d4")
+
+# URL publique de l'application (pour les liens de connexion dans les emails)
+APP_URL               = os.getenv("APP_URL", "https://zenith-ao0n.onrender.com").rstrip("/")
+
 ALLOWED_ORIGINS       = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 DOUBLON_WINDOW_HOURS  = int(os.getenv("DOUBLON_WINDOW_HOURS", "24"))
 
@@ -251,7 +258,7 @@ def public_site_info(site_id):
     """
     try:
         res = supabase.table("sites").select(
-            "id, nom, actif, entreprises(id, nom, code_entreprise, logo_url, actif)"
+            "id, nom, actif, entreprises(id, nom, code_entreprise, logo_url, actif, autoriser_sans_photo_desc)"
         ).eq("id", site_id).single().execute()
 
         if not res.data:
@@ -273,6 +280,7 @@ def public_site_info(site_id):
                 "nom": ent.get("nom"),
                 "code": ent.get("code_entreprise"),
                 "logo_url": ent.get("logo_url"),
+                "sans_photo_desc": bool(ent.get("autoriser_sans_photo_desc")),
             },
         })
     except Exception as e:
@@ -391,17 +399,24 @@ def public_submit_request():
     if not site_id:        return jsonify({"error": "site_id requis"}), 400
     if not code_barre:     return jsonify({"error": "code_barre requis"}), 400
     if not nom_porteur:    return jsonify({"error": "nom_porteur requis"}), 400
-    if not description:    return jsonify({"error": "description requise"}), 400
 
     try:
-        # 1. Récupérer l'entreprise_id depuis le site
-        site_res = supabase.table("sites").select("id, entreprise_id, actif").eq("id", site_id).single().execute()
+        # 1. Récupérer l'entreprise + le réglage "sans photo/description" depuis le site
+        site_res = supabase.table("sites").select(
+            "id, entreprise_id, actif, entreprises(autoriser_sans_photo_desc)"
+        ).eq("id", site_id).single().execute()
         if not site_res.data:
             return jsonify({"error": "Site introuvable"}), 404
         if not site_res.data.get("actif", True):
             return jsonify({"error": "Site inactif"}), 410
 
         entreprise_id = site_res.data["entreprise_id"]
+        ent_obj = site_res.data.get("entreprises") or {}
+        sans_obligation = bool(ent_obj.get("autoriser_sans_photo_desc"))
+
+        # Description obligatoire, sauf si l'entreprise autorise l'envoi sans
+        if not description and not sans_obligation:
+            return jsonify({"error": "description requise"}), 400
 
         # 2. Créer la demande
         req_res = supabase.table("repair_requests").insert({
@@ -476,6 +491,16 @@ def _notify_submission_internal(request_id):
     ent = req.get("entreprises") or {}
     site = req.get("sites") or {}
 
+    # Nombre de demandes en attente pour l'entreprise (inclut celle qui vient d'arriver)
+    pending = 0
+    try:
+        cnt = supabase.table("repair_requests").select("id", count="exact").eq(
+            "entreprise_id", req.get("entreprise_id")
+        ).eq("statut", "en_attente").execute()
+        pending = cnt.count or 0
+    except Exception as e:
+        logger.error(f"Erreur comptage demandes en attente : {e}")
+
     users_to_notify = set()
     if site.get("id"):
         assigned = supabase.table("user_sites").select(
@@ -504,7 +529,18 @@ def _notify_submission_internal(request_id):
         <tr style="background:#f5f7fb;"><td style="padding:10px 16px; color:#65748b;">Code-barres</td><td style="padding:10px 16px; font-family:monospace;">{req.get('code_barre') or '—'}</td></tr>
         <tr><td style="padding:10px 16px; color:#65748b;">Site</td><td style="padding:10px 16px;">{site.get('nom') or '—'}</td></tr>
     </table>
-    <p style="color:#1C3775; margin-top:24px;">Connectez-vous à votre espace ZÉNITH pour valider ou refuser cette demande.</p>
+    <p style="color:#1C3775; margin-top:24px;">Vous avez actuellement
+        <strong style="color:#FC6100;">{pending}</strong>
+        demande{'s' if pending > 1 else ''} en attente de validation.</p>
+    <div style="text-align:center; margin:28px 0 4px;">
+        <a href="{APP_URL}" style="display:inline-block; background-color:#FC6100; color:#ffffff;
+           text-decoration:none; font-weight:700; font-size:15px; padding:14px 34px; border-radius:8px;">
+            Se connecter à ZÉNITH
+        </a>
+    </div>
+    <p style="color:#65748b; font-size:13px; text-align:center; margin-top:10px;">
+        ou copiez ce lien : <a href="{APP_URL}" style="color:#1C3775;">{APP_URL}</a>
+    </p>
     """
     html = _email_template("Nouvelle demande à valider", contenu)
     subject = f"[ZÉNITH] Demande à valider — {req.get('ticket_number','')}"
@@ -534,7 +570,7 @@ def pre_validate_request(request_id):
 
     # Récupérer la demande
     res = supabase.table("repair_requests").select(
-        "*, entreprises(nom, email_contact), sites(id, nom)"
+        "*, entreprises(nom, email_contact, code_client_sis), sites(id, nom, code_client_livre)"
     ).eq("id", request_id).single().execute()
     if not res.data:
         return jsonify({"error": "Demande introuvable"}), 404
@@ -568,7 +604,7 @@ def pre_validate_request(request_id):
 
     # Notifier l'admin NETEXIAL
     try:
-        _notify_admin_validation(req)
+        _notify_admin_validation(req, profile)
     except Exception as e:
         logger.error(f"Erreur notif admin : {e}")
 
@@ -657,8 +693,14 @@ def reopen_request(request_id):
     return jsonify({"success": True})
 
 
-def _notify_admin_validation(req):
-    """Email à l'admin NETEXIAL quand une demande passe en pre_validee."""
+def _notify_admin_validation(req, validator_profile=None):
+    """Email aux admins concernés quand une demande passe en pre_validee.
+
+    Destinataires :
+      - l'admin référent de l'utilisateur qui a validé (validator_profile.admin_referent_id)
+      - l'admin de base (BASE_ADMIN_ID), qui reçoit TOUJOURS tout
+    Fallback : si aucun destinataire n'a pu être résolu, on notifie tous les admins.
+    """
     ent = req.get("entreprises") or {}
     site = req.get("sites") or {}
 
@@ -668,7 +710,9 @@ def _notify_admin_validation(req):
     <table style="width:100%; margin-top:20px; font-family:Arial; font-size:14px; border-collapse:collapse;">
         <tr style="background:#f5f7fb;"><td style="padding:10px 16px; color:#65748b; width:35%;">N° de ticket</td><td style="padding:10px 16px; font-weight:700; color:#FC6100;">{req.get('ticket_number','—')}</td></tr>
         <tr><td style="padding:10px 16px; color:#65748b;">Entreprise</td><td style="padding:10px 16px;">{ent.get('nom') or '—'}</td></tr>
-        <tr style="background:#f5f7fb;"><td style="padding:10px 16px; color:#65748b;">Site</td><td style="padding:10px 16px;">{site.get('nom') or '—'}</td></tr>
+        <tr style="background:#f5f7fb;"><td style="padding:10px 16px; color:#65748b;">Code client SIS</td><td style="padding:10px 16px; font-family:monospace;">{ent.get('code_client_sis') or '—'}</td></tr>
+        <tr><td style="padding:10px 16px; color:#65748b;">Site</td><td style="padding:10px 16px;">{site.get('nom') or '—'}</td></tr>
+        <tr style="background:#f5f7fb;"><td style="padding:10px 16px; color:#65748b;">Code client livré (ATLAS)</td><td style="padding:10px 16px; font-family:monospace;">{site.get('code_client_livre') or '—'}</td></tr>
         <tr><td style="padding:10px 16px; color:#65748b;">Porteur</td><td style="padding:10px 16px;">{req.get('nom_porteur') or '—'}</td></tr>
         <tr style="background:#f5f7fb;"><td style="padding:10px 16px; color:#65748b;">Code-barres</td><td style="padding:10px 16px; font-family:monospace;">{req.get('code_barre') or '—'}</td></tr>
     </table>
@@ -677,11 +721,32 @@ def _notify_admin_validation(req):
     html = _email_template("Demande pré-validée — Action requise", contenu)
     subject = f"[ZÉNITH] À traiter — {req.get('ticket_number','')}"
 
-    # Récupérer tous les admins
-    admins = supabase.table("users").select("email").eq("role", "admin").execute()
-    for a in (admins.data or []):
-        if a.get("email"):
-            send_email(a["email"], subject, html)
+    # Construire la liste des destinataires (admin référent + admin de base)
+    admin_ids = set()
+    if validator_profile and validator_profile.get("admin_referent_id"):
+        admin_ids.add(validator_profile["admin_referent_id"])
+    if BASE_ADMIN_ID:
+        admin_ids.add(BASE_ADMIN_ID)
+
+    recipients = set()
+    if admin_ids:
+        try:
+            res = supabase.table("users").select("email").eq("role", "admin").in_("id", list(admin_ids)).execute()
+            for a in (res.data or []):
+                if a.get("email"):
+                    recipients.add(a["email"])
+        except Exception as e:
+            logger.error(f"Erreur résolution admins destinataires : {e}")
+
+    # Filet de sécurité : si rien n'a pu être résolu, on notifie tous les admins
+    if not recipients:
+        all_admins = supabase.table("users").select("email").eq("role", "admin").execute()
+        for a in (all_admins.data or []):
+            if a.get("email"):
+                recipients.add(a["email"])
+
+    for email in recipients:
+        send_email(email, subject, html)
 
 
 @app.route("/api/public/notify-submission", methods=["POST"])
@@ -1002,11 +1067,14 @@ def create_user():
     role           = data.get("role", "client")
     entreprise_id  = data.get("entreprise_id")
     site_ids       = data.get("site_ids") or []
+    admin_referent_id = data.get("admin_referent_id")
 
     if not email or not password:
         return jsonify({"error": "Email et mot de passe requis"}), 400
     if role == "client" and not entreprise_id:
         return jsonify({"error": "entreprise_id requis pour un utilisateur d'entreprise"}), 400
+    if role == "client" and not admin_referent_id:
+        return jsonify({"error": "Un admin référent est requis pour un utilisateur d'entreprise"}), 400
 
     try:
         # Création du compte auth (utilise l'API admin)
@@ -1024,6 +1092,7 @@ def create_user():
             "nom_complet": nom,
             "role": role,
             "entreprise_id": entreprise_id if role == "client" else None,
+            "admin_referent_id": admin_referent_id if role == "client" else None,
         }).execute()
 
         # Assigner les sites (si role = client/entreprise_user)
@@ -1133,6 +1202,78 @@ def reset_password():
         return jsonify({"success": True})
     except Exception as e:
         logger.error(f"Erreur reset password : {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+# --- Mise à jour des infos d'un utilisateur (admin only) --------------------
+@app.route("/api/admin/update-user", methods=["POST"])
+def update_user():
+    """
+    Met à jour les infos d'un utilisateur : email, nom, rôle, entreprise, sites.
+    Ne touche PAS au mot de passe (géré par /admin/reset-password).
+    Body : {
+        "user_id": "...", "email": "...", "nom_complet": "...",
+        "role": "client" | "admin", "entreprise_id": "...",
+        "site_ids": ["uuid1", ...]   // [] ou null = accès à tous les sites
+    }
+    """
+    payload, err = verify_jwt(request)
+    if err:
+        return err
+
+    user_profile = get_user_profile(payload["sub"])
+    if not user_profile or user_profile.get("role") != "admin":
+        return jsonify({"error": "Accès admin requis"}), 403
+
+    data = request.get_json(silent=True) or {}
+    target_id     = data.get("user_id")
+    email         = (data.get("email") or "").strip()
+    nom           = data.get("nom_complet", "")
+    role          = data.get("role", "client")
+    entreprise_id = data.get("entreprise_id")
+    site_ids      = data.get("site_ids") or []
+    admin_referent_id = data.get("admin_referent_id")
+
+    if not target_id:
+        return jsonify({"error": "user_id requis"}), 400
+    if not email or "@" not in email:
+        return jsonify({"error": "Email invalide"}), 400
+    if role not in ("client", "admin"):
+        return jsonify({"error": "Rôle invalide"}), 400
+    if role == "client" and not entreprise_id:
+        return jsonify({"error": "entreprise_id requis pour un utilisateur d'entreprise"}), 400
+    if role == "client" and not admin_referent_id:
+        return jsonify({"error": "Un admin référent est requis pour un utilisateur d'entreprise"}), 400
+
+    # Empêcher un admin de se rétrograder lui-même (éviter de se verrouiller dehors)
+    if target_id == payload["sub"] and role != "admin":
+        return jsonify({"error": "Vous ne pouvez pas retirer votre propre rôle administrateur"}), 400
+
+    try:
+        # 1) Email côté auth (email_confirm pour éviter un mail de confirmation)
+        supabase.auth.admin.update_user_by_id(
+            target_id, {"email": email, "email_confirm": True}
+        )
+
+        # 2) Profil public.users
+        supabase.table("users").update({
+            "email": email,
+            "nom_complet": nom,
+            "role": role,
+            "entreprise_id": entreprise_id if role == "client" else None,
+            "admin_referent_id": admin_referent_id if role == "client" else None,
+        }).eq("id", target_id).execute()
+
+        # 3) Sites assignés (on remplace l'ensemble)
+        supabase.table("user_sites").delete().eq("user_id", target_id).execute()
+        if role == "client" and site_ids:
+            supabase.table("user_sites").insert([
+                {"user_id": target_id, "site_id": sid} for sid in site_ids
+            ]).execute()
+
+        return jsonify({"success": True})
+    except Exception as e:
+        logger.error(f"Erreur mise à jour utilisateur : {e}")
         return jsonify({"error": str(e)}), 500
 
 
