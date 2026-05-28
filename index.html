@@ -23,6 +23,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // reCAPTCHA — rendu différé : un widget ne peut être rendu QUE s'il est visible.
 console.log('%c[ZÉNITH] build captcha-v3 chargé', 'color:#FC6100;font-weight:bold');
@@ -195,11 +196,20 @@ h3 { font-size: 18px; letter-spacing: 0.8px; }
 /* Logo dans la sidebar (logo complet : icône + NETEXIAL) */
 .sidebar-logo {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 8px 8px 24px;
     margin-bottom: 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sidebar-subtitle {
+    margin-top: 12px;
+    color: var(--nx-white);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 .sidebar-logo-img {
     width: 100%;
@@ -2501,7 +2511,7 @@ a.contact-card:hover {
 
                 <div class="field">
                     <label class="field-label">
-                        Nom inscrit sur le vêtement
+                        Nom du porteur
                         <span id="anon-ocr-badge" class="anon-ocr-badge hidden">
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                             détecté automatiquement
@@ -2975,6 +2985,7 @@ a.contact-card:hover {
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-logo">
                 <img src="/static/netexial-logo-white.png" alt="NETEXIAL" class="sidebar-logo-img">
+                <div class="sidebar-subtitle">Espace Réparation</div>
             </div>
 
             <!-- Navigation client -->
@@ -2992,14 +3003,17 @@ a.contact-card:hover {
 
             <!-- Navigation admin -->
             <nav id="nav-admin" class="hidden">
-                <div class="sidebar-section-label">Pilotage</div>
                 <button class="nav-item active" data-view="admin-dashboard">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
                     <span>Tableau de bord</span>
                 </button>
+                <button class="nav-item" data-view="admin-pending">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Demandes en attente</span>
+                </button>
                 <button class="nav-item" data-view="admin-requests">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                    <span>Demandes</span>
+                    <span>Suivi des demandes</span>
                 </button>
                 <div class="sidebar-section-label" data-admin-only>Gestion</div>
                 <button class="nav-item" data-view="admin-entreprises" data-admin-only>
@@ -3208,7 +3222,7 @@ a.contact-card:hover {
                 <div class="page-header">
                     <div>
                         <h1>Tableau de bord</h1>
-                        <p class="sub">Vue d'ensemble de l'activité</p>
+                        <p class="sub">Vos demandes de réparation</p>
                     </div>
                 </div>
 
@@ -3233,12 +3247,51 @@ a.contact-card:hover {
                 </div>
             </section>
 
+            <!-- ===== VUE : Admin - Demandes en attente ===== -->
+            <section id="view-admin-pending" class="view">
+                <div class="page-header">
+                    <div>
+                        <h1>Demandes en attente</h1>
+                        <p class="sub">Les demandes qui attendent votre action</p>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <div class="table-toolbar">
+                        <span id="pending-count" style="font-size:13px; color:var(--text-muted); font-weight:600;">0 résultat</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Ticket</th>
+                                    <th>Raison sociale</th>
+                                    <th>Ville</th>
+                                    <th>Type de réparation</th>
+                                    <th>Nom porteur</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pending-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             <!-- ===== VUE : Admin - Demandes ===== -->
             <section id="view-admin-requests" class="view">
                 <div class="page-header">
                     <div>
-                        <h1>Demandes</h1>
+                        <h1>Suivi des demandes</h1>
                         <p class="sub">Gérez les demandes de réparation entrantes</p>
+                    </div>
+                    <div class="page-header-actions">
+                        <button class="btn btn-accent" id="export-requests-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Exporter Excel</span>
+                        </button>
                     </div>
                 </div>
 
@@ -3255,14 +3308,17 @@ a.contact-card:hover {
                             <option value="acceptee">Acceptées</option>
                             <option value="refusee">Refusées</option>
                         </select>
+                        <span id="requests-count" style="margin-left:auto; font-size:13px; color:var(--text-muted); font-weight:600; white-space:nowrap;">0 résultat</span>
                     </div>
                     <div style="overflow-x: auto;">
                         <table class="table">
                             <thead>
                                 <tr>
                                     <th>Ticket</th>
-                                    <th>Entreprise</th>
-                                    <th>Produit</th>
+                                    <th>Raison sociale</th>
+                                    <th>Ville</th>
+                                    <th>Type de réparation</th>
+                                    <th>Nom porteur</th>
                                     <th>Date</th>
                                     <th>Statut</th>
                                     <th>Actions</th>
@@ -3272,7 +3328,6 @@ a.contact-card:hover {
                         </table>
                     </div>
                     <div class="table-pagination">
-                        <span id="requests-count">0 résultat</span>
                         <div class="page-btns" id="requests-pages"></div>
                     </div>
                 </div>
@@ -4186,8 +4241,6 @@ async function enterApp() {
         // Admin : tout visible
         $$('#nav-admin [data-admin-only]').forEach(el => el.style.display = '');
         $('#client-banner')?.classList.add('hidden');
-        showView('admin-dashboard');
-        await loadDashboard();
     } else {
         // User entreprise : on cache Entreprises / Sites / Utilisateurs
         $$('#nav-admin [data-admin-only]').forEach(el => el.style.display = 'none');
@@ -4207,15 +4260,11 @@ async function enterApp() {
                 }
             }
         }
-        // Aller directement à la vue Demandes (le user entreprise n'a pas de dashboard utile)
-        // Par défaut, n'afficher que les demandes EN ATTENTE (à traiter)
-        State.requestsFilter.status = 'en_attente';
-        const statusSel = $('#requests-filter-status');
-        if (statusSel) statusSel.value = 'en_attente';
-        showView('admin-requests');
-        await loadRequests();
-        return;
     }
+
+    // Tout le monde atterrit directement sur la page "Demandes en attente"
+    showView('admin-pending');
+    await loadPendingRequests();
 
     // Notifs temps réel
     subscribeRealtime();
@@ -4239,6 +4288,7 @@ function showView(viewName) {
 
     // Lazy load des données par vue
     if (viewName === 'admin-dashboard') loadDashboard();
+    if (viewName === 'admin-pending') loadPendingRequests();
     if (viewName === 'admin-requests') loadRequests();
     if (viewName === 'admin-entreprises') loadEntreprises();
     if (viewName === 'admin-sites') loadSites();
@@ -4782,7 +4832,7 @@ const REQUESTS_PAGE_SIZE = 10;
 
 async function loadRequests() {
     const tbody = $('#requests-tbody');
-    tbody.innerHTML = `<tr><td colspan="6"><div class="full-loader"><span class="loader"></span></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="full-loader"><span class="loader"></span></div></td></tr>`;
 
     let query = sb
         .from('repair_requests')
@@ -4858,6 +4908,161 @@ function populateSiteFilter() {
     }
 }
 
+// Rendu d'une ligne de demande (partagé entre "Suivi des demandes" et "Demandes en attente")
+function requestRowHtml(r) {
+    return `
+            <tr>
+                <td><strong style="font-family: var(--font-display);">${escapeHtml(r.ticket_number)}</strong></td>
+                <td>
+                    <div>${escapeHtml(r.entreprises?.nom || '—')}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(r.entreprises?.code_entreprise || '')}</div>
+                </td>
+                <td>${escapeHtml(r.sites?.nom || '—')}</td>
+                <td>${r.description ? escapeHtml(r.description.length > 60 ? r.description.slice(0, 60) + '…' : r.description) : '—'}</td>
+                <td>${escapeHtml(r.nom_porteur || '—')}</td>
+                <td>${formatRelative(r.created_at)}</td>
+                <td>${statusBadge(r.statut)}</td>
+                <td>
+                    <div class="flex-row" style="gap: 4px;">
+                        <button class="btn btn-ghost btn-icon" onclick="viewRequest('${r.id}')" title="Voir">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                        ${(() => {
+                            const role = State.profile?.role;
+                            if (role === 'client' && r.statut === 'en_attente') {
+                                return `
+                                    <button class="btn btn-icon" style="background: rgba(70,168,77,0.15); color: var(--nx-green);" onclick="preValidateRequest('${r.id}')" title="Valider et transmettre à NETEXIAL">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </button>
+                                    <button class="btn btn-icon" style="background: rgba(211,47,47,0.12); color: #c62828;" onclick="refuseByEntreprise('${r.id}')" title="Refuser">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                    </button>
+                                `;
+                            }
+                            if (role === 'admin' && r.statut === 'pre_validee') {
+                                return `
+                                    <button class="btn btn-icon" style="background: rgba(70,168,77,0.15); color: var(--nx-green);" onclick="acceptRequest('${r.id}')" title="Accepter">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </button>
+                                    <button class="btn btn-icon" style="background: rgba(211,47,47,0.12); color: #c62828;" onclick="refuseRequest('${r.id}')" title="Refuser">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                    </button>
+                                `;
+                            }
+                            return '';
+                        })()}
+                    </div>
+                </td>
+            </tr>
+        `;
+}
+
+// Page "Demandes en attente" : uniquement les demandes qui attendent une action.
+//   - Admin    → demandes pré-validées (en attente de SA décision)
+//   - Entreprise → demandes en_attente (en attente de SA validation)
+async function loadPendingRequests() {
+    const tbody = $('#pending-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="full-loader"><span class="loader"></span></div></td></tr>`;
+
+    const role = State.profile?.role;
+    let query = sb
+        .from('repair_requests')
+        .select('*, entreprises(nom, code_entreprise), sites(nom), request_images(id)')
+        .order('created_at', { ascending: false });
+
+    if (role === 'admin') {
+        query = query.eq('statut', 'pre_validee');
+    } else if (role === 'client') {
+        query = query.eq('statut', 'en_attente').eq('entreprise_id', State.profile.entreprise_id);
+        if (State.userSites && State.userSites.length > 0) {
+            query = query.in('site_id', State.userSites);
+        }
+    }
+
+    const { data, error } = await query;
+    if (error) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><p style="color:var(--nx-red);">${escapeHtml(error.message || 'Erreur de chargement')}</p></div></td></tr>`;
+        return;
+    }
+
+    const rows = data || [];
+    tbody.innerHTML = rows.length
+        ? rows.map(requestRowHtml).join('')
+        : `<tr><td colspan="8"><div class="empty-state"><p>Aucune demande en attente.</p></div></td></tr>`;
+
+    const cnt = $('#pending-count');
+    if (cnt) cnt.textContent = `${rows.length} demande${rows.length > 1 ? 's' : ''} en attente`;
+}
+
+// Recharge la bonne vue après une action (selon la page courante)
+function reloadActiveRequests() {
+    if (State.currentView === 'admin-pending') loadPendingRequests();
+    else loadRequests();
+}
+
+// Libellé lisible d'un statut (pour l'export)
+function statutLabel(status) {
+    return ({
+        en_attente:  'En attente',
+        pre_validee: 'Pré-validée',
+        acceptee:    'Acceptée',
+        refusee:     'Refusée',
+        cloturee:    'Clôturée',
+    })[status] || status || '';
+}
+
+// Renvoie les demandes filtrées (mêmes filtres que le tableau, sans pagination)
+function getFilteredRequests() {
+    const search = State.requestsFilter.search.toLowerCase();
+    const statusFilter = State.requestsFilter.status;
+    const siteFilter = State.requestsFilter.site;
+    return State.requestsCache.filter(r => {
+        if (statusFilter && r.statut !== statusFilter) return false;
+        if (siteFilter && r.site_id !== siteFilter) return false;
+        if (State.requestsFilter.entreprise && r.entreprise_id !== State.requestsFilter.entreprise) return false;
+        if (!search) return true;
+        const blob = [
+            r.ticket_number, r.code_barre, r.nom_porteur,
+            r.description, r.entreprises?.nom, r.entreprises?.code_entreprise, r.sites?.nom
+        ].filter(Boolean).join(' ').toLowerCase();
+        return blob.includes(search);
+    });
+}
+
+// Export Excel (.xlsx) des demandes affichées
+function exportRequestsExcel() {
+    if (typeof XLSX === 'undefined') {
+        toast("Module d'export indisponible (réessayez dans un instant)", 'error');
+        return;
+    }
+    const rows = getFilteredRequests();
+    if (!rows.length) {
+        toast("Aucune demande à exporter", 'warning');
+        return;
+    }
+
+    const header = ['Ticket', 'Raison sociale', 'Ville', 'Type de réparation', 'Nom porteur', 'Date', 'Statut'];
+    const data = rows.map(r => [
+        r.ticket_number || '',
+        r.entreprises?.nom || '',
+        r.sites?.nom || '',
+        r.description || '',
+        r.nom_porteur || '',
+        r.created_at ? new Date(r.created_at).toLocaleString('fr-FR') : '',
+        statutLabel(r.statut),
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
+    ws['!cols'] = [{ wch: 14 }, { wch: 26 }, { wch: 20 }, { wch: 50 }, { wch: 22 }, { wch: 18 }, { wch: 14 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Demandes');
+
+    const date = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `demandes_zenith_${date}.xlsx`);
+    toast(`${rows.length} demande${rows.length > 1 ? 's' : ''} exportée${rows.length > 1 ? 's' : ''}`, 'success');
+}
+
 function renderRequestsTable() {
     const search = State.requestsFilter.search.toLowerCase();
     const statusFilter = State.requestsFilter.status;
@@ -4883,56 +5088,9 @@ function renderRequestsTable() {
 
     const tbody = $('#requests-tbody');
     if (!pageData.length) {
-        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><p>Aucune demande trouvée.</p></div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><p>Aucune demande trouvée.</p></div></td></tr>`;
     } else {
-        tbody.innerHTML = pageData.map(r => `
-            <tr>
-                <td><strong style="font-family: var(--font-display);">${escapeHtml(r.ticket_number)}</strong></td>
-                <td>
-                    <div>${escapeHtml(r.entreprises?.nom || '—')}</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(r.entreprises?.code_entreprise || '')}</div>
-                </td>
-                <td>
-                    <div>${escapeHtml(r.reference_produit || '—')}</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(r.type_equipement || '')}</div>
-                </td>
-                <td>${formatRelative(r.created_at)}</td>
-                <td>${statusBadge(r.statut)}</td>
-                <td>
-                    <div class="flex-row" style="gap: 4px;">
-                        <button class="btn btn-ghost btn-icon" onclick="viewRequest('${r.id}')" title="Voir">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </button>
-                        ${(() => {
-                            const role = State.profile?.role;
-                            // User entreprise : valider/refuser une demande en_attente
-                            if (role === 'client' && r.statut === 'en_attente') {
-                                return `
-                                    <button class="btn btn-icon" style="background: rgba(70,168,77,0.15); color: var(--nx-green);" onclick="preValidateRequest('${r.id}')" title="Valider et transmettre à NETEXIAL">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                    </button>
-                                    <button class="btn btn-icon" style="background: rgba(211,47,47,0.12); color: #c62828;" onclick="refuseByEntreprise('${r.id}')" title="Refuser">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                    </button>
-                                `;
-                            }
-                            // Admin NETEXIAL : accepter/refuser une demande pré-validée
-                            if (role === 'admin' && r.statut === 'pre_validee') {
-                                return `
-                                    <button class="btn btn-icon" style="background: rgba(70,168,77,0.15); color: var(--nx-green);" onclick="acceptRequest('${r.id}')" title="Accepter">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                    </button>
-                                    <button class="btn btn-icon" style="background: rgba(211,47,47,0.12); color: #c62828;" onclick="refuseRequest('${r.id}')" title="Refuser">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                    </button>
-                                `;
-                            }
-                            return '';
-                        })()}
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = pageData.map(requestRowHtml).join('');
     }
 
     $('#requests-count').textContent = `${total} résultat${total > 1 ? 's' : ''}`;
@@ -4980,6 +5138,7 @@ $('#requests-filter-site').addEventListener('change', e => {
     State.requestsPage = 1;
     renderRequestsTable();
 });
+$('#export-requests-btn')?.addEventListener('click', exportRequestsExcel);
 
 async function viewRequest(id) {
     const { data, error } = await sb
@@ -5017,7 +5176,7 @@ async function viewRequest(id) {
             <div class="detail-item"><div class="label">Statut</div><div class="value">${statusBadge(r.statut)}</div></div>
             <div class="detail-item"><div class="label">Entreprise</div><div class="value">${escapeHtml(r.entreprises?.nom || '—')}<div style="font-size:11px;color:var(--text-muted);font-family:var(--font-display);">${escapeHtml(r.entreprises?.code_entreprise || '')}</div></div></div>
             <div class="detail-item"><div class="label">Site</div><div class="value">${escapeHtml(r.sites?.nom || '—')}</div></div>
-            <div class="detail-item"><div class="label">Porteur du vêtement</div><div class="value">${escapeHtml(r.nom_porteur || '—')}${sourceBadge}</div></div>
+            <div class="detail-item"><div class="label">Nom du porteur</div><div class="value">${escapeHtml(r.nom_porteur || '—')}${sourceBadge}</div></div>
             <div class="detail-item"><div class="label">Date</div><div class="value">${formatDate(r.created_at)}</div></div>
             <div class="detail-item"><div class="label">Code-barres</div><div class="value" style="font-family:monospace;">${escapeHtml(r.code_barre || '—')}</div></div>
         </div>
@@ -5083,7 +5242,7 @@ async function acceptRequest(id) {
 
         toast("Demande acceptée", 'success');
         closeModal();
-        loadRequests();
+        reloadActiveRequests();
     } catch (err) {
         toast(err.message, 'error');
     }
@@ -5106,7 +5265,7 @@ async function refuseRequest(id) {
 
         toast("Demande refusée", 'info');
         closeModal();
-        loadRequests();
+        reloadActiveRequests();
     } catch (err) {
         toast(err.message, 'error');
     }
@@ -5119,7 +5278,7 @@ async function preValidateRequest(id) {
         const res = await apiCall(`/requests/${id}/pre-validate`, { method: 'POST' });
         toast("Demande validée et transmise à NETEXIAL", 'success');
         closeModal();
-        loadRequests();
+        reloadActiveRequests();
     } catch (err) {
         toast(err.message || "Erreur lors de la validation", 'error');
     }
@@ -5137,7 +5296,7 @@ async function refuseByEntreprise(id) {
         });
         toast("Demande refusée", 'info');
         closeModal();
-        loadRequests();
+        reloadActiveRequests();
     } catch (err) {
         toast(err.message || "Erreur lors du refus", 'error');
     }
@@ -5150,7 +5309,7 @@ async function reopenRequest(id) {
         await apiCall(`/requests/${id}/reopen`, { method: 'POST' });
         toast("Demande rouverte — repassée en attente", 'success');
         closeModal();
-        loadRequests();
+        reloadActiveRequests();
     } catch (err) {
         toast(err.message || "Erreur lors de la réouverture", 'error');
     }
@@ -5922,6 +6081,7 @@ function subscribeRealtime() {
         .channel('repair_requests_changes')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'repair_requests' }, payload => {
             toast(`Nouvelle demande : ${payload.new.ticket_number}`, 'info');
+            if (State.currentView === 'admin-pending') loadPendingRequests();
             if (State.currentView === 'admin-requests') loadRequests();
             if (State.currentView === 'admin-dashboard') loadDashboard();
         })
