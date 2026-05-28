@@ -89,6 +89,16 @@ CORS(app, resources={r"/api/*": {"origins": ALLOWED_ORIGINS}})
 supabase: SupaClient = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY) \
     if SUPABASE_URL and SUPABASE_SERVICE_KEY else None
 
+if supabase is None:
+    logger.warning(
+        "Client Supabase NON initialise. Verifiez votre .env -> "
+        "SUPABASE_URL: %s | SUPABASE_SERVICE_ROLE_KEY: %s",
+        "OK" if SUPABASE_URL else "MANQUANTE",
+        "OK" if SUPABASE_SERVICE_KEY else "MANQUANTE",
+    )
+else:
+    logger.info("Client Supabase initialise avec succes.")
+
 
 # ----------------------------------------------------------------------------
 # AUTH : vérification du JWT Supabase
