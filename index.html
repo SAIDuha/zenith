@@ -3258,7 +3258,13 @@ a.contact-card:hover {
 
                 <div class="table-wrap">
                     <div class="table-toolbar">
-                        <span id="pending-count" style="font-size:13px; color:var(--text-muted); font-weight:600;">0 résultat</span>
+                        <span style="display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--text-muted);">
+                            <span>Du</span>
+                            <input id="pending-date-from" type="date" class="input" style="padding:8px 10px; width:auto;">
+                            <span>au</span>
+                            <input id="pending-date-to" type="date" class="input" style="padding:8px 10px; width:auto;">
+                        </span>
+                        <span id="pending-count" style="margin-left:auto; font-size:13px; color:var(--text-muted); font-weight:600;">0 résultat</span>
                     </div>
                     <div style="overflow-x: auto;">
                         <table class="table">
@@ -3308,6 +3314,12 @@ a.contact-card:hover {
                             <option value="acceptee">Acceptées</option>
                             <option value="refusee">Refusées</option>
                         </select>
+                        <span style="display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--text-muted);">
+                            <span>Du</span>
+                            <input id="requests-date-from" type="date" class="input" style="padding:8px 10px; width:auto;">
+                            <span>au</span>
+                            <input id="requests-date-to" type="date" class="input" style="padding:8px 10px; width:auto;">
+                        </span>
                         <span id="requests-count" style="margin-left:auto; font-size:13px; color:var(--text-muted); font-weight:600; white-space:nowrap;">0 résultat</span>
                     </div>
                     <div style="overflow-x: auto;">
@@ -3530,7 +3542,9 @@ const State = {
     entreprisesCache: [],
     usersCache: [],
     requestsPage: 1,
-    requestsFilter: { search: '', status: '', site: '', entreprise: '' },
+    requestsFilter: { search: '', status: '', site: '', entreprise: '', dateFrom: '', dateTo: '' },
+    pendingCache: [],
+    pendingFilter: { dateFrom: '', dateTo: '' },
     realtimeChannels: [],
 };
 
@@ -4741,7 +4755,6 @@ async function loadDashboard() {
             </div>
             <div class="stat-label">Total demandes</div>
             <div class="stat-value">${stats.total}</div>
-            <div class="stat-trend">depuis le début</div>
         </div>
         <div class="stat-card warning">
             <div class="stat-card-icon">
@@ -4749,7 +4762,6 @@ async function loadDashboard() {
             </div>
             <div class="stat-label">À valider</div>
             <div class="stat-value">${stats.en_attente}</div>
-            <div class="stat-trend">demandes pré-validées</div>
         </div>
         <div class="stat-card success">
             <div class="stat-card-icon">
@@ -4757,7 +4769,6 @@ async function loadDashboard() {
             </div>
             <div class="stat-label">Acceptées</div>
             <div class="stat-value">${stats.acceptee}</div>
-            <div class="stat-trend up">prises en charge</div>
         </div>
         <div class="stat-card danger">
             <div class="stat-card-icon">
@@ -4765,7 +4776,6 @@ async function loadDashboard() {
             </div>
             <div class="stat-label">Refusées</div>
             <div class="stat-value">${stats.refusee}</div>
-            <div class="stat-trend">non retenues</div>
         </div>
     `;
 
@@ -4986,7 +4996,23 @@ async function loadPendingRequests() {
         return;
     }
 
-    const rows = data || [];
+    State.pendingCache = data || [];
+    renderPendingTable();
+}
+
+// Rendu (avec filtre date) à partir du cache des demandes en attente
+function renderPendingTable() {
+    const tbody = $('#pending-tbody');
+    if (!tbody) return;
+    const dateFrom = State.pendingFilter.dateFrom;
+    const dateTo   = State.pendingFilter.dateTo;
+    const rows = State.pendingCache.filter(r => {
+        const day = (r.created_at || '').slice(0, 10);
+        if (dateFrom && day < dateFrom) return false;
+        if (dateTo   && day > dateTo)   return false;
+        return true;
+    });
+
     tbody.innerHTML = rows.length
         ? rows.map(requestRowHtml).join('')
         : `<tr><td colspan="8"><div class="empty-state"><p>Aucune demande en attente.</p></div></td></tr>`;
@@ -5017,10 +5043,15 @@ function getFilteredRequests() {
     const search = State.requestsFilter.search.toLowerCase();
     const statusFilter = State.requestsFilter.status;
     const siteFilter = State.requestsFilter.site;
+    const dateFrom = State.requestsFilter.dateFrom;
+    const dateTo   = State.requestsFilter.dateTo;
     return State.requestsCache.filter(r => {
         if (statusFilter && r.statut !== statusFilter) return false;
         if (siteFilter && r.site_id !== siteFilter) return false;
         if (State.requestsFilter.entreprise && r.entreprise_id !== State.requestsFilter.entreprise) return false;
+        const day = (r.created_at || '').slice(0, 10);  // YYYY-MM-DD
+        if (dateFrom && day < dateFrom) return false;
+        if (dateTo   && day > dateTo)   return false;
         if (!search) return true;
         const blob = [
             r.ticket_number, r.code_barre, r.nom_porteur,
@@ -5064,21 +5095,7 @@ function exportRequestsExcel() {
 }
 
 function renderRequestsTable() {
-    const search = State.requestsFilter.search.toLowerCase();
-    const statusFilter = State.requestsFilter.status;
-    const siteFilter = State.requestsFilter.site;
-
-    let filtered = State.requestsCache.filter(r => {
-        if (statusFilter && r.statut !== statusFilter) return false;
-        if (siteFilter && r.site_id !== siteFilter) return false;
-        if (State.requestsFilter.entreprise && r.entreprise_id !== State.requestsFilter.entreprise) return false;
-        if (!search) return true;
-        const blob = [
-            r.ticket_number, r.code_barre, r.nom_porteur,
-            r.description, r.entreprises?.nom, r.entreprises?.code_entreprise, r.sites?.nom
-        ].filter(Boolean).join(' ').toLowerCase();
-        return blob.includes(search);
-    });
+    const filtered = getFilteredRequests();
 
     const total = filtered.length;
     const pages = Math.max(1, Math.ceil(total / REQUESTS_PAGE_SIZE));
@@ -5139,6 +5156,28 @@ $('#requests-filter-site').addEventListener('change', e => {
     renderRequestsTable();
 });
 $('#export-requests-btn')?.addEventListener('click', exportRequestsExcel);
+
+// Filtres date — Suivi des demandes
+$('#requests-date-from')?.addEventListener('change', e => {
+    State.requestsFilter.dateFrom = e.target.value;
+    State.requestsPage = 1;
+    renderRequestsTable();
+});
+$('#requests-date-to')?.addEventListener('change', e => {
+    State.requestsFilter.dateTo = e.target.value;
+    State.requestsPage = 1;
+    renderRequestsTable();
+});
+
+// Filtres date — Demandes en attente
+$('#pending-date-from')?.addEventListener('change', e => {
+    State.pendingFilter.dateFrom = e.target.value;
+    renderPendingTable();
+});
+$('#pending-date-to')?.addEventListener('change', e => {
+    State.pendingFilter.dateTo = e.target.value;
+    renderPendingTable();
+});
 
 async function viewRequest(id) {
     const { data, error } = await sb
