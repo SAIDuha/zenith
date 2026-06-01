@@ -55,7 +55,7 @@ SMTP_PORT             = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER             = os.getenv("SMTP_USER", "")
 SMTP_PASSWORD         = os.getenv("SMTP_PASSWORD", "")
 SMTP_FROM             = os.getenv("SMTP_FROM", "no-reply@netexial.com")
-SMTP_FROM_NAME        = os.getenv("SMTP_FROM_NAME", "ZÉNITH by NETEXIAL")
+SMTP_FROM_NAME        = os.getenv("SMTP_FROM_NAME", "IDEA by NETEXIAL")
 
 SERVICE_EMAIL         = os.getenv("SERVICE_EMAIL", "reparations@netexial.com")
 
@@ -166,11 +166,11 @@ def _email_template(titre: str, contenu_html: str, footer_extra: str = "") -> st
                style="background:#ffffff;border-radius:12px;overflow:hidden;
                       box-shadow:0 4px 24px rgba(20,27,77,0.08);">
 
-          <!-- Bandeau ZÉNITH -->
+          <!-- Bandeau IDEA -->
           <tr>
             <td style="background-color:#141B4D;padding:28px 32px;text-align:left;">
               <div style="color:#ffffff;font-size:26px;font-weight:700;letter-spacing:6px;">
-                ZÉNITH
+                IDEA
               </div>
               <div style="color:#C1D1EB;font-size:11px;letter-spacing:1.5px;margin-top:6px;">
                 BY NETEXIAL · PARTENAIRE SPÉCIALISTE DE LA PROTECTION AU TRAVAIL
@@ -200,7 +200,7 @@ def _email_template(titre: str, contenu_html: str, footer_extra: str = "") -> st
                        border-top:1px solid #C1D1EB;color:#1C3775;font-size:12px;line-height:1.5;">
               {footer_extra}
               <div style="margin-top:8px;color:#98B2DD;">
-                © {datetime.now().year} ZÉNITH by NETEXIAL — Cet email a été généré automatiquement.
+                © {datetime.now().year} IDEA by NETEXIAL — Cet email a été généré automatiquement.
               </div>
             </td>
           </tr>
@@ -545,7 +545,7 @@ def _notify_submission_internal(request_id):
     <div style="text-align:center; margin:28px 0 4px;">
         <a href="{APP_URL}" style="display:inline-block; background-color:#FC6100; color:#ffffff;
            text-decoration:none; font-weight:700; font-size:15px; padding:14px 34px; border-radius:8px;">
-            Se connecter à ZÉNITH
+            Se connecter à IDEA
         </a>
     </div>
     <p style="color:#65748b; font-size:13px; text-align:center; margin-top:10px;">
@@ -553,7 +553,7 @@ def _notify_submission_internal(request_id):
     </p>
     """
     html = _email_template("Nouvelle demande à valider", contenu)
-    subject = f"[ZÉNITH] Demande à valider — {req.get('ticket_number','')}"
+    subject = f"[IDEA] Demande à valider — {req.get('ticket_number','')}"
 
     for email in users_to_notify:
         if email:
@@ -726,10 +726,10 @@ def _notify_admin_validation(req, validator_profile=None):
         <tr><td style="padding:10px 16px; color:#65748b;">Porteur</td><td style="padding:10px 16px;">{req.get('nom_porteur') or '—'}</td></tr>
         <tr style="background:#f5f7fb;"><td style="padding:10px 16px; color:#65748b;">Code-barres</td><td style="padding:10px 16px; font-family:monospace;">{req.get('code_barre') or '—'}</td></tr>
     </table>
-    <p style="color:#1C3775; margin-top:24px;">Connectez-vous à l'espace ZÉNITH pour accepter ou refuser cette demande.</p>
+    <p style="color:#1C3775; margin-top:24px;">Connectez-vous à l'espace IDEA pour accepter ou refuser cette demande.</p>
     """
     html = _email_template("Demande pré-validée — Action requise", contenu)
-    subject = f"[ZÉNITH] À traiter — {req.get('ticket_number','')}"
+    subject = f"[IDEA] À traiter — {req.get('ticket_number','')}"
 
     # Construire la liste des destinataires (admin référent + admin de base)
     admin_ids = set()
@@ -864,7 +864,7 @@ def send_confirmation():
         </table>
 
         <p>Vous serez notifié(e) par email dès qu'une décision aura été prise sur votre demande.</p>
-        <p style="margin-top:24px;color:#1C3775;">Cordialement,<br><strong>L'équipe ZÉNITH</strong></p>
+        <p style="margin-top:24px;color:#1C3775;">Cordialement,<br><strong>L'équipe IDEA</strong></p>
     """
     html = _email_template(
         "Votre demande a bien été reçue",
@@ -872,7 +872,7 @@ def send_confirmation():
         footer_extra=f"Conservez ce numéro de ticket pour tout suivi : <strong>{req['ticket_number']}</strong>"
     )
 
-    ok = send_email(email_dest, f"[ZÉNITH] Confirmation de votre demande {req['ticket_number']}", html)
+    ok = send_email(email_dest, f"[IDEA] Confirmation de votre demande {req['ticket_number']}", html)
 
     # Journalisation
     supabase.table("notifications").insert({
@@ -967,7 +967,7 @@ def export_pdf(request_id):
     )
 
     story = []
-    story.append(Paragraph("ZÉNITH", title_style))
+    story.append(Paragraph("IDEA", title_style))
     story.append(Paragraph("DEMANDE DE RÉPARATION", sub_style))
     story.append(Spacer(1, 6))
 
@@ -1045,7 +1045,7 @@ def export_pdf(request_id):
     return send_file(
         buffer,
         mimetype="application/pdf",
-        download_name=f"ZENITH_{req['ticket_number']}.pdf",
+        download_name=f"IDEA_{req['ticket_number']}.pdf",
         as_attachment=True
     )
 
@@ -1284,6 +1284,91 @@ def update_user():
         return jsonify({"success": True})
     except Exception as e:
         logger.error(f"Erreur mise à jour utilisateur : {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+# --- Suppression EN CASCADE d'une entreprise (admin only) -------------------
+@app.route("/api/admin/delete-entreprise-cascade", methods=["POST"])
+def delete_entreprise_cascade():
+    """
+    Supprime une entreprise et TOUTES ses données dépendantes :
+      - demandes (repair_requests) + photos (request_images + storage)
+      - sites
+      - utilisateurs (public.users + user_sites + comptes auth.users)
+    Action IRRÉVERSIBLE. Admin only.
+    """
+    payload, err = verify_jwt(request)
+    if err:
+        return err
+    me = get_user_profile(payload["sub"])
+    if not me or me.get("role") != "admin":
+        return jsonify({"error": "Accès admin requis"}), 403
+
+    data = request.get_json(silent=True) or {}
+    ent_id = data.get("entreprise_id")
+    if not ent_id:
+        return jsonify({"error": "entreprise_id requis"}), 400
+
+    try:
+        # Vérifier que l'entreprise existe
+        ent_res = supabase.table("entreprises").select("id, nom").eq("id", ent_id).single().execute()
+        if not ent_res.data:
+            return jsonify({"error": "Entreprise introuvable"}), 404
+        ent_nom = ent_res.data.get("nom")
+
+        # 1) Collecter les IDs des demandes et des utilisateurs
+        req_res = supabase.table("repair_requests").select("id").eq("entreprise_id", ent_id).execute()
+        request_ids = [r["id"] for r in (req_res.data or [])]
+
+        users_res = supabase.table("users").select("id").eq("entreprise_id", ent_id).execute()
+        user_ids = [u["id"] for u in (users_res.data or [])]
+
+        # 2) Photos : storage + table
+        if request_ids:
+            imgs_res = supabase.table("request_images").select("storage_path") \
+                .in_("request_id", request_ids).execute()
+            paths = [i["storage_path"] for i in (imgs_res.data or []) if i.get("storage_path")]
+            if paths:
+                try:
+                    supabase.storage.from_("repair-photos").remove(paths)
+                except Exception as e:
+                    logger.warning(f"Suppression storage partielle : {e}")
+            supabase.table("request_images").delete().in_("request_id", request_ids).execute()
+
+        # 3) Demandes
+        supabase.table("repair_requests").delete().eq("entreprise_id", ent_id).execute()
+
+        # 4) Liaisons user_sites
+        if user_ids:
+            supabase.table("user_sites").delete().in_("user_id", user_ids).execute()
+
+        # 5) Profils utilisateurs (public.users)
+        supabase.table("users").delete().eq("entreprise_id", ent_id).execute()
+
+        # 6) Sites
+        supabase.table("sites").delete().eq("entreprise_id", ent_id).execute()
+
+        # 7) Entreprise
+        supabase.table("entreprises").delete().eq("id", ent_id).execute()
+
+        # 8) Comptes Supabase Auth (best effort : on ne fait pas planter la
+        #    suppression si l'un échoue, mais on log)
+        for uid in user_ids:
+            try:
+                supabase.auth.admin.delete_user(uid)
+            except Exception as e:
+                logger.warning(f"Suppression auth user {uid} echouee : {e}")
+
+        return jsonify({
+            "success": True,
+            "deleted": {
+                "entreprise": ent_nom,
+                "demandes": len(request_ids),
+                "utilisateurs": len(user_ids),
+            }
+        })
+    except Exception as e:
+        logger.error(f"Erreur cascade delete entreprise : {e}")
         return jsonify({"error": str(e)}), 500
 
 

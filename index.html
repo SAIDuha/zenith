@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#141B4D">
-<title>ZÉNITH — Plateforme de réparation NETEXIAL</title>
+<title>IDEA — Plateforme de réparation NETEXIAL</title>
 
 <!-- ============================================================
      POLICES (charte NETEXIAL : Oswald titres / Roboto texte / Monoton accents)
@@ -26,7 +26,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // reCAPTCHA — rendu différé : un widget ne peut être rendu QUE s'il est visible.
-console.log('%c[ZÉNITH] build captcha-v3 chargé', 'color:#FC6100;font-weight:bold');
+console.log('%c[IDEA] build captcha-v3 chargé', 'color:#FC6100;font-weight:bold');
 window.RECAPTCHA_SITEKEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
 window.recaptchaWidgets = { login: null, anon: null };
 window.grecaptchaReady = false;
@@ -620,8 +620,8 @@ h3 { font-size: 18px; letter-spacing: 0.8px; }
 .timeline-content strong { color: var(--nx-navy); }
 .timeline-content em { color: var(--nx-orange); font-style: normal; font-weight: 600; }
 
-/* Section ZÉNITH (lien philosophie) */
-.philo-zenith-section {
+/* Section IDEA (lien philosophie) */
+.philo-idea-section {
     position: relative;
     background: linear-gradient(135deg, #141B4D 0%, #1C3775 100%);
     border-radius: var(--radius-lg);
@@ -630,7 +630,7 @@ h3 { font-size: 18px; letter-spacing: 0.8px; }
     overflow: hidden;
     color: var(--nx-white);
 }
-.philo-zenith-mark {
+.philo-idea-mark {
     position: absolute;
     top: 50%;
     right: -40px;
@@ -643,12 +643,12 @@ h3 { font-size: 18px; letter-spacing: 0.8px; }
     user-select: none;
     pointer-events: none;
 }
-.philo-zenith-content {
+.philo-idea-content {
     position: relative;
     z-index: 1;
     max-width: 720px;
 }
-.philo-zenith-content h2 {
+.philo-idea-content h2 {
     font-family: var(--font-display);
     font-size: clamp(24px, 2.8vw, 36px);
     font-weight: 700;
@@ -656,17 +656,17 @@ h3 { font-size: 18px; letter-spacing: 0.8px; }
     margin: 14px 0 22px;
     line-height: 1.25;
 }
-.philo-zenith-content p {
+.philo-idea-content p {
     color: var(--nx-blue-light);
     line-height: 1.75;
     font-size: 15px;
     margin-bottom: 14px;
 }
-.philo-zenith-content p strong { color: var(--nx-orange); }
+.philo-idea-content p strong { color: var(--nx-orange); }
 
 /* Mobile : timeline marker repositionnée */
 @media (max-width: 640px) {
-    .philo-zenith-mark { font-size: 90px; right: -20px; }
+    .philo-idea-mark { font-size: 90px; right: -20px; }
     .timeline { padding-left: 30px; }
     .timeline::before { left: 9px; }
     .timeline-marker { left: -30px; }
@@ -798,12 +798,12 @@ a.contact-card:hover {
     position: relative;
     overflow: hidden;
 }
-/* Pas de motif pattern : fond bleu uni + lueur orange douce derrière ZÉNITH */
+/* Pas de motif pattern : fond bleu uni + lueur orange douce derrière IDEA */
 .auth-art::before { display: none; }
 .auth-art > * { position: relative; z-index: 1; }
 .auth-art-hero { margin-top: 0; }
 
-.zenith-brand {
+.idea-brand {
     color: var(--nx-orange);
     font-family: var(--font-mono);
     font-size: clamp(56px, 7vw, 100px);
@@ -812,9 +812,9 @@ a.contact-card:hover {
     line-height: 0.9;
     margin: 8px 0 18px 0;
     text-shadow: 0 6px 40px rgba(252, 97, 0, 0.20);
-    animation: zenithFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: ideaFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
-@keyframes zenithFadeIn {
+@keyframes ideaFadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
 }
@@ -871,7 +871,7 @@ a.contact-card:hover {
     flex-shrink: 0;
     transition: all var(--t-fast);
 }
-.zenith-tagline {
+.idea-tagline {
     color: var(--nx-navy);
     font-family: var(--font-display);
     font-size: clamp(18px, 2vw, 26px);
@@ -881,13 +881,13 @@ a.contact-card:hover {
     margin-bottom: 4px;
     max-width: 500px;
 }
-.zenith-tagline strong {
+.idea-tagline strong {
     color: var(--nx-navy);
     font-weight: 700;
 }
-.zenith-tagline .accent { color: var(--nx-orange); }
+.idea-tagline .accent { color: var(--nx-orange); }
 
-.zenith-desc {
+.idea-desc {
     color: var(--nx-navy-2);
     font-size: clamp(13px, 1.1vw, 15px);
     line-height: 1.6;
@@ -2589,7 +2589,7 @@ a.contact-card:hover {
         </div>
 
         <footer class="anon-footer">
-            <span>Propulsé par <strong style="color:var(--nx-orange); font-family:var(--font-mono); letter-spacing:1px;">ZÉNITH</strong> · NETEXIAL</span>
+            <span>Propulsé par <strong style="color:var(--nx-orange); font-family:var(--font-mono); letter-spacing:1px;">IDEA</strong> · NETEXIAL</span>
         </footer>
     </div>
 </div>
@@ -2617,9 +2617,9 @@ a.contact-card:hover {
         <!-- Côté gauche : visuel charte NETEXIAL -->
         <div class="auth-art">
             <div class="auth-art-hero">
-                <p class="zenith-tagline">L'exigence <strong>NETEXIAL</strong>,<br>jusqu'au</p>
-                <div class="zenith-brand">ZÉNITH</div>
-                <p class="zenith-desc">Déclarez, suivez et résolvez vos demandes de réparation en quelques clics. Chaque équipement abîmé prend une seconde vie.</p>
+                <p class="idea-tagline">L'expertise <strong>NETEXIAL</strong>,<br>en une seule</p>
+                <div class="idea-brand">IDEA</div>
+                <p class="idea-desc">Déclarez, suivez et résolvez vos demandes de réparation en quelques clics. Chaque équipement abîmé prend une seconde vie.</p>
 
                 <!-- 3 cartes feature (avec descriptions enrichies) -->
                 <div class="auth-features">
@@ -2653,7 +2653,7 @@ a.contact-card:hover {
                     </div>
                     <div class="auth-banner-text">
                         <div class="auth-banner-title">Plus d'un siècle d'expertise</div>
-                        <div class="auth-banner-sub">Découvrez l'histoire NETEXIAL et la philosophie ZÉNITH</div>
+                        <div class="auth-banner-sub">Découvrez l'histoire NETEXIAL et la philosophie IDEA</div>
                     </div>
                     <svg class="auth-banner-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </button>
@@ -2664,7 +2664,7 @@ a.contact-card:hover {
         <div class="auth-form-side">
             <div class="auth-card">
                 <h2>Connexion</h2>
-                <p class="sub">Accédez à votre espace <span style="color: var(--nx-orange); font-weight: 600;">ZÉNITH</span></p>
+                <p class="sub">Accédez à votre espace <span style="color: var(--nx-orange); font-weight: 600;">IDEA</span></p>
 
                 <div class="auth-tabs">
                     <button class="auth-tab active" data-tab="client">
@@ -2728,12 +2728,12 @@ a.contact-card:hover {
     <div class="public-page" id="public-page-faq">
         <div class="public-page-inner">
             <h1 class="public-page-title">Questions <span class="accent">fréquentes</span></h1>
-            <p class="public-page-subtitle">Tout ce que vous devez savoir sur ZÉNITH</p>
+            <p class="public-page-subtitle">Tout ce que vous devez savoir sur IDEA</p>
 
             <div class="faq-list">
                 <details class="faq-item">
                     <summary>Comment soumettre une demande de réparation ?</summary>
-                    <p>Connectez-vous à votre espace ZÉNITH avec votre email et mot de passe (utilisateur entreprise). Cliquez ensuite sur <strong>« Nouvelle demande »</strong> dans le menu, scannez le code-barres de l'équipement défaillant (ou saisissez-le manuellement), ajoutez quelques photos qui montrent le problème, puis décrivez en détail le défaut constaté. Une fois envoyée, vous recevez immédiatement un email de confirmation avec votre numéro de ticket.</p>
+                    <p>Connectez-vous à votre espace IDEA avec votre email et mot de passe (utilisateur entreprise). Cliquez ensuite sur <strong>« Nouvelle demande »</strong> dans le menu, scannez le code-barres de l'équipement défaillant (ou saisissez-le manuellement), ajoutez quelques photos qui montrent le problème, puis décrivez en détail le défaut constaté. Une fois envoyée, vous recevez immédiatement un email de confirmation avec votre numéro de ticket.</p>
                 </details>
 
                 <details class="faq-item">
@@ -2842,14 +2842,14 @@ a.contact-card:hover {
                 </div>
             </section>
 
-            <!-- Section : Lien avec ZÉNITH -->
-            <section class="philo-zenith-section">
-                <div class="philo-zenith-mark">ZÉNITH</div>
-                <div class="philo-zenith-content">
-                    <div class="philo-intro-tag light">L'aboutissement</div>
-                    <h2>Du sommet d'un héritage,<br>au zénith de votre quotidien</h2>
-                    <p>Le <strong>zénith</strong>, c'est le point culminant. Le sommet. L'apogée. Après plus d'un siècle au service de la performance et de la protection au travail, <strong>ZÉNITH est la concrétisation moderne de cette tradition d'exigence</strong>.</p>
-                    <p>Comme NETEXIAL a toujours visé l'excellence dans le textile professionnel, ZÉNITH vous accompagne jusqu'au plus haut niveau dans la <strong>gestion et la maintenance de vos équipements</strong>. Une plateforme digitale taillée pour le terrain, conçue par ceux qui connaissent vos enjeux mieux que personne.</p>
+            <!-- Section : Lien avec IDEA -->
+            <section class="philo-idea-section">
+                <div class="philo-idea-mark">IDEA</div>
+                <div class="philo-idea-content">
+                    <div class="philo-intro-tag light">L'idée juste</div>
+                    <h2>L'idée la plus simple<br>pour gérer vos réparations</h2>
+                    <p><strong>IDEA</strong>, c'est l'évidence : centraliser, suivre et résoudre toutes vos demandes de réparation en quelques clics. Forte de plus d'un siècle au service de la performance et de la protection au travail, <strong>NETEXIAL transforme son savoir-faire terrain en une plateforme digitale</strong>.</p>
+                    <p>Du scan d'un équipement à sa remise en service, IDEA fluidifie chaque étape pour vos équipes. Une plateforme <strong>taillée pour le terrain, conçue par ceux qui connaissent vos enjeux mieux que personne</strong>.</p>
                 </div>
             </section>
 
@@ -2890,13 +2890,13 @@ a.contact-card:hover {
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
                         </div>
                         <h3>Innovation continue</h3>
-                        <p>De la <em>location-entretien</em> en 1903 à <strong>ZÉNITH</strong> aujourd'hui, l'innovation est notre moteur. Toujours en avance, toujours au service du terrain.</p>
+                        <p>De la <em>location-entretien</em> en 1903 à <strong>IDEA</strong> aujourd'hui, l'innovation est notre moteur. Toujours en avance, toujours au service du terrain.</p>
                     </div>
                 </div>
             </section>
 
             <div class="public-page-cta">
-                <p>Prêt à découvrir ZÉNITH ?</p>
+                <p>Prêt à découvrir IDEA ?</p>
                 <button class="btn btn-accent" data-page="connexion">Accéder à mon espace</button>
             </div>
         </div>
@@ -3253,6 +3253,12 @@ a.contact-card:hover {
                     <div>
                         <h1>Demandes en attente</h1>
                         <p class="sub">Les demandes qui attendent votre action</p>
+                    </div>
+                    <div class="page-header-actions">
+                        <button class="btn btn-accent" id="export-pending-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Exporter Excel</span>
+                        </button>
                     </div>
                 </div>
 
@@ -4043,7 +4049,7 @@ const _anonPromise = (async () => {
     const isAnon = await initAnonView();
     if (isAnon) {
         // Stop tout le reste de l'init (login, etc.)
-        window.__zenith_anon_mode__ = true;
+        window.__idea_anon_mode__ = true;
     }
 })();
 
@@ -4108,7 +4114,7 @@ $('#contact-form')?.addEventListener('submit', e => {
     if (!name || !email || !subject || !message) return toast("Tous les champs sont requis", 'warning');
     // Ouvre le client mail par défaut
     const body = encodeURIComponent(`Nom : ${name}\nEmail : ${email}\n\n${message}`);
-    window.location.href = `mailto:support@netexial.com?subject=${encodeURIComponent('[ZÉNITH] ' + subject)}&body=${body}`;
+    window.location.href = `mailto:support@netexial.com?subject=${encodeURIComponent('[IDEA] ' + subject)}&body=${body}`;
     toast("Votre messagerie va s'ouvrir pour finaliser l'envoi.", 'success');
 });
 
@@ -5000,18 +5006,23 @@ async function loadPendingRequests() {
     renderPendingTable();
 }
 
-// Rendu (avec filtre date) à partir du cache des demandes en attente
-function renderPendingTable() {
-    const tbody = $('#pending-tbody');
-    if (!tbody) return;
+// Renvoie les demandes en attente filtrées (date)
+function getFilteredPending() {
     const dateFrom = State.pendingFilter.dateFrom;
     const dateTo   = State.pendingFilter.dateTo;
-    const rows = State.pendingCache.filter(r => {
+    return State.pendingCache.filter(r => {
         const day = (r.created_at || '').slice(0, 10);
         if (dateFrom && day < dateFrom) return false;
         if (dateTo   && day > dateTo)   return false;
         return true;
     });
+}
+
+// Rendu (avec filtre date) à partir du cache des demandes en attente
+function renderPendingTable() {
+    const tbody = $('#pending-tbody');
+    if (!tbody) return;
+    const rows = getFilteredPending();
 
     tbody.innerHTML = rows.length
         ? rows.map(requestRowHtml).join('')
@@ -5019,6 +5030,36 @@ function renderPendingTable() {
 
     const cnt = $('#pending-count');
     if (cnt) cnt.textContent = `${rows.length} demande${rows.length > 1 ? 's' : ''} en attente`;
+}
+
+// Export Excel (.xlsx) des demandes en attente affichées
+function exportPendingExcel() {
+    if (typeof XLSX === 'undefined') {
+        toast("Module d'export indisponible (réessayez dans un instant)", 'error');
+        return;
+    }
+    const rows = getFilteredPending();
+    if (!rows.length) {
+        toast("Aucune demande à exporter", 'warning');
+        return;
+    }
+    const header = ['Ticket', 'Raison sociale', 'Ville', 'Type de réparation', 'Nom porteur', 'Date', 'Statut'];
+    const data = rows.map(r => [
+        r.ticket_number || '',
+        r.entreprises?.nom || '',
+        r.sites?.nom || '',
+        r.description || '',
+        r.nom_porteur || '',
+        r.created_at ? new Date(r.created_at).toLocaleString('fr-FR') : '',
+        statutLabel(r.statut),
+    ]);
+    const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
+    ws['!cols'] = [{ wch: 14 }, { wch: 26 }, { wch: 20 }, { wch: 50 }, { wch: 22 }, { wch: 18 }, { wch: 14 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Demandes en attente');
+    const date = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `demandes_en_attente_idea_${date}.xlsx`);
+    toast(`${rows.length} demande${rows.length > 1 ? 's' : ''} exportée${rows.length > 1 ? 's' : ''}`, 'success');
 }
 
 // Recharge la bonne vue après une action (selon la page courante)
@@ -5090,7 +5131,7 @@ function exportRequestsExcel() {
     XLSX.utils.book_append_sheet(wb, ws, 'Demandes');
 
     const date = new Date().toISOString().slice(0, 10);
-    XLSX.writeFile(wb, `demandes_zenith_${date}.xlsx`);
+    XLSX.writeFile(wb, `demandes_idea_${date}.xlsx`);
     toast(`${rows.length} demande${rows.length > 1 ? 's' : ''} exportée${rows.length > 1 ? 's' : ''}`, 'success');
 }
 
@@ -5156,6 +5197,7 @@ $('#requests-filter-site').addEventListener('change', e => {
     renderRequestsTable();
 });
 $('#export-requests-btn')?.addEventListener('click', exportRequestsExcel);
+$('#export-pending-btn')?.addEventListener('click', exportPendingExcel);
 
 // Filtres date — Suivi des demandes
 $('#requests-date-from')?.addEventListener('change', e => {
@@ -5505,11 +5547,48 @@ async function saveEntreprise(id) {
 }
 
 async function deleteEntreprise(id) {
-    if (!confirm("Supprimer cette entreprise ? Cette action est irréversible et supprimera aussi tous ses sites.")) return;
-    const { error } = await sb.from('entreprises').delete().eq('id', id);
-    if (error) return toast(error.message, 'error');
-    toast("Entreprise supprimée", 'success');
-    loadEntreprises();
+    const ent = State.entreprisesCache.find(x => x.id === id) || {};
+    const nom = ent.nom || '(sans nom)';
+
+    // Compter ce qui va être supprimé
+    const [demReq, userReq, siteReq] = await Promise.all([
+        sb.from('repair_requests').select('id', { count: 'exact', head: true }).eq('entreprise_id', id),
+        sb.from('users').select('id', { count: 'exact', head: true }).eq('entreprise_id', id),
+        sb.from('sites').select('id', { count: 'exact', head: true }).eq('entreprise_id', id),
+    ]);
+    const nbDem   = demReq.count   || 0;
+    const nbUsers = userReq.count  || 0;
+    const nbSites = siteReq.count  || 0;
+
+    const msg =
+        `⚠ SUPPRESSION DÉFINITIVE de l'entreprise « ${nom} »\n\n` +
+        `Cette action va supprimer EN CASCADE :\n` +
+        `  • ${nbSites} site${nbSites > 1 ? 's' : ''}\n` +
+        `  • ${nbUsers} utilisateur${nbUsers > 1 ? 's' : ''} (compte de connexion inclus)\n` +
+        `  • ${nbDem} demande${nbDem > 1 ? 's' : ''} de réparation et toutes les photos\n\n` +
+        `Action IRRÉVERSIBLE — toutes ces données seront perdues.\n\n` +
+        `Pour confirmer, retapez exactement le nom de l'entreprise :\n${nom}`;
+
+    const typed = prompt(msg);
+    if (typed === null) return;
+    if (typed.trim() !== nom) {
+        toast("Le nom ne correspond pas — suppression annulée", 'warning');
+        return;
+    }
+
+    try {
+        const res = await apiCall('/admin/delete-entreprise-cascade', {
+            method: 'POST',
+            body: JSON.stringify({ entreprise_id: id }),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || "Erreur inconnue");
+        const d = data.deleted || {};
+        toast(`« ${nom} » supprimée (${d.demandes || 0} demandes, ${d.utilisateurs || 0} utilisateurs)`, 'success');
+        loadEntreprises();
+    } catch (e) {
+        toast(e.message || "Échec de la suppression", 'error');
+    }
 }
 
 
@@ -5655,9 +5734,33 @@ async function saveSite(id) {
 }
 
 async function deleteSite(id, nom) {
+    // Compter les demandes liées avant toute action
+    const { count: nbDemandes } = await sb
+        .from('repair_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('site_id', id);
+
+    if (nbDemandes && nbDemandes > 0) {
+        const ok = confirm(
+            `Le site "${nom}" a ${nbDemandes} demande${nbDemandes > 1 ? 's' : ''} liée${nbDemandes > 1 ? 's' : ''} et ne peut pas être supprimé définitivement (l'historique serait perdu).\n\n` +
+            `Voulez-vous plutôt le DÉSACTIVER ? Il disparaîtra des listes mais l'historique est conservé.`
+        );
+        if (!ok) return;
+        const { error } = await sb.from('sites').update({ actif: false }).eq('id', id);
+        if (error) return toast(error.message, 'error');
+        toast("Site désactivé", 'success');
+        loadSites();
+        return;
+    }
+
     if (!confirm(`Supprimer le site "${nom}" ? Cette action est irréversible.`)) return;
     const { error } = await sb.from('sites').delete().eq('id', id);
-    if (error) return toast(error.message, 'error');
+    if (error) {
+        if ((error.message || '').includes('violates foreign key')) {
+            return toast("Suppression impossible : des éléments dépendent encore de ce site. Désactivez-le plutôt.", 'error');
+        }
+        return toast(error.message, 'error');
+    }
     toast("Site supprimé", 'success');
     loadSites();
 }
@@ -6258,7 +6361,7 @@ function printQr(qrSrc, clientName, codeClient) {
     if (!w) return toast("Pop-up bloquée — autorisez les pop-ups pour imprimer", 'warning');
     w.document.write(`
         <!DOCTYPE html><html><head>
-            <title>QR ZÉNITH — ${clientName}</title>
+            <title>QR IDEA — ${clientName}</title>
             <style>
                 body { font-family: system-ui, sans-serif; text-align: center; padding: 40px; margin: 0; color: #141B4D; }
                 h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: 6px; color: #FC6100; }
@@ -6270,13 +6373,13 @@ function printQr(qrSrc, clientName, codeClient) {
                 .brand  { margin-top: 40px; font-size: 11px; color: #999; letter-spacing: 2px; text-transform: uppercase; }
             </style>
         </head><body>
-            <h1>ZÉNITH</h1>
+            <h1>IDEA</h1>
             <h2>Accès direct à votre espace</h2>
             <div class="client">${clientName}</div>
             <div class="code">${codeClient}</div>
             <img src="${qrSrc}" alt="QR">
-            <p>Scannez ce QR code avec l'appareil photo de votre smartphone pour accéder directement à votre espace ZÉNITH et déclarer une demande de réparation.</p>
-            <div class="brand">NETEXIAL — L'exigence jusqu'au zénith</div>
+            <p>Scannez ce QR code avec l'appareil photo de votre smartphone pour accéder directement à votre espace IDEA et déclarer une demande de réparation.</p>
+            <div class="brand">NETEXIAL — IDEA, la plateforme de gestion des réparations</div>
             <scr` + `ipt>window.onload = () => setTimeout(() => window.print(), 400);</scr` + `ipt>
         </body></html>
     `);
