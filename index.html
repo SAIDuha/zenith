@@ -5734,35 +5734,40 @@ async function saveSite(id) {
 }
 
 async function deleteSite(id, nom) {
-    // Compter les demandes liées avant toute action
-    const { count: nbDemandes } = await sb
+    // Compter les demandes liées à ce site
+    const { count: nbDem } = await sb
         .from('repair_requests')
         .select('id', { count: 'exact', head: true })
         .eq('site_id', id);
 
-    if (nbDemandes && nbDemandes > 0) {
-        const ok = confirm(
-            `Le site "${nom}" a ${nbDemandes} demande${nbDemandes > 1 ? 's' : ''} liée${nbDemandes > 1 ? 's' : ''} et ne peut pas être supprimé définitivement (l'historique serait perdu).\n\n` +
-            `Voulez-vous plutôt le DÉSACTIVER ? Il disparaîtra des listes mais l'historique est conservé.`
-        );
-        if (!ok) return;
-        const { error } = await sb.from('sites').update({ actif: false }).eq('id', id);
-        if (error) return toast(error.message, 'error');
-        toast("Site désactivé", 'success');
-        loadSites();
+    const msg =
+        `⚠ SUPPRESSION DÉFINITIVE du site « ${nom} »\n\n` +
+        `Cette action va supprimer EN CASCADE :\n` +
+        `  • ${nbDem || 0} demande${(nbDem || 0) > 1 ? 's' : ''} de réparation et toutes les photos\n` +
+        `  • Les rattachements des utilisateurs à ce site (les comptes restent)\n\n` +
+        `Action IRRÉVERSIBLE — toutes ces données seront perdues.\n\n` +
+        `Pour confirmer, retapez exactement le nom du site :\n${nom}`;
+
+    const typed = prompt(msg);
+    if (typed === null) return;
+    if (typed.trim() !== nom) {
+        toast("Le nom ne correspond pas — suppression annulée", 'warning');
         return;
     }
 
-    if (!confirm(`Supprimer le site "${nom}" ? Cette action est irréversible.`)) return;
-    const { error } = await sb.from('sites').delete().eq('id', id);
-    if (error) {
-        if ((error.message || '').includes('violates foreign key')) {
-            return toast("Suppression impossible : des éléments dépendent encore de ce site. Désactivez-le plutôt.", 'error');
-        }
-        return toast(error.message, 'error');
+    try {
+        const res = await apiCall('/admin/delete-site-cascade', {
+            method: 'POST',
+            body: JSON.stringify({ site_id: id }),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || "Erreur inconnue");
+        const d = data.deleted || {};
+        toast(`« ${nom} » supprimé (${d.demandes || 0} demandes)`, 'success');
+        loadSites();
+    } catch (e) {
+        toast(e.message || "Échec de la suppression", 'error');
     }
-    toast("Site supprimé", 'success');
-    loadSites();
 }
 
 // QR code pour un site (anonyme, pas de credentials)

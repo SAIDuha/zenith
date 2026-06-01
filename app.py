@@ -1372,6 +1372,69 @@ def delete_entreprise_cascade():
         return jsonify({"error": str(e)}), 500
 
 
+# --- Suppression EN CASCADE d'un site (admin only) --------------------------
+@app.route("/api/admin/delete-site-cascade", methods=["POST"])
+def delete_site_cascade():
+    """
+    Supprime un site et toutes ses demandes (+ photos).
+    Les utilisateurs entreprise restent (seule leur liaison à ce site disparait).
+    Action IRRÉVERSIBLE. Admin only.
+    """
+    payload, err = verify_jwt(request)
+    if err:
+        return err
+    me = get_user_profile(payload["sub"])
+    if not me or me.get("role") != "admin":
+        return jsonify({"error": "Accès admin requis"}), 403
+
+    data = request.get_json(silent=True) or {}
+    site_id = data.get("site_id")
+    if not site_id:
+        return jsonify({"error": "site_id requis"}), 400
+
+    try:
+        site_res = supabase.table("sites").select("id, nom").eq("id", site_id).single().execute()
+        if not site_res.data:
+            return jsonify({"error": "Site introuvable"}), 404
+        site_nom = site_res.data.get("nom")
+
+        # 1) Demandes du site
+        req_res = supabase.table("repair_requests").select("id").eq("site_id", site_id).execute()
+        request_ids = [r["id"] for r in (req_res.data or [])]
+
+        # 2) Photos
+        if request_ids:
+            imgs_res = supabase.table("request_images").select("storage_path") \
+                .in_("request_id", request_ids).execute()
+            paths = [i["storage_path"] for i in (imgs_res.data or []) if i.get("storage_path")]
+            if paths:
+                try:
+                    supabase.storage.from_("repair-photos").remove(paths)
+                except Exception as e:
+                    logger.warning(f"Suppression storage partielle : {e}")
+            supabase.table("request_images").delete().in_("request_id", request_ids).execute()
+
+        # 3) Demandes
+        supabase.table("repair_requests").delete().eq("site_id", site_id).execute()
+
+        # 4) Liaisons utilisateurs ↔ site
+        supabase.table("user_sites").delete().eq("site_id", site_id).execute()
+
+        # 5) Site
+        supabase.table("sites").delete().eq("id", site_id).execute()
+
+        return jsonify({
+            "success": True,
+            "deleted": {
+                "site": site_nom,
+                "demandes": len(request_ids),
+            }
+        })
+    except Exception as e:
+        logger.error(f"Erreur cascade delete site : {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 # ----------------------------------------------------------------------------
 # LANCEMENT
 # ----------------------------------------------------------------------------
