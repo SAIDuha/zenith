@@ -71,7 +71,7 @@ DOUBLON_WINDOW_HOURS  = int(os.getenv("DOUBLON_WINDOW_HOURS", "24"))
 
 # Gemini Vision (OCR du nom du porteur)
 GEMINI_API_KEY        = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL          = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+GEMINI_MODEL          = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 # ----------------------------------------------------------------------------
 # INITIALISATION
