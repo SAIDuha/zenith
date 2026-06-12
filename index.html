@@ -5508,6 +5508,13 @@ async function editEntreprise(id) {
             </label>
             <small style="display:block; margin-top:6px; color:var(--text-muted); font-size:11px;">Affiche au porteur les options « sans photo » et « sans description »</small>
         </div>
+        <div class="field">
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text);">
+                <input id="ent-no-notifs" type="checkbox" ${c.desactiver_notifs_client ? 'checked' : ''}>
+                <span>Désactiver les notifications email par demande</span>
+            </label>
+            <small style="display:block; margin-top:6px; color:var(--text-muted); font-size:11px;">Si coché, les utilisateurs clients ne reçoivent pas d'email à chaque nouvelle demande</small>
+        </div>
     `;
     const footer = `
         <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
@@ -5525,6 +5532,7 @@ async function saveEntreprise(id) {
         logo_url: $('#ent-logo').value.trim() || null,
         actif: $('#ent-actif').checked,
         autoriser_sans_photo_desc: $('#ent-sans-oblig').checked,
+        desactiver_notifs_client: $('#ent-no-notifs').checked,
     };
     if (!payload.nom) {
         return toast("Le nom est requis", 'warning');

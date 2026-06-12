@@ -493,13 +493,22 @@ def public_submit_request():
 def _notify_submission_internal(request_id):
     """Logique d'envoi de notification refactorée."""
     res = supabase.table("repair_requests").select(
-        "*, entreprises(nom, email_contact), sites(nom, id)"
+        "*, entreprises(nom, email_contact, desactiver_notifs_client), sites(nom, id)"
     ).eq("id", request_id).single().execute()
     if not res.data:
         return
     req = res.data
     ent = req.get("entreprises") or {}
     site = req.get("sites") or {}
+
+    # Si l'entreprise a désactivé les notifications par demande,
+    # on n'envoie aucun email aux clients pour cette soumission.
+    if ent.get("desactiver_notifs_client"):
+        logger.info(
+            f"Notifications client désactivées pour l'entreprise "
+            f"{ent.get('nom') or req.get('entreprise_id')} — envoi ignoré (demande {request_id})."
+        )
+        return
 
     # Nombre de demandes en attente pour l'entreprise (inclut celle qui vient d'arriver)
     pending = 0
