@@ -5515,6 +5515,13 @@ async function editEntreprise(id) {
             </label>
             <small style="display:block; margin-top:6px; color:var(--text-muted); font-size:11px;">Si coché, les utilisateurs clients ne reçoivent pas d'email à chaque nouvelle demande</small>
         </div>
+        <div class="field">
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text);">
+                <input id="ent-auto-valid" type="checkbox" ${c.auto_validation ? 'checked' : ''}>
+                <span>Auto-validation des demandes</span>
+            </label>
+            <small style="display:block; margin-top:6px; color:var(--text-muted); font-size:11px;">Si coché, l'entreprise n'a rien à valider : chaque demande est transmise directement à NETEXIAL (et reste visible dans son suivi)</small>
+        </div>
     `;
     const footer = `
         <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
@@ -5533,6 +5540,7 @@ async function saveEntreprise(id) {
         actif: $('#ent-actif').checked,
         autoriser_sans_photo_desc: $('#ent-sans-oblig').checked,
         desactiver_notifs_client: $('#ent-no-notifs').checked,
+        auto_validation: $('#ent-auto-valid').checked,
     };
     if (!payload.nom) {
         return toast("Le nom est requis", 'warning');

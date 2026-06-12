@@ -411,9 +411,9 @@ def public_submit_request():
     if not nom_porteur:    return jsonify({"error": "nom_porteur requis"}), 400
 
     try:
-        # 1. Récupérer l'entreprise + le réglage "sans photo/description" depuis le site
+        # 1. Récupérer l'entreprise + ses réglages depuis le site
         site_res = supabase.table("sites").select(
-            "id, entreprise_id, actif, entreprises(autoriser_sans_photo_desc)"
+            "id, entreprise_id, actif, entreprises(autoriser_sans_photo_desc, auto_validation)"
         ).eq("id", site_id).single().execute()
         if not site_res.data:
             return jsonify({"error": "Site introuvable"}), 404
@@ -423,6 +423,9 @@ def public_submit_request():
         entreprise_id = site_res.data["entreprise_id"]
         ent_obj = site_res.data.get("entreprises") or {}
         sans_obligation = bool(ent_obj.get("autoriser_sans_photo_desc"))
+        # Auto-validation : l'entreprise n'a rien à valider, la demande part
+        # directement chez NETEXIAL (statut pre_validee).
+        auto_validation = bool(ent_obj.get("auto_validation"))
 
         # Description obligatoire, sauf si l'entreprise autorise l'envoi sans
         if not description and not sans_obligation:
@@ -436,7 +439,7 @@ def public_submit_request():
             "nom_porteur": nom_porteur,
             "nom_porteur_source": nom_porteur_source if nom_porteur_source in ("manual", "auto", "corrected") else "manual",
             "description": description,
-            "statut": "en_attente",
+            "statut": "pre_validee" if auto_validation else "en_attente",
         }).execute()
 
         if not req_res.data:
@@ -475,7 +478,16 @@ def public_submit_request():
 
         # 4. Notification email (best-effort, ne bloque pas si échec)
         try:
-            _notify_submission_internal(req_id)
+            if auto_validation:
+                # La demande est déjà pré-validée → on notifie directement
+                # NETEXIAL (admin), pas l'entreprise (qui n'a rien à valider).
+                full = supabase.table("repair_requests").select(
+                    "*, entreprises(nom, email_contact, code_client_sis), sites(id, nom, code_client_livre)"
+                ).eq("id", req_id).single().execute()
+                if full.data:
+                    _notify_admin_validation(full.data, None)
+            else:
+                _notify_submission_internal(req_id)
         except Exception as e_notif:
             logger.error(f"Erreur notif submission : {e_notif}")
 
