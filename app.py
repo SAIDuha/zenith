@@ -725,12 +725,11 @@ def reopen_request(request_id):
 
 
 def _notify_admin_validation(req, validator_profile=None):
-    """Email aux admins concernés quand une demande passe en pre_validee.
+    """Email à l'admin référent de l'entreprise quand une demande passe en pre_validee.
 
-    Destinataires :
-      - l'admin référent de l'utilisateur qui a validé (validator_profile.admin_referent_id)
-      - l'admin de base (BASE_ADMIN_ID), qui reçoit TOUJOURS tout
-    Fallback : si aucun destinataire n'a pu être résolu, on notifie tous les admins.
+    Destinataire : l'admin défini sur entreprises.admin_referent_id (source unique).
+    C'est le même admin qui voit la demande dans son espace.
+    Fallback : si l'entreprise n'a pas de référent, on notifie l'admin de base (BASE_ADMIN_ID).
     """
     ent = req.get("entreprises") or {}
     site = req.get("sites") or {}
@@ -752,29 +751,34 @@ def _notify_admin_validation(req, validator_profile=None):
     html = _email_template("Demande pré-validée — Action requise", contenu)
     subject = f"[IDEA] À traiter — {req.get('ticket_number','')}"
 
-    # Construire la liste des destinataires (admin référent + admin de base)
-    admin_ids = set()
-    if validator_profile and validator_profile.get("admin_referent_id"):
-        admin_ids.add(validator_profile["admin_referent_id"])
-    if BASE_ADMIN_ID:
-        admin_ids.add(BASE_ADMIN_ID)
-
+    # Destinataire unique : l'admin référent de l'ENTREPRISE concernée.
+    # C'est le même admin qui voit la demande dans son espace.
     recipients = set()
-    if admin_ids:
+    referent_id = None
+    entreprise_id = req.get("entreprise_id")
+    if entreprise_id:
         try:
-            res = supabase.table("users").select("email").eq("role", "admin").in_("id", list(admin_ids)).execute()
-            for a in (res.data or []):
-                if a.get("email"):
-                    recipients.add(a["email"])
+            er = supabase.table("entreprises").select("admin_referent_id").eq("id", entreprise_id).single().execute()
+            referent_id = (er.data or {}).get("admin_referent_id")
         except Exception as e:
-            logger.error(f"Erreur résolution admins destinataires : {e}")
+            logger.error(f"Erreur résolution admin référent entreprise : {e}")
 
-    # Filet de sécurité : si rien n'a pu être résolu, on notifie tous les admins
-    if not recipients:
-        all_admins = supabase.table("users").select("email").eq("role", "admin").execute()
-        for a in (all_admins.data or []):
-            if a.get("email"):
-                recipients.add(a["email"])
+    if referent_id:
+        try:
+            ar = supabase.table("users").select("email").eq("id", referent_id).eq("role", "admin").single().execute()
+            if ar.data and ar.data.get("email"):
+                recipients.add(ar.data["email"])
+        except Exception as e:
+            logger.error(f"Erreur résolution email admin référent : {e}")
+
+    # Filet de sécurité : si aucun référent n'est défini sur l'entreprise, on notifie l'admin de base
+    if not recipients and BASE_ADMIN_ID:
+        try:
+            ab = supabase.table("users").select("email").eq("id", BASE_ADMIN_ID).single().execute()
+            if ab.data and ab.data.get("email"):
+                recipients.add(ab.data["email"])
+        except Exception as e:
+            logger.error(f"Erreur résolution admin de base : {e}")
 
     for email in recipients:
         send_email(email, subject, html)

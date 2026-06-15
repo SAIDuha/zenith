@@ -4240,6 +4240,17 @@ async function enterApp() {
     $('#auth-page').classList.remove('active');
     $('#app-page').classList.add('active');
 
+    // Cloisonnement admin : liste des entreprises dont cet admin est le référent.
+    // Chaque admin ne voit/traite que les demandes de SES entreprises.
+    State.assignedEntrepriseIds = [];
+    if (State.profile.role === 'admin') {
+        const { data: myEnts } = await sb
+            .from('entreprises')
+            .select('id')
+            .eq('admin_referent_id', State.profile.id);
+        State.assignedEntrepriseIds = (myEnts || []).map(e => e.id);
+    }
+
     // Personnalisation user (avatar : logo client si dispo, sinon initiales)
     const avatarEl = $('#user-avatar');
     if (State.entreprise?.logo_url) {
@@ -4733,9 +4744,10 @@ async function loadDashboard() {
         .from('repair_requests')
         .select('id, statut, created_at, entreprise_id');
 
-    // Admin NETEXIAL : ne voit pas les demandes "en_attente"
+    // Admin NETEXIAL : ne voit pas les demandes "en_attente", et seulement SES entreprises
     if (State.profile?.role === 'admin') {
-        query = query.in('statut', ['pre_validee', 'acceptee', 'refusee']);
+        const scope = State.assignedEntrepriseIds?.length ? State.assignedEntrepriseIds : ['00000000-0000-0000-0000-000000000000'];
+        query = query.in('statut', ['pre_validee', 'acceptee', 'refusee']).in('entreprise_id', scope);
     }
 
     const { data: requests, error } = await query;
@@ -4856,8 +4868,9 @@ async function loadRequests() {
         .order('created_at', { ascending: false });
 
     if (State.profile?.role === 'admin') {
-        // Admin NETEXIAL : voit pre_validee, acceptee, refusee
-        query = query.in('statut', ['pre_validee', 'acceptee', 'refusee']);
+        // Admin NETEXIAL : voit pre_validee, acceptee, refusee — UNIQUEMENT pour ses entreprises
+        const scope = State.assignedEntrepriseIds?.length ? State.assignedEntrepriseIds : ['00000000-0000-0000-0000-000000000000'];
+        query = query.in('statut', ['pre_validee', 'acceptee', 'refusee']).in('entreprise_id', scope);
     } else if (State.profile?.role === 'client') {
         // User entreprise : voit les demandes de SON entreprise
         query = query.eq('entreprise_id', State.profile.entreprise_id);
@@ -4988,7 +5001,8 @@ async function loadPendingRequests() {
         .order('created_at', { ascending: false });
 
     if (role === 'admin') {
-        query = query.eq('statut', 'pre_validee');
+        const scope = State.assignedEntrepriseIds?.length ? State.assignedEntrepriseIds : ['00000000-0000-0000-0000-000000000000'];
+        query = query.eq('statut', 'pre_validee').in('entreprise_id', scope);
     } else if (role === 'client') {
         query = query.eq('statut', 'en_attente').eq('entreprise_id', State.profile.entreprise_id);
         if (State.userSites && State.userSites.length > 0) {
@@ -5473,6 +5487,12 @@ async function nextEntrepriseCode() {
 async function editEntreprise(id) {
     const c = id ? State.entreprisesCache.find(x => x.id === id) : {};
     const autoCode = id ? '' : await nextEntrepriseCode();
+    // Liste des admins NETEXIAL pour le sélecteur de référent
+    const { data: adminsList } = await sb.from('users').select('id, nom_complet, email').eq('role', 'admin').order('nom_complet');
+    const currentRef = id ? (c.admin_referent_id || '') : (State.profile?.id || '');
+    const adminOptions = (adminsList || []).map(a =>
+        `<option value="${a.id}"${currentRef === a.id ? ' selected' : ''}>${escapeHtml(a.nom_complet || a.email)}</option>`
+    ).join('');
     const body = `
         <div class="field">
             <label class="field-label">Code entreprise</label>
@@ -5490,6 +5510,14 @@ async function editEntreprise(id) {
         <div class="field">
             <label class="field-label">Email de contact</label>
             <input id="ent-email" class="input" type="email" value="${escapeHtml(c.email_contact || '')}">
+        </div>
+        <div class="field">
+            <label class="field-label">Admin référent NETEXIAL</label>
+            <select id="ent-admin-ref" class="input">
+                <option value="">— Choisir un admin —</option>
+                ${adminOptions}
+            </select>
+            <small style="display:block; margin-top:6px; color:var(--text-muted); font-size:11px;">Cet admin reçoit les emails des demandes de cette entreprise et est le seul à les voir dans son espace</small>
         </div>
         <div class="field">
             <label class="field-label">URL du logo (optionnel)</label>
@@ -5541,9 +5569,13 @@ async function saveEntreprise(id) {
         autoriser_sans_photo_desc: $('#ent-sans-oblig').checked,
         desactiver_notifs_client: $('#ent-no-notifs').checked,
         auto_validation: $('#ent-auto-valid').checked,
+        admin_referent_id: $('#ent-admin-ref').value || null,
     };
     if (!payload.nom) {
         return toast("Le nom est requis", 'warning');
+    }
+    if (!payload.admin_referent_id) {
+        return toast("Sélectionnez un admin référent", 'warning');
     }
     try {
         if (id) {
