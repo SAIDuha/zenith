@@ -5871,7 +5871,7 @@ async function loadUsers() {
 
     const { data, error } = await sb
         .from('users')
-        .select('*, entreprises(nom, code_entreprise)')
+        .select('*, entreprises!entreprise_id(nom, code_entreprise)')
         .order('created_at', { ascending: false });
 
     if (error) {
