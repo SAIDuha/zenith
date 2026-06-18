@@ -27,6 +27,7 @@
 <script>
 // reCAPTCHA — rendu différé : un widget ne peut être rendu QUE s'il est visible.
 console.log('%c[IDEA] build captcha-v3 chargé', 'color:#FC6100;font-weight:bold');
+console.log('%c[IDEA] build — fix QR apostrophe (escapeJs) ✓', 'color:#22c55e;font-weight:bold');
 window.RECAPTCHA_SITEKEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
 window.recaptchaWidgets = { login: null, anon: null };
 window.grecaptchaReady = false;
@@ -3585,6 +3586,20 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// Échappe une valeur destinée à être insérée comme chaîne JS entre quotes simples
+// à l'intérieur d'un attribut onclick="..." (double quotes). Gère apostrophes,
+// backslashes et quotes — évite les SyntaxError sur des noms comme "Chantiers de l'Atlantique".
+function escapeJs(text) {
+    return String(text === null || text === undefined ? '' : text)
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\r?\n/g, ' ');
+}
+
 function formatDate(iso) {
     if (!iso) return '—';
     return new Date(iso).toLocaleDateString('fr-FR', {
@@ -5254,7 +5269,7 @@ async function viewRequest(id) {
                 const src = img.url_publique || img.url || '';
                 return `
                 <img src="${src}" style="width:88px;height:88px;object-fit:cover;border-radius:var(--radius-sm);cursor:pointer;"
-                     onclick="openLightbox('${src}')" alt="${escapeHtml(img.filename || '')}">
+                     onclick="openLightbox('${src}')" alt="${escapeJs(img.filename || '')}">
             `;}).join('')}
         </div>
     ` : '<p style="color: var(--text-muted); font-size: 13px;">Aucune photo</p>';
@@ -5689,13 +5704,13 @@ async function loadSites() {
                 <td style="color:var(--text-muted); font-size:12px;">${date}</td>
                 <td>
                     <div class="flex-row" style="gap:4px;">
-                        <button class="btn btn-ghost btn-icon" onclick="showQrForSite('${s.id}', '${escapeHtml(s.nom)}', '${escapeHtml(ent.nom || '')}', '${escapeHtml(ent.code_entreprise || '')}')" title="QR code du site" style="color:var(--nx-orange);">
+                        <button class="btn btn-ghost btn-icon" onclick="showQrForSite('${s.id}', '${escapeJs(s.nom)}', '${escapeJs(ent.nom || '')}', '${escapeJs(ent.code_entreprise || '')}')" title="QR code du site" style="color:var(--nx-orange);">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="14" y2="14.01"/><line x1="17.5" y1="14" x2="21" y2="14"/><line x1="14" y1="17.5" x2="14" y2="21"/><line x1="17.5" y1="17.5" x2="21" y2="17.5"/><line x1="21" y1="21" x2="21" y2="17.5"/></svg>
                         </button>
                         <button class="btn btn-ghost btn-icon" onclick="editSite('${s.id}')" title="Modifier">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
-                        <button class="btn btn-danger btn-icon" onclick="deleteSite('${s.id}', '${escapeHtml(s.nom)}')" title="Supprimer">
+                        <button class="btn btn-danger btn-icon" onclick="deleteSite('${s.id}', '${escapeJs(s.nom)}')" title="Supprimer">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
                         </button>
                     </div>
@@ -5849,7 +5864,7 @@ function showQrForSite(siteId, siteName, entrepriseName, codeEntreprise) {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             <span>Copier l'URL</span>
         </button>
-        <button class="btn btn-ghost" onclick="printQr('${qrSrc}', '${escapeHtml(entrepriseName + ' — ' + siteName)}', '${escapeHtml(codeEntreprise)}')">
+        <button class="btn btn-ghost" onclick="printQr('${qrSrc}', '${escapeJs(entrepriseName + ' — ' + siteName)}', '${escapeJs(codeEntreprise)}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
             <span>Imprimer</span>
         </button>
@@ -5923,18 +5938,18 @@ function renderUsersTable() {
                 <td>
                     <div style="display:flex; gap:6px;">
                         ${u.role === 'client' && u.entreprises ? `
-                        <button class="btn btn-ghost btn-sm" onclick="showQrForUser('${u.id}', '${escapeHtml(u.email)}', '${escapeHtml(u.entreprises.code_entreprise)}', '${escapeHtml(u.entreprises.nom)}')" title="Générer un QR code de connexion" style="color: var(--nx-orange);">
+                        <button class="btn btn-ghost btn-sm" onclick="showQrForUser('${u.id}', '${escapeJs(u.email)}', '${escapeJs(u.entreprises.code_entreprise)}', '${escapeJs(u.entreprises.nom)}')" title="Générer un QR code de connexion" style="color: var(--nx-orange);">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="14" y2="14.01"/><line x1="17.5" y1="14" x2="21" y2="14"/><line x1="14" y1="17.5" x2="14" y2="21"/><line x1="17.5" y1="17.5" x2="21" y2="17.5"/><line x1="21" y1="21" x2="21" y2="17.5"/></svg>
                         </button>
                         ` : ''}
                         <button class="btn btn-ghost btn-sm" onclick="editUser('${u.id}')" title="Modifier l'utilisateur">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
-                        <button class="btn btn-ghost btn-sm" onclick="resetUserPassword('${u.id}', '${escapeHtml(u.email)}')" title="Réinitialiser le mot de passe">
+                        <button class="btn btn-ghost btn-sm" onclick="resetUserPassword('${u.id}', '${escapeJs(u.email)}')" title="Réinitialiser le mot de passe">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         </button>
                         ${isSelf ? '' : `
-                        <button class="btn btn-ghost btn-sm" onclick="deleteUser('${u.id}', '${escapeHtml(u.email)}')" title="Supprimer" style="color:var(--nx-red);">
+                        <button class="btn btn-ghost btn-sm" onclick="deleteUser('${u.id}', '${escapeJs(u.email)}')" title="Supprimer" style="color:var(--nx-red);">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
                         </button>`}
                     </div>
@@ -6232,7 +6247,7 @@ async function resetUserPassword(id, email) {
     `;
     const footer = `
         <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
-        <button class="btn btn-accent" onclick="confirmResetPassword('${id}', '${escapeHtml(email)}')">Réinitialiser</button>
+        <button class="btn btn-accent" onclick="confirmResetPassword('${id}', '${escapeJs(email)}')">Réinitialiser</button>
     `;
     openModal('Réinitialiser le mot de passe', body, footer);
 }
@@ -6344,7 +6359,7 @@ function showQrForUser(userId, email, codeClient, clientName) {
     `;
     const footer = `
         <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
-        <button class="btn btn-accent" onclick="renderQrModal('${escapeHtml(email)}', '${escapeHtml(codeClient)}', '${escapeHtml(clientName)}')">
+        <button class="btn btn-accent" onclick="renderQrModal('${escapeJs(email)}', '${escapeJs(codeClient)}', '${escapeJs(clientName)}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             <span>Générer le QR</span>
         </button>
@@ -6389,7 +6404,7 @@ function renderQrModal(email, codeClient, clientName) {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             <span>Copier l'URL</span>
         </button>
-        <button class="btn btn-ghost" onclick="printQr('${qrSrc}', '${escapeHtml(clientName)}', '${escapeHtml(codeClient)}')">
+        <button class="btn btn-ghost" onclick="printQr('${qrSrc}', '${escapeJs(clientName)}', '${escapeJs(codeClient)}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
             <span>Imprimer</span>
         </button>
