@@ -169,11 +169,8 @@ def _email_template(titre: str, contenu_html: str, footer_extra: str = "") -> st
           <!-- Bandeau IDEA -->
           <tr>
             <td style="background-color:#141B4D;padding:28px 32px;text-align:left;">
-              <div style="color:#ffffff;font-size:26px;font-weight:700;letter-spacing:6px;">
+              <div style="color:#FC6100;font-size:26px;font-weight:700;letter-spacing:6px;">
                 IDEA
-              </div>
-              <div style="color:#C1D1EB;font-size:11px;letter-spacing:1.5px;margin-top:6px;">
-                BY NETEXIAL · PARTENAIRE SPÉCIALISTE DE LA PROTECTION AU TRAVAIL
               </div>
             </td>
           </tr>
