@@ -734,6 +734,9 @@ def _notify_admin_validation(req, validator_profile=None):
     ent = req.get("entreprises") or {}
     site = req.get("sites") or {}
 
+    desc_raw = (req.get("description") or "").strip()
+    desc_html = (desc_raw.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>")) or "—"
+
     contenu = f"""
     <p style="color:#1C3775; margin-bottom:24px;">Bonjour,</p>
     <p style="color:#1C3775;">Une demande a été <strong>pré-validée</strong> par un utilisateur entreprise et attend votre décision.</p>
@@ -745,6 +748,7 @@ def _notify_admin_validation(req, validator_profile=None):
         <tr style="background:#f5f7fb;"><td style="padding:10px 16px; color:#65748b;">Code client livré (ATLAS)</td><td style="padding:10px 16px; font-family:monospace;">{site.get('code_client_livre') or '—'}</td></tr>
         <tr><td style="padding:10px 16px; color:#65748b;">Porteur</td><td style="padding:10px 16px;">{req.get('nom_porteur') or '—'}</td></tr>
         <tr style="background:#f5f7fb;"><td style="padding:10px 16px; color:#65748b;">Code-barres</td><td style="padding:10px 16px; font-family:monospace;">{req.get('code_barre') or '—'}</td></tr>
+        <tr><td style="padding:10px 16px; color:#65748b; vertical-align:top;">Description</td><td style="padding:10px 16px; color:#1C3775;">{desc_html}</td></tr>
     </table>
     <p style="color:#1C3775; margin-top:24px;">Connectez-vous à l'espace IDEA pour accepter ou refuser cette demande.</p>
     """
