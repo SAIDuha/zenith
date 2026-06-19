@@ -737,6 +737,30 @@ def _notify_admin_validation(req, validator_profile=None):
     desc_raw = (req.get("description") or "").strip()
     desc_html = (desc_raw.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>")) or "—"
 
+    # Photos du problème : on récupère les images de la demande, triées par "ordre",
+    # et on RETIRE la première (qui est la photo du code-barres, pas le défaut).
+    photos_html = ""
+    try:
+        imgs_res = supabase.table("request_images").select("url_publique, ordre") \
+            .eq("request_id", req.get("id")).order("ordre").execute()
+        rows = imgs_res.data or []
+        probleme = rows[1:]  # on saute la 1ère image = code-barres
+        urls = [r["url_publique"] for r in probleme if r.get("url_publique")]
+        if urls:
+            tags = "".join(
+                f'<a href="{u}" target="_blank" style="display:inline-block; margin:0 8px 8px 0;">'
+                f'<img src="{u}" alt="Photo du probleme" '
+                f'style="width:150px; height:150px; object-fit:cover; border-radius:8px; border:1px solid #e7ebf4;"></a>'
+                for u in urls
+            )
+            photos_html = (
+                '<p style="color:#1C3775; margin-top:28px; margin-bottom:8px; font-weight:700;">'
+                'Photos du probleme</p>'
+                f'<div>{tags}</div>'
+            )
+    except Exception as e_img:
+        logger.error(f"Erreur récupération photos pour email admin : {e_img}")
+
     contenu = f"""
     <p style="color:#1C3775; margin-bottom:24px;">Bonjour,</p>
     <p style="color:#1C3775;">Une demande a été <strong>pré-validée</strong> par un utilisateur entreprise et attend votre décision.</p>
@@ -750,6 +774,7 @@ def _notify_admin_validation(req, validator_profile=None):
         <tr style="background:#f5f7fb;"><td style="padding:10px 16px; color:#65748b;">Code-barres</td><td style="padding:10px 16px; font-family:monospace;">{req.get('code_barre') or '—'}</td></tr>
         <tr><td style="padding:10px 16px; color:#65748b; vertical-align:top;">Description</td><td style="padding:10px 16px; color:#1C3775;">{desc_html}</td></tr>
     </table>
+    {photos_html}
     <p style="color:#1C3775; margin-top:24px;">Connectez-vous à l'espace IDEA pour accepter ou refuser cette demande.</p>
     """
     html = _email_template("Demande pré-validée — Action requise", contenu)
