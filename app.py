@@ -500,6 +500,114 @@ def public_submit_request():
         return jsonify({"error": str(e)}), 500
 
 
+# ===========================================================================
+# MOT DE PASSE OUBLIÉ (libre-service)
+# ---------------------------------------------------------------------------
+# 1. L'utilisateur saisit son email → on génère un lien de récupération
+#    Supabase (admin.generate_link) et on l'envoie avec NOTRE template SMTP.
+# 2. Le lien pointe vers l'appli avec le token haché (?reset_token=...).
+#    Le token n'est consommé qu'au moment où l'utilisateur valide son
+#    nouveau mot de passe (verifyOtp côté front) → les scanners de liens
+#    (Outlook Safe Links…) ne peuvent pas le "griller" en ouvrant l'email.
+# 3. Réponse toujours identique, que le compte existe ou non (anti-énumération).
+# ===========================================================================
+import re as _re
+import time as _time
+from collections import defaultdict, deque
+
+_FORGOT_HITS = defaultdict(deque)          # clé → timestamps des demandes
+_FORGOT_LIMITS = {                         # (nb max, fenêtre en secondes)
+    "email": (3, 15 * 60),                 # 3 demandes / 15 min par email
+    "ip":    (10, 60 * 60),                # 10 demandes / heure par IP
+}
+_EMAIL_RE = _re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def _forgot_rate_limited(kind: str, value: str) -> bool:
+    max_hits, window = _FORGOT_LIMITS[kind]
+    q = _FORGOT_HITS[f"{kind}:{value}"]
+    now = _time.time()
+    while q and now - q[0] > window:
+        q.popleft()
+    if len(q) >= max_hits:
+        return True
+    q.append(now)
+    return False
+
+
+@app.route("/api/public/forgot-password", methods=["POST"])
+def public_forgot_password():
+    """
+    Body : { "email": "..." }
+    Réponse : toujours { "success": true } (sauf email invalide / limite atteinte).
+    """
+    generic = jsonify({
+        "success": True,
+        "message": "Si un compte existe pour cette adresse, un email de réinitialisation vient d'être envoyé.",
+    })
+
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    if not email or not _EMAIL_RE.match(email):
+        return jsonify({"error": "Adresse email invalide"}), 400
+
+    ip = (request.headers.get("X-Forwarded-For") or request.remote_addr or "?").split(",")[0].strip()
+    if _forgot_rate_limited("ip", ip) or _forgot_rate_limited("email", email):
+        return jsonify({"error": "Trop de demandes. Réessayez dans quelques minutes."}), 429
+
+    if not supabase:
+        logger.error("forgot-password : backend Supabase non configuré")
+        return generic
+
+    try:
+        # Compte connu de l'appli ? (sinon on ne fait rien, sans le dire)
+        # ilike pour ignorer la casse ; on échappe les jokers % et _ de l'email
+        email_pattern = email.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        prof = supabase.table("users").select("id, email, nom_complet") \
+            .ilike("email", email_pattern).limit(1).execute()
+        if not prof.data:
+            logger.info("forgot-password : email inconnu (réponse générique)")
+            return generic
+        user = prof.data[0]
+
+        link = supabase.auth.admin.generate_link({"type": "recovery", "email": user["email"]})
+        hashed_token = link.properties.hashed_token
+        if not hashed_token:
+            raise RuntimeError("hashed_token absent de la réponse Supabase")
+
+        from urllib.parse import urlencode
+        reset_url = f"{APP_URL}/?{urlencode({'reset_token': hashed_token})}"
+        prenom = (user.get("nom_complet") or "").split(" ")[0]
+
+        contenu = f"""
+        <p style="color:#1C3775; margin-bottom:20px;">Bonjour{(' ' + prenom) if prenom else ''},</p>
+        <p style="color:#1C3775;">Vous avez demandé à réinitialiser le mot de passe de votre compte IDEA
+        (<strong>{user['email']}</strong>).</p>
+        <p style="color:#1C3775;">Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe :</p>
+        <div style="text-align:center; margin:28px 0 8px;">
+            <a href="{reset_url}" style="display:inline-block; background-color:#FC6100; color:#ffffff;
+               text-decoration:none; font-weight:700; font-size:15px; padding:14px 34px; border-radius:8px;">
+                Choisir un nouveau mot de passe
+            </a>
+        </div>
+        <p style="color:#65748b; font-size:13px; text-align:center; margin-top:10px;">
+            Ce lien est valable une seule fois et expire rapidement (1 heure par défaut).
+        </p>
+        <p style="color:#65748b; font-size:13px; margin-top:24px;">
+            Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet email :
+            votre mot de passe actuel reste inchangé.
+        </p>
+        """
+        html = _email_template("Réinitialisation du mot de passe", contenu)
+        send_email(user["email"], "[IDEA] Réinitialisation de votre mot de passe", html)
+        logger.info(f"forgot-password : lien envoyé à l'utilisateur {user['id']}")
+    except Exception as e:
+        # On log mais on ne révèle rien au client
+        logger.error(f"Erreur forgot-password : {e}")
+
+    return generic
+
+
 def _notify_submission_internal(request_id):
     """Logique d'envoi de notification refactorée."""
     res = supabase.table("repair_requests").select(

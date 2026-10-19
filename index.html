@@ -2842,7 +2842,7 @@ a.contact-card:hover {
 
                 <details class="faq-item">
                     <summary>J'ai oublié mon mot de passe, que faire ?</summary>
-                    <p>Contactez votre administrateur NETEXIAL qui pourra réinitialiser votre mot de passe depuis l'espace administrateur. Vous recevrez ensuite un nouveau mot de passe temporaire à modifier dès votre première connexion.</p>
+                    <p>Sur la page de connexion, cliquez sur <strong>« Mot de passe oublié ? »</strong> et saisissez votre adresse email. Vous recevez un lien pour choisir un nouveau mot de passe, puis vous êtes connecté automatiquement. Le lien n'est valable qu'une seule fois. Si vous ne recevez rien, vérifiez vos courriers indésirables ou contactez votre administrateur NETEXIAL.</p>
                 </details>
 
                 <details class="faq-item">
@@ -4290,11 +4290,184 @@ $('#toggle-pwd')?.addEventListener('click', () => {
         : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
 });
 
-// Lien "Mot de passe oublié"
+// ============================================================
+// MOT DE PASSE OUBLIÉ (libre-service)
+// ------------------------------------------------------------
+// 1. "Mot de passe oublié ?" → saisie email → /api/public/forgot-password
+// 2. L'email contient un lien ?reset_token=... vers l'appli
+// 3. L'écran "Nouveau mot de passe" consomme le token (verifyOtp)
+//    uniquement au moment de la validation, puis met à jour le mdp.
+// ============================================================
+const PWD_MIN_LENGTH = 8;
+
 $('#forgot-pwd-link')?.addEventListener('click', e => {
     e.preventDefault();
-    toast("Contactez votre administrateur pour réinitialiser votre mot de passe.", 'info');
+    openForgotPasswordModal($('#login-email')?.value || '');
 });
+
+function openForgotPasswordModal(prefill = '') {
+    const body = `
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+            Saisissez l'adresse email de votre compte. Vous recevrez un lien pour choisir un nouveau mot de passe.
+        </p>
+        <form id="forgot-form" novalidate>
+            <div class="field">
+                <label class="field-label" for="forgot-email">Adresse email</label>
+                <input id="forgot-email" class="input" type="email" autocomplete="email" required
+                       placeholder="prenom.nom@entreprise.com" value="${escapeHtml(prefill)}">
+            </div>
+            <div id="forgot-result" class="hidden" style="padding:12px 14px; border-radius:var(--radius-sm); font-size:13px; background:rgba(70,168,77,0.10); border-left:3px solid var(--nx-green);"></div>
+        </form>
+    `;
+    const footer = `
+        <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+        <button class="btn btn-accent" id="forgot-submit-btn" onclick="submitForgotPassword()">
+            <span>Envoyer le lien</span>
+        </button>
+    `;
+    openModal('Mot de passe oublié', body, footer);
+    $('#forgot-form').addEventListener('submit', e => { e.preventDefault(); submitForgotPassword(); });
+    setTimeout(() => $('#forgot-email')?.focus(), 50);
+}
+
+async function submitForgotPassword() {
+    const email = ($('#forgot-email')?.value || '').trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return toast("Saisissez une adresse email valide", 'warning');
+
+    const btn = $('#forgot-submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span>';
+    try {
+        const res = await fetch(`${CONFIG.API_BASE}/public/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
+
+        const result = $('#forgot-result');
+        result.innerHTML = `<strong>C'est envoyé.</strong><br>${escapeHtml(data.message || '')}<br>
+            <span style="color:var(--text-muted);">Pensez à vérifier vos courriers indésirables.</span>`;
+        result.classList.remove('hidden');
+        $('#forgot-email').disabled = true;
+        $('#modal-footer').innerHTML = `<button class="btn btn-primary" onclick="closeModal()">Fermer</button>`;
+    } catch (err) {
+        toast(err.message || "Erreur lors de l'envoi", 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<span>Envoyer le lien</span>';
+    }
+}
+
+// Évalue la solidité d'un mot de passe (0 à 4)
+function passwordStrength(pwd) {
+    let score = 0;
+    if (pwd.length >= PWD_MIN_LENGTH) score++;
+    if (pwd.length >= 12) score++;
+    if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
+    if (/\d/.test(pwd) && /[^A-Za-z0-9]/.test(pwd)) score++;
+    return Math.min(score, 4);
+}
+const PWD_LEVELS = [
+    { label: 'Trop court', color: '#c62828' },
+    { label: 'Faible',     color: '#c62828' },
+    { label: 'Moyen',      color: '#d68a00' },
+    { label: 'Bon',        color: '#46A84D' },
+    { label: 'Excellent',  color: '#2e7d32' },
+];
+
+// Appelée au chargement : si l'URL contient ?reset_token=..., on affiche l'écran de réinitialisation
+function handlePasswordResetLink() {
+    const params = new URLSearchParams(location.search);
+    const token = params.get('reset_token');
+    if (!token) return false;
+    openResetPasswordModal(token);
+    return true;
+}
+
+function openResetPasswordModal(token) {
+    const body = `
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+            Choisissez votre nouveau mot de passe (${PWD_MIN_LENGTH} caractères minimum).
+        </p>
+        <form id="reset-form" novalidate>
+            <div class="field">
+                <label class="field-label" for="reset-pwd">Nouveau mot de passe</label>
+                <input id="reset-pwd" class="input" type="password" autocomplete="new-password" required>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+                    <div style="flex:1; height:6px; border-radius:3px; background:var(--border); overflow:hidden;">
+                        <div id="reset-strength-bar" style="height:100%; width:0; transition:width .2s, background .2s;"></div>
+                    </div>
+                    <span id="reset-strength-label" style="font-size:11px; min-width:62px; text-align:right; color:var(--text-muted);"></span>
+                </div>
+            </div>
+            <div class="field">
+                <label class="field-label" for="reset-pwd2">Confirmer le mot de passe</label>
+                <input id="reset-pwd2" class="input" type="password" autocomplete="new-password" required>
+            </div>
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-muted); cursor:pointer;">
+                <input type="checkbox" id="reset-show"> Afficher les mots de passe
+            </label>
+        </form>
+    `;
+    const footer = `
+        <button class="btn btn-accent" id="reset-submit-btn"><span>Enregistrer et me connecter</span></button>
+    `;
+    openModal('Nouveau mot de passe', body, footer);
+
+    const pwd = $('#reset-pwd'), pwd2 = $('#reset-pwd2');
+    pwd.addEventListener('input', () => {
+        const v = pwd.value;
+        const lvl = v.length < PWD_MIN_LENGTH ? 0 : passwordStrength(v);
+        $('#reset-strength-bar').style.width = v ? `${Math.max(lvl, 1) * 25}%` : '0';
+        $('#reset-strength-bar').style.background = PWD_LEVELS[lvl].color;
+        $('#reset-strength-label').textContent = v ? PWD_LEVELS[lvl].label : '';
+        $('#reset-strength-label').style.color = PWD_LEVELS[lvl].color;
+    });
+    $('#reset-show').addEventListener('change', e => {
+        const t = e.target.checked ? 'text' : 'password';
+        pwd.type = t; pwd2.type = t;
+    });
+    $('#reset-form').addEventListener('submit', e => { e.preventDefault(); submitResetPassword(token); });
+    $('#reset-submit-btn').addEventListener('click', () => submitResetPassword(token));
+    setTimeout(() => pwd.focus(), 50);
+}
+
+async function submitResetPassword(token) {
+    const p1 = $('#reset-pwd').value;
+    const p2 = $('#reset-pwd2').value;
+    if (p1.length < PWD_MIN_LENGTH) return toast(`Le mot de passe doit faire au moins ${PWD_MIN_LENGTH} caractères`, 'warning');
+    if (p1 !== p2) return toast("Les deux mots de passe ne correspondent pas", 'warning');
+
+    const btn = $('#reset-submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span>';
+    try {
+        // 1. Consomme le lien (usage unique) → ouvre une session pour cet utilisateur
+        const { error: otpErr } = await sb.auth.verifyOtp({ token_hash: token, type: 'recovery' });
+        if (otpErr) throw new Error("Ce lien a expiré ou a déjà été utilisé. Refaites une demande depuis « Mot de passe oublié ? ».");
+
+        // 2. Enregistre le nouveau mot de passe
+        const { error: updErr } = await sb.auth.updateUser({ password: p1 });
+        if (updErr) throw new Error(updErr.message || "Impossible d'enregistrer le mot de passe");
+
+        toast("Mot de passe modifié, connexion en cours…", 'success');
+        // 3. On nettoie l'URL et on recharge : la session est restaurée automatiquement
+        setTimeout(() => location.replace(location.pathname), 900);
+    } catch (err) {
+        toast(err.message, 'error', 7000);
+        btn.disabled = false;
+        btn.innerHTML = '<span>Enregistrer et me connecter</span>';
+        if (/expiré|utilisé/.test(err.message)) {
+            history.replaceState(null, '', location.pathname);
+            $('#modal-footer').innerHTML = `
+                <button class="btn btn-accent" onclick="openForgotPasswordModal()">Recevoir un nouveau lien</button>`;
+        }
+    }
+}
+
+window.openForgotPasswordModal = openForgotPasswordModal;
+window.submitForgotPassword = submitForgotPassword;
 
 $('#login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -6807,6 +6980,8 @@ function subscribeRealtime() {
 // INIT : restauration de session
 // ============================================================
 (async () => {
+    // Lien "réinitialiser le mot de passe" reçu par email → on affiche l'écran dédié
+    if (handlePasswordResetLink()) return;
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
         const { data: profile } = await sb
