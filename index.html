@@ -2148,6 +2148,7 @@ a.contact-card:hover {
     letter-spacing: 0.5px;
     text-transform: uppercase;
     font-family: var(--font-display);
+    white-space: nowrap;
 }
 .badge-pending  { background: rgba(255, 167, 0, 0.15); color: #b87300; }
 .badge-accepted { background: rgba(70, 168, 77, 0.15); color: var(--nx-green); }
@@ -2403,6 +2404,88 @@ a.contact-card:hover {
     align-items: center;
     justify-content: center;
 }
+
+/* ============================================================
+   PARC VÊTEMENTS — historique par code-barres
+   ============================================================ */
+.modal.modal-wide { max-width: 760px; }
+
+.health-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+    text-transform: uppercase; font-family: var(--font-display);
+    white-space: nowrap;
+}
+.health-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.health-ok      { background: rgba(70, 168, 77, 0.12);  color: var(--nx-green); }
+.health-watch   { background: rgba(255, 167, 0, 0.15);  color: #b87300; }
+.health-replace { background: rgba(211, 47, 47, 0.12);  color: #c62828; }
+[data-theme="dark"] .health-ok      { background: rgba(70, 168, 77, 0.2);   color: #7fd687; }
+[data-theme="dark"] .health-watch   { background: rgba(255, 167, 0, 0.2);   color: #ffc961; }
+[data-theme="dark"] .health-replace { background: rgba(255, 100, 100, 0.18); color: #ff9999; }
+
+.repeat-chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    margin-left: 6px; padding: 1px 7px; border-radius: 10px;
+    font-size: 10px; font-weight: 600; font-family: var(--font-display);
+    background: rgba(252, 97, 0, 0.12); color: var(--nx-orange);
+    cursor: pointer; vertical-align: middle; border: none;
+}
+.repeat-chip.replace { background: rgba(211, 47, 47, 0.12); color: #c62828; }
+[data-theme="dark"] .repeat-chip.replace { color: #ff9999; }
+
+.garment-hint {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-top: 16px; padding: 12px 14px;
+    border-radius: var(--radius-sm); font-size: 13px;
+    background: var(--bg); border-left: 3px solid var(--nx-blue-mid);
+}
+.garment-hint > span { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.garment-hint .btn { white-space: nowrap; flex-shrink: 0; }
+.garment-hint.watch   { border-left-color: var(--nx-yellow); }
+.garment-hint.replace { border-left-color: #d32f2f; background: rgba(211, 47, 47, 0.06); }
+
+.garment-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.garment-code { font-family: monospace; font-size: 20px; font-weight: 600; letter-spacing: 1px; color: var(--text); }
+.garment-sub  { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+.garment-reco {
+    padding: 14px 16px; border-radius: var(--radius-sm); font-size: 13px; line-height: 1.5;
+    margin-bottom: 16px; border-left: 3px solid;
+}
+.garment-reco strong { display: block; font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.5px; font-size: 13px; margin-bottom: 2px; }
+.garment-reco.ok      { background: rgba(70, 168, 77, 0.08);  border-color: var(--nx-green); }
+.garment-reco.watch   { background: rgba(255, 167, 0, 0.10); border-color: var(--nx-yellow); }
+.garment-reco.replace { background: rgba(211, 47, 47, 0.08);  border-color: #d32f2f; }
+
+.garment-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+.garment-kpi { background: var(--bg); border-radius: var(--radius-sm); padding: 10px 12px; }
+.garment-kpi .k { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); }
+.garment-kpi .v { font-family: var(--font-display); font-size: 22px; color: var(--text); margin-top: 2px; }
+@media (max-width: 600px) { .garment-kpis { grid-template-columns: repeat(2, 1fr); } }
+
+.garment-timeline { position: relative; padding-left: 22px; }
+.garment-timeline::before { content: ''; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 2px; background: var(--border); }
+.gt-item { position: relative; padding: 0 0 18px 0; }
+.gt-item:last-child { padding-bottom: 0; }
+.gt-dot {
+    position: absolute; left: -22px; top: 4px; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--bg-card); border: 3px solid var(--nx-blue-mid);
+}
+.gt-item.s-acceptee .gt-dot    { border-color: var(--nx-green); }
+.gt-item.s-refusee .gt-dot     { border-color: #d32f2f; }
+.gt-item.s-pre_validee .gt-dot { border-color: var(--nx-navy-2); }
+.gt-item.s-en_attente .gt-dot  { border-color: var(--nx-yellow); }
+.gt-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.gt-date { font-family: var(--font-display); font-size: 13px; color: var(--text); }
+.gt-ticket { font-size: 12px; color: var(--text-muted); font-family: var(--font-display); }
+.gt-desc { font-size: 13px; margin-top: 6px; color: var(--text); }
+.gt-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.gt-gap  { font-size: 11px; color: var(--text-muted); margin: -8px 0 10px; font-style: italic; }
+.gt-photos { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.gt-photos img { width: 56px; height: 56px; object-fit: cover; border-radius: var(--radius-sm); cursor: pointer; }
+.gt-open { margin-left: auto; }
 </style>
 </head>
 <body>
@@ -3016,6 +3099,10 @@ a.contact-card:hover {
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     <span>Suivi des demandes</span>
                 </button>
+                <button class="nav-item" data-view="garments">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                    <span>Parc vêtements</span>
+                </button>
                 <div class="sidebar-section-label" data-admin-only>Gestion</div>
                 <button class="nav-item" data-view="admin-entreprises" data-admin-only>
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -3352,6 +3439,58 @@ a.contact-card:hover {
                 </div>
             </section>
 
+            <!-- ===== VUE : Parc vêtements (historique par code-barres) ===== -->
+            <section id="view-garments" class="view">
+                <div class="page-header">
+                    <div>
+                        <h1>Parc vêtements</h1>
+                        <p class="sub">Historique des réparations par vêtement et recommandations de remplacement</p>
+                    </div>
+                    <div class="page-header-actions">
+                        <button class="btn btn-accent" id="export-garments-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Exporter Excel</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-grid" id="garments-stats"></div>
+
+                <div class="table-wrap">
+                    <div class="table-toolbar">
+                        <input type="text" id="garments-search" class="search-input" placeholder="Rechercher par code-barres, porteur, entreprise, site...">
+                        <select id="garments-filter-health" class="select" style="width: auto; min-width: 180px;">
+                            <option value="">Tous les vêtements</option>
+                            <option value="replace">À remplacer</option>
+                            <option value="watch">À surveiller</option>
+                            <option value="multi">Réparés plusieurs fois</option>
+                            <option value="ok">RAS</option>
+                        </select>
+                        <span id="garments-count" style="margin-left:auto; font-size:13px; color:var(--text-muted); font-weight:600; white-space:nowrap;">0 vêtement</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Code-barres</th>
+                                    <th>Porteur</th>
+                                    <th>Raison sociale</th>
+                                    <th>Ville</th>
+                                    <th>Demandes</th>
+                                    <th>Dernière demande</th>
+                                    <th>État</th>
+                                    <th>Fiche</th>
+                                </tr>
+                            </thead>
+                            <tbody id="garments-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div class="table-pagination">
+                        <div class="page-btns" id="garments-pages"></div>
+                    </div>
+                </div>
+            </section>
+
             <!-- ===== VUE : Admin - Clients ===== -->
             <section id="view-admin-entreprises" class="view">
                 <div class="page-header">
@@ -3479,7 +3618,7 @@ a.contact-card:hover {
 
 <!-- Modal générique -->
 <div class="modal-overlay" id="modal-overlay">
-    <div class="modal">
+    <div class="modal" id="modal-box">
         <div class="modal-header">
             <h3 class="card-title" id="modal-title">Titre</h3>
             <button class="modal-close" onclick="closeModal()">
@@ -3637,7 +3776,8 @@ async function apiCall(endpoint, options = {}) {
 // ============================================================
 // MODAL & LIGHTBOX
 // ============================================================
-function openModal(title, bodyHtml, footerHtml = '') {
+function openModal(title, bodyHtml, footerHtml = '', opts = {}) {
+    $('#modal-box')?.classList.toggle('modal-wide', !!opts.wide);
     $('#modal-title').textContent = title;
     $('#modal-body').innerHTML = bodyHtml;
     $('#modal-footer').innerHTML = footerHtml;
@@ -4340,6 +4480,7 @@ function showView(viewName) {
     if (viewName === 'admin-sites') loadSites();
     if (viewName === 'admin-users') loadUsers();
     if (viewName === 'client-history') loadClientHistory();
+    if (viewName === 'garments') loadGarments();
 }
 
 $('#menu-toggle').addEventListener('click', () => $('#sidebar').classList.toggle('open'));
@@ -4741,6 +4882,7 @@ async function loadClientHistory() {
 function statusBadge(status) {
     const map = {
         en_attente: ['badge-pending', 'En attente'],
+        pre_validee:['badge-info', 'Pré-validée'],
         acceptee:   ['badge-accepted', 'Acceptée'],
         refusee:    ['badge-refused', 'Refusée'],
         cloturee:   ['badge-closed', 'Clôturée'],
@@ -4904,6 +5046,7 @@ async function loadRequests() {
     }
 
     State.requestsCache = data || [];
+    await loadGarmentIndex().catch(() => {});
     populateSiteFilter();
     renderRequestsTable();
 }
@@ -4963,7 +5106,7 @@ function requestRowHtml(r) {
                 </td>
                 <td>${escapeHtml(r.sites?.nom || '—')}</td>
                 <td>${r.description ? escapeHtml(r.description.length > 60 ? r.description.slice(0, 60) + '…' : r.description) : '—'}</td>
-                <td>${escapeHtml(r.nom_porteur || '—')}</td>
+                <td>${escapeHtml(r.nom_porteur || '—')}${garmentRepeatBadgeHtml(r)}</td>
                 <td>${formatRelative(r.created_at)}</td>
                 <td>${statusBadge(r.statut)}</td>
                 <td>
@@ -5032,6 +5175,7 @@ async function loadPendingRequests() {
     }
 
     State.pendingCache = data || [];
+    await loadGarmentIndex().catch(() => {});
     renderPendingTable();
 }
 
@@ -5093,7 +5237,9 @@ function exportPendingExcel() {
 
 // Recharge la bonne vue après une action (selon la page courante)
 function reloadActiveRequests() {
-    if (State.currentView === 'admin-pending') loadPendingRequests();
+    GarmentIndex.fetchedAt = 0; // un statut a changé → l'historique doit être recalculé
+    if (State.currentView === 'garments') loadGarments(true);
+    else if (State.currentView === 'admin-pending') loadPendingRequests();
     else loadRequests();
 }
 
@@ -5251,6 +5397,7 @@ $('#pending-date-to')?.addEventListener('change', e => {
 });
 
 async function viewRequest(id) {
+    await loadGarmentIndex().catch(() => {});
     const { data, error } = await sb
         .from('repair_requests')
         .select('*, entreprises(nom, code_entreprise, email_contact), sites(nom), request_images(*)')
@@ -5290,6 +5437,7 @@ async function viewRequest(id) {
             <div class="detail-item"><div class="label">Date</div><div class="value">${formatDate(r.created_at)}</div></div>
             <div class="detail-item"><div class="label">Code-barres</div><div class="value" style="font-family:monospace;">${escapeHtml(r.code_barre || '—')}</div></div>
         </div>
+        ${garmentHistoryHintHtml(r)}
         <div class="field" style="margin-top: 16px;">
             <div class="field-label">Description</div>
             <div style="padding: 12px 14px; background: var(--bg); border-radius: var(--radius-sm); font-size: 13px;">${escapeHtml(r.description || '—')}</div>
@@ -5339,6 +5487,386 @@ async function viewRequest(id) {
     }
 
     openModal(`Demande ${r.ticket_number}`, body, footer);
+}
+
+// ============================================================
+// PARC VÊTEMENTS : historique par code-barres
+// ------------------------------------------------------------
+// Un "vêtement" = un code-barres au sein d'une entreprise.
+// On regroupe toutes ses demandes pour afficher son historique
+// et recommander un remplacement quand il revient trop souvent.
+// ============================================================
+const GARMENT_RULES = {
+    windowDays: 180,   // fenêtre glissante d'analyse (6 mois)
+    watchAt:    2,     // ≥ 2 demandes non refusées sur la fenêtre → à surveiller
+    replaceAt:  3,     // ≥ 3 demandes non refusées sur la fenêtre → à remplacer
+    cacheMs:    30000, // durée de cache de l'index
+};
+const GARMENTS_PAGE_SIZE = 15;
+
+const GarmentIndex = {
+    fetchedAt: 0,
+    byKey: new Map(),   // clé → groupe
+    byReqId: new Map(), // id demande → clé
+    loading: null,
+};
+const GarmentView = { search: '', health: '', page: 1 };
+
+function normalizeCode(code) {
+    return String(code || '').trim().toUpperCase().replace(/\s+/g, '');
+}
+function garmentKey(r) {
+    const code = normalizeCode(r.code_barre);
+    return code ? `${r.entreprise_id || '-'}|${code}` : null;
+}
+
+// Applique le même cloisonnement que "Suivi des demandes"
+function applyRequestScope(query) {
+    const role = State.profile?.role;
+    if (role === 'admin') {
+        const scope = State.assignedEntrepriseIds?.length ? State.assignedEntrepriseIds : ['00000000-0000-0000-0000-000000000000'];
+        query = query.in('statut', ['pre_validee', 'acceptee', 'refusee', 'cloturee']).in('entreprise_id', scope);
+    } else if (role === 'client') {
+        query = query.eq('entreprise_id', State.profile.entreprise_id);
+        if (State.userSites && State.userSites.length > 0) query = query.in('site_id', State.userSites);
+    }
+    return query;
+}
+
+// Calcule les indicateurs + la recommandation d'un vêtement
+function computeGarmentHealth(reqs) {
+    const sorted = [...reqs].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const valid = sorted.filter(r => r.statut !== 'refusee');
+    const since = Date.now() - GARMENT_RULES.windowDays * 86400000;
+    const recent = valid.filter(r => new Date(r.created_at).getTime() >= since);
+
+    let intervalDays = null;
+    if (valid.length >= 2) {
+        const span = new Date(valid[valid.length - 1].created_at) - new Date(valid[0].created_at);
+        intervalDays = Math.round(span / 86400000 / (valid.length - 1));
+    }
+
+    let level = 'ok';
+    if (recent.length >= GARMENT_RULES.replaceAt) level = 'replace';
+    else if (recent.length >= GARMENT_RULES.watchAt || valid.length >= GARMENT_RULES.replaceAt) level = 'watch';
+
+    const porteurs = [...new Set(sorted.map(r => (r.nom_porteur || '').trim()).filter(Boolean))];
+    return {
+        sorted,
+        total: sorted.length,
+        valid: valid.length,
+        accepted: sorted.filter(r => r.statut === 'acceptee' || r.statut === 'cloturee').length,
+        refused: sorted.filter(r => r.statut === 'refusee').length,
+        recent: recent.length,
+        intervalDays,
+        level,
+        porteurs,
+        first: sorted[0],
+        last: sorted[sorted.length - 1],
+    };
+}
+
+const HEALTH_LABELS = { ok: 'RAS', watch: 'À surveiller', replace: 'À remplacer' };
+function healthBadgeHtml(level) {
+    return `<span class="health-badge health-${level}">${HEALTH_LABELS[level]}</span>`;
+}
+function healthRecoText(h) {
+    const months = Math.round(GARMENT_RULES.windowDays / 30);
+    if (h.level === 'replace') {
+        return `<strong>Remplacement recommandé</strong>
+            ${h.recent} demandes de réparation sur les ${months} derniers mois${h.intervalDays !== null ? `, une tous les ${h.intervalDays} jours en moyenne` : ''}.
+            Réparer encore coûte probablement plus cher qu'un vêtement neuf.`;
+    }
+    if (h.level === 'watch') {
+        return `<strong>À surveiller</strong>
+            ${h.valid} demande${h.valid > 1 ? 's' : ''} au total, dont ${h.recent} sur les ${months} derniers mois.
+            Au prochain retour, envisager le remplacement.`;
+    }
+    return `<strong>RAS</strong> Pas de réparations répétées sur ce vêtement.`;
+}
+
+// Charge (ou réutilise) l'index de toutes les demandes visibles, groupées par vêtement
+async function loadGarmentIndex(force = false) {
+    if (!State.profile) return GarmentIndex;
+    if (!force && Date.now() - GarmentIndex.fetchedAt < GARMENT_RULES.cacheMs) return GarmentIndex;
+    if (GarmentIndex.loading) return GarmentIndex.loading;
+
+    GarmentIndex.loading = (async () => {
+        const query = applyRequestScope(
+            sb.from('repair_requests')
+              .select('id, ticket_number, code_barre, nom_porteur, statut, description, created_at, entreprise_id, site_id, entreprises(nom, code_entreprise), sites(nom)')
+              .not('code_barre', 'is', null)
+              .order('created_at', { ascending: false })
+        );
+        const { data, error } = await query;
+        if (error) throw error;
+
+        const byKey = new Map();
+        const byReqId = new Map();
+        for (const r of data || []) {
+            const key = garmentKey(r);
+            if (!key) continue;
+            if (!byKey.has(key)) byKey.set(key, { key, code: normalizeCode(r.code_barre), requests: [] });
+            byKey.get(key).requests.push(r);
+            byReqId.set(r.id, key);
+        }
+        for (const g of byKey.values()) {
+            g.health = computeGarmentHealth(g.requests);
+            const last = g.health.last;
+            g.porteur = last?.nom_porteur || '';
+            g.entreprise = last?.entreprises?.nom || '';
+            g.entrepriseCode = last?.entreprises?.code_entreprise || '';
+            g.site = last?.sites?.nom || '';
+        }
+        GarmentIndex.byKey = byKey;
+        GarmentIndex.byReqId = byReqId;
+        GarmentIndex.fetchedAt = Date.now();
+        return GarmentIndex;
+    })();
+
+    try { return await GarmentIndex.loading; }
+    finally { GarmentIndex.loading = null; }
+}
+
+function garmentOf(r) {
+    const key = GarmentIndex.byReqId.get(r.id) || garmentKey(r);
+    return key ? GarmentIndex.byKey.get(key) : null;
+}
+
+// Pastille "↻ 3" à côté du porteur dans les tableaux de demandes
+function garmentRepeatBadgeHtml(r) {
+    const g = garmentOf(r);
+    if (!g || g.health.total < 2) return '';
+    const cls = g.health.level === 'replace' ? 'repeat-chip replace' : 'repeat-chip';
+    return `<button type="button" class="${cls}" title="${g.health.total} demandes sur ce vêtement — voir l'historique"
+        onclick="event.stopPropagation(); openGarmentSheet('${escapeJs(g.key)}')">↻ ${g.health.total}</button>`;
+}
+
+// Encart dans le détail d'une demande
+function garmentHistoryHintHtml(r) {
+    const g = garmentOf(r);
+    if (!g) return '';
+    const h = g.health;
+    const txt = h.total <= 1
+        ? `Première demande pour ce vêtement.`
+        : `${h.level !== 'ok' ? healthBadgeHtml(h.level) : ''}<span><strong>${h.total} demandes</strong> sur ce vêtement depuis le ${new Date(h.first.created_at).toLocaleDateString('fr-FR')}</span>`;
+    return `
+        <div class="garment-hint ${h.level}">
+            <span>${txt}</span>
+            ${h.total > 1 ? `<button class="btn btn-ghost btn-sm" onclick="openGarmentSheet('${escapeJs(g.key)}')">Voir l'historique</button>` : ''}
+        </div>`;
+}
+
+// ---------- Vue "Parc vêtements" ----------
+async function loadGarments(force = false) {
+    const tbody = $('#garments-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="full-loader"><span class="loader"></span></div></td></tr>`;
+    try {
+        await loadGarmentIndex(force);
+    } catch (err) {
+        console.error('loadGarments error:', err);
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><p style="color:var(--nx-red);">${escapeHtml(err.message || 'Erreur de chargement')}</p></div></td></tr>`;
+        return;
+    }
+    renderGarmentStats();
+    renderGarmentsTable();
+}
+
+const HEALTH_ORDER = { replace: 0, watch: 1, ok: 2 };
+function getFilteredGarments() {
+    const search = GarmentView.search.toLowerCase();
+    return [...GarmentIndex.byKey.values()]
+        .filter(g => {
+            if (GarmentView.health === 'multi' && g.health.total < 2) return false;
+            if (GarmentView.health && GarmentView.health !== 'multi' && g.health.level !== GarmentView.health) return false;
+            if (!search) return true;
+            const blob = [g.code, g.entreprise, g.entrepriseCode, g.site, ...g.health.porteurs].join(' ').toLowerCase();
+            return blob.includes(search);
+        })
+        .sort((a, b) =>
+            (HEALTH_ORDER[a.health.level] - HEALTH_ORDER[b.health.level]) ||
+            (b.health.total - a.health.total) ||
+            (new Date(b.health.last.created_at) - new Date(a.health.last.created_at)));
+}
+
+function renderGarmentStats() {
+    const all = [...GarmentIndex.byKey.values()];
+    const multi = all.filter(g => g.health.total >= 2).length;
+    const replace = all.filter(g => g.health.level === 'replace').length;
+    const watch = all.filter(g => g.health.level === 'watch').length;
+    const rate = all.length ? Math.round(multi / all.length * 100) : 0;
+    $('#garments-stats').innerHTML = `
+        <div class="stat-card">
+            <div class="stat-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg></div>
+            <div class="stat-label">Vêtements suivis</div>
+            <div class="stat-value">${all.length}</div>
+        </div>
+        <div class="stat-card accent">
+            <div class="stat-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></div>
+            <div class="stat-label">Taux de récidive</div>
+            <div class="stat-value">${rate}%</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+            <div class="stat-label">À surveiller</div>
+            <div class="stat-value">${watch}</div>
+        </div>
+        <div class="stat-card danger">
+            <div class="stat-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <div class="stat-label">À remplacer</div>
+            <div class="stat-value">${replace}</div>
+        </div>
+    `;
+}
+
+function renderGarmentsTable() {
+    const rows = getFilteredGarments();
+    const total = rows.length;
+    const pages = Math.max(1, Math.ceil(total / GARMENTS_PAGE_SIZE));
+    if (GarmentView.page > pages) GarmentView.page = 1;
+    const start = (GarmentView.page - 1) * GARMENTS_PAGE_SIZE;
+    const pageData = rows.slice(start, start + GARMENTS_PAGE_SIZE);
+
+    const tbody = $('#garments-tbody');
+    tbody.innerHTML = pageData.length ? pageData.map(g => `
+        <tr style="cursor:pointer;" onclick="openGarmentSheet('${escapeJs(g.key)}')">
+            <td><strong style="font-family: monospace;">${escapeHtml(g.code)}</strong></td>
+            <td>${escapeHtml(g.porteur || '—')}${g.health.porteurs.length > 1 ? `<div style="font-size:11px;color:var(--text-muted);">${g.health.porteurs.length} porteurs successifs</div>` : ''}</td>
+            <td>
+                <div>${escapeHtml(g.entreprise || '—')}</div>
+                <div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(g.entrepriseCode)}</div>
+            </td>
+            <td>${escapeHtml(g.site || '—')}</td>
+            <td><strong style="font-family: var(--font-display); font-size: 16px;">${g.health.total}</strong>${g.health.refused ? `<span style="font-size:11px;color:var(--text-muted);"> (${g.health.refused} refusée${g.health.refused > 1 ? 's' : ''})</span>` : ''}</td>
+            <td>${formatRelative(g.health.last.created_at)}</td>
+            <td>${healthBadgeHtml(g.health.level)}</td>
+            <td>
+                <button class="btn btn-ghost btn-icon" title="Ouvrir la fiche" onclick="event.stopPropagation(); openGarmentSheet('${escapeJs(g.key)}')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+            </td>
+        </tr>`).join('')
+        : `<tr><td colspan="8"><div class="empty-state"><p>Aucun vêtement trouvé.</p></div></td></tr>`;
+
+    $('#garments-count').textContent = `${total} vêtement${total > 1 ? 's' : ''}`;
+
+    const pagesEl = $('#garments-pages');
+    pagesEl.innerHTML = '';
+    if (pages > 1) {
+        const mkBtn = (label, page, disabled = false, active = false) => {
+            const b = document.createElement('button');
+            b.className = `page-btn ${active ? 'active' : ''}`;
+            b.textContent = label;
+            b.disabled = disabled;
+            b.onclick = () => { GarmentView.page = page; renderGarmentsTable(); };
+            return b;
+        };
+        pagesEl.appendChild(mkBtn('‹', GarmentView.page - 1, GarmentView.page === 1));
+        for (let i = 1; i <= pages; i++) {
+            if (i === 1 || i === pages || Math.abs(i - GarmentView.page) <= 1) {
+                pagesEl.appendChild(mkBtn(i, i, false, i === GarmentView.page));
+            } else if (Math.abs(i - GarmentView.page) === 2) {
+                const sp = document.createElement('span'); sp.textContent = '…'; sp.style.padding = '0 6px'; pagesEl.appendChild(sp);
+            }
+        }
+        pagesEl.appendChild(mkBtn('›', GarmentView.page + 1, GarmentView.page === pages));
+    }
+}
+
+function exportGarmentsExcel() {
+    if (typeof XLSX === 'undefined') return toast("Module d'export indisponible (réessayez dans un instant)", 'error');
+    const rows = getFilteredGarments();
+    if (!rows.length) return toast("Aucun vêtement à exporter", 'warning');
+    const header = ['Code-barres', 'Porteur actuel', 'Porteurs successifs', 'Raison sociale', 'Ville', 'Demandes', 'Non refusées', `Sur ${Math.round(GARMENT_RULES.windowDays / 30)} mois`, 'Intervalle moyen (j)', 'Première demande', 'Dernière demande', 'État'];
+    const data = rows.map(g => [
+        g.code, g.porteur, g.health.porteurs.join(' / '), g.entreprise, g.site,
+        g.health.total, g.health.valid, g.health.recent,
+        g.health.intervalDays ?? '',
+        new Date(g.health.first.created_at).toLocaleDateString('fr-FR'),
+        new Date(g.health.last.created_at).toLocaleDateString('fr-FR'),
+        HEALTH_LABELS[g.health.level],
+    ]);
+    const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
+    ws['!cols'] = [{ wch: 18 }, { wch: 22 }, { wch: 30 }, { wch: 26 }, { wch: 18 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Parc vêtements');
+    XLSX.writeFile(wb, `parc_vetements_idea_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast(`${rows.length} vêtement${rows.length > 1 ? 's' : ''} exporté${rows.length > 1 ? 's' : ''}`, 'success');
+}
+
+$('#garments-search')?.addEventListener('input', e => { GarmentView.search = e.target.value; GarmentView.page = 1; renderGarmentsTable(); });
+$('#garments-filter-health')?.addEventListener('change', e => { GarmentView.health = e.target.value; GarmentView.page = 1; renderGarmentsTable(); });
+$('#export-garments-btn')?.addEventListener('click', exportGarmentsExcel);
+
+// ---------- Fiche vêtement (modal) ----------
+async function openGarmentSheet(key) {
+    await loadGarmentIndex().catch(() => {});
+    const g = GarmentIndex.byKey.get(key);
+    if (!g) return toast("Historique introuvable pour ce vêtement", 'error');
+    const h = g.health;
+
+    // Photos de toutes les demandes du vêtement (une seule requête)
+    const imagesByReq = new Map();
+    try {
+        const { data: imgs } = await sb
+            .from('request_images')
+            .select('request_id, url_publique, filename')
+            .in('request_id', h.sorted.map(r => r.id));
+        for (const img of imgs || []) {
+            if (!imagesByReq.has(img.request_id)) imagesByReq.set(img.request_id, []);
+            imagesByReq.get(img.request_id).push(img);
+        }
+    } catch (e) { /* les photos sont un plus, pas bloquant */ }
+
+    // Timeline : plus récent en haut, avec l'écart entre deux demandes
+    const desc = [...h.sorted].reverse();
+    const timeline = desc.map((r, i) => {
+        const prev = desc[i + 1];
+        const porteurChanged = prev && (prev.nom_porteur || '').trim() && (r.nom_porteur || '').trim()
+            && (prev.nom_porteur || '').trim().toUpperCase() !== (r.nom_porteur || '').trim().toUpperCase();
+        const gapDays = prev ? Math.round((new Date(r.created_at) - new Date(prev.created_at)) / 86400000) : null;
+        const photos = (imagesByReq.get(r.id) || []).map(img => {
+            const src = img.url_publique || '';
+            return src ? `<img src="${escapeHtml(src)}" alt="${escapeHtml(img.filename || '')}" onclick="openLightbox('${escapeJs(src)}')">` : '';
+        }).join('');
+        return `
+            <div class="gt-item s-${escapeHtml(r.statut)}">
+                <span class="gt-dot"></span>
+                <div class="gt-top">
+                    <span class="gt-date">${formatDate(r.created_at)}</span>
+                    <span class="gt-ticket">${escapeHtml(r.ticket_number || '')}</span>
+                    ${statusBadge(r.statut)}
+                    <button class="btn btn-ghost btn-sm gt-open" onclick="viewRequest('${r.id}')">Détail</button>
+                </div>
+                <div class="gt-desc">${escapeHtml(r.description || 'Sans description')}</div>
+                <div class="gt-meta">Porteur : ${escapeHtml(r.nom_porteur || '—')}${porteurChanged ? ' <span class="badge badge-accent" style="font-size:9px;margin-left:4px;">Nouveau porteur</span>' : ''} · ${escapeHtml(r.sites?.nom || '—')}</div>
+                ${photos ? `<div class="gt-photos">${photos}</div>` : ''}
+            </div>
+            ${gapDays !== null ? `<div class="gt-gap">${gapDays === 0 ? 'même jour que la précédente' : `${gapDays} jour${gapDays > 1 ? 's' : ''} depuis la précédente`}</div>` : ''}
+        `;
+    }).join('');
+
+    const body = `
+        <div class="garment-head">
+            <div>
+                <div class="garment-code">${escapeHtml(g.code)}</div>
+                <div class="garment-sub">${escapeHtml(g.entreprise || '—')} · ${escapeHtml(g.site || '—')}</div>
+                <div class="garment-sub">Porteur${h.porteurs.length > 1 ? 's' : ''} : ${escapeHtml(h.porteurs.join(' → ') || '—')}</div>
+            </div>
+            <div>${healthBadgeHtml(h.level)}</div>
+        </div>
+        <div class="garment-reco ${h.level}">${healthRecoText(h)}</div>
+        <div class="garment-kpis">
+            <div class="garment-kpi"><div class="k">Demandes</div><div class="v">${h.total}</div></div>
+            <div class="garment-kpi"><div class="k">Acceptées</div><div class="v">${h.accepted}</div></div>
+            <div class="garment-kpi"><div class="k">Refusées</div><div class="v">${h.refused}</div></div>
+            <div class="garment-kpi"><div class="k">Intervalle moyen</div><div class="v">${h.intervalDays !== null ? `${h.intervalDays} j` : '—'}</div></div>
+        </div>
+        <div class="field-label" style="margin-bottom: 12px;">Historique (${h.total})</div>
+        <div class="garment-timeline">${timeline}</div>
+    `;
+    openModal(`Fiche vêtement`, body, `<button class="btn btn-primary" onclick="closeModal()">Fermer</button>`, { wide: true });
 }
 
 async function acceptRequest(id) {
@@ -6291,6 +6819,8 @@ function subscribeRealtime() {
         .channel('repair_requests_changes')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'repair_requests' }, payload => {
             toast(`Nouvelle demande : ${payload.new.ticket_number}`, 'info');
+            GarmentIndex.fetchedAt = 0;
+            if (State.currentView === 'garments') loadGarments(true);
             if (State.currentView === 'admin-pending') loadPendingRequests();
             if (State.currentView === 'admin-requests') loadRequests();
             if (State.currentView === 'admin-dashboard') loadDashboard();
