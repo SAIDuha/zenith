@@ -4443,13 +4443,37 @@ async function submitResetPassword(token) {
     btn.disabled = true;
     btn.innerHTML = '<span class="loader"></span>';
     try {
-        // 1. Consomme le lien (usage unique) → ouvre une session pour cet utilisateur
-        const { error: otpErr } = await sb.auth.verifyOtp({ token_hash: token, type: 'recovery' });
-        if (otpErr) throw new Error("Ce lien a expiré ou a déjà été utilisé. Refaites une demande depuis « Mot de passe oublié ? ».");
+        // 1. Consomme le lien (usage unique) → ouvre une session pour cet utilisateur.
+        //    Une seule fois : si l'enregistrement du mdp échoue ensuite (mdp refusé),
+        //    on peut réessayer sans revalider le lien (déjà consommé).
+        if (!window.__resetVerified) {
+            const { error: otpErr } = await sb.auth.verifyOtp({ token_hash: token, type: 'recovery' });
+            if (otpErr) {
+                console.error('verifyOtp recovery error:', otpErr);
+                const detail = [otpErr.code, otpErr.status, otpErr.message].filter(Boolean).join(' · ');
+                throw new Error(`Ce lien a expiré ou a déjà été utilisé. Refaites une demande depuis « Mot de passe oublié ? ».\n(Détail : ${detail})`);
+            }
+            window.__resetVerified = true;
+        }
 
         // 2. Enregistre le nouveau mot de passe
         const { error: updErr } = await sb.auth.updateUser({ password: p1 });
-        if (updErr) throw new Error(updErr.message || "Impossible d'enregistrer le mot de passe");
+        if (updErr) {
+            console.error('updateUser error:', updErr);
+            const code = updErr.code || '';
+            let msg;
+            if (code === 'same_password' || /different from the old/i.test(updErr.message || '')) {
+                msg = "Ce mot de passe est identique à l'ancien. Choisissez-en un différent.";
+            } else if (code === 'weak_password' || /weak|should contain|at least/i.test(updErr.message || '')) {
+                const reasons = (updErr.weak_password?.reasons || updErr.reasons || []).map(r => ({
+                    length: 'trop court', characters: 'il manque des types de caractères (majuscule, minuscule, chiffre, symbole)', pwned: 'mot de passe connu des fuites de données'
+                })[r] || r);
+                msg = `Mot de passe refusé : ${reasons.length ? reasons.join(', ') : (updErr.message || 'trop faible')}. Ajoutez majuscules, chiffres et symboles.`;
+            } else {
+                msg = `Impossible d'enregistrer le mot de passe (${updErr.message || code || 'erreur inconnue'}).`;
+            }
+            const e = new Error(msg); e.retryable = true; throw e;
+        }
 
         toast("Mot de passe modifié, connexion en cours…", 'success');
         // 3. On nettoie l'URL et on recharge : la session est restaurée automatiquement
@@ -4458,7 +4482,7 @@ async function submitResetPassword(token) {
         toast(err.message, 'error', 7000);
         btn.disabled = false;
         btn.innerHTML = '<span>Enregistrer et me connecter</span>';
-        if (/expiré|utilisé/.test(err.message)) {
+        if (!err.retryable && /expiré|utilisé/.test(err.message)) {
             history.replaceState(null, '', location.pathname);
             $('#modal-footer').innerHTML = `
                 <button class="btn btn-accent" onclick="openForgotPasswordModal()">Recevoir un nouveau lien</button>`;
