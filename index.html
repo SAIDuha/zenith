@@ -3091,7 +3091,7 @@ a.contact-card:hover {
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
                     <span>Tableau de bord</span>
                 </button>
-                <button class="nav-item" data-view="admin-pending">
+                <button class="nav-item" data-view="admin-pending" data-client-only>
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     <span>Demandes en attente</span>
                 </button>
@@ -3404,7 +3404,6 @@ a.contact-card:hover {
                         <select id="requests-filter-status" class="select" style="width: auto; min-width: 160px;">
                             <option value="">Tous statuts</option>
                             <option value="en_attente">En attente</option>
-                            <option value="pre_validee">Pré-validées</option>
                             <option value="acceptee">Acceptées</option>
                             <option value="refusee">Refusées</option>
                         </select>
@@ -4426,6 +4425,9 @@ async function enterApp() {
     if (State.profile.role === 'admin') {
         // Admin : tout visible
         $$('#nav-admin [data-admin-only]').forEach(el => el.style.display = '');
+        // NETEXIAL ne valide plus rien : pas de page "en attente", pas de filtres refus/pré-validation
+        $$('#nav-admin [data-client-only]').forEach(el => el.style.display = 'none');
+        $$('#requests-filter-status option[value="refusee"], #requests-filter-status option[value="en_attente"]').forEach(o => o.remove());
         $('#client-banner')?.classList.add('hidden');
     } else {
         // User entreprise : on cache Entreprises / Sites / Utilisateurs
@@ -4448,9 +4450,13 @@ async function enterApp() {
         }
     }
 
-    // Tout le monde atterrit directement sur la page "Demandes en attente"
-    showView('admin-pending');
-    await loadPendingRequests();
+    // Admin NETEXIAL → "Suivi des demandes" (tout est accepté d'office)
+    // User entreprise → "Demandes en attente" (sa validation N+1)
+    if (State.profile.role === 'admin') {
+        showView('admin-requests');
+    } else {
+        showView('admin-pending');
+    }
 
     // Notifs temps réel
     subscribeRealtime();
@@ -4897,14 +4903,15 @@ function statusBadge(status) {
 let chartEvol = null, chartStatus = null;
 
 async function loadDashboard() {
+    const isAdmin = State.profile?.role === 'admin';
     let query = sb
         .from('repair_requests')
-        .select('id, statut, created_at, entreprise_id');
+        .select('id, statut, created_at, entreprise_id, entreprises(nom)');
 
-    // Admin NETEXIAL : ne voit pas les demandes "en_attente", et seulement SES entreprises
-    if (State.profile?.role === 'admin') {
+    // Admin NETEXIAL : uniquement les demandes acceptées de SES entreprises
+    if (isAdmin) {
         const scope = State.assignedEntrepriseIds?.length ? State.assignedEntrepriseIds : ['00000000-0000-0000-0000-000000000000'];
-        query = query.in('statut', ['pre_validee', 'acceptee', 'refusee']).in('entreprise_id', scope);
+        query = query.in('statut', ['pre_validee', 'acceptee', 'cloturee']).in('entreprise_id', scope);
     }
 
     const { data: requests, error } = await query;
@@ -4914,45 +4921,36 @@ async function loadDashboard() {
         return;
     }
 
-    // Stats globales (côté admin : pre_validee = "en attente NETEXIAL")
-    const stats = {
-        total: requests.length,
-        en_attente: requests.filter(r => r.statut === 'pre_validee').length, // pour admin = pré-validées en attente d'action
-        acceptee:   requests.filter(r => r.statut === 'acceptee').length,
-        refusee:    requests.filter(r => r.statut === 'refusee').length,
+    const since = (days) => requests.filter(r => new Date(r.created_at) > new Date(Date.now() - days * 86400000)).length;
+    const todayStr = new Date().toDateString();
+    const isAccepted = r => ['acceptee', 'pre_validee', 'cloturee'].includes(r.statut);
+    const icon = {
+        doc:   '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+        clock: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+        check: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>',
+        cross: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+        cal:   '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
     };
-    const last30Days = requests.filter(r => new Date(r.created_at) > new Date(Date.now() - 30 * 86400000)).length;
+    const card = (cls, ic, label, value) => `
+        <div class="stat-card ${cls}">
+            <div class="stat-card-icon">${ic}</div>
+            <div class="stat-label">${label}</div>
+            <div class="stat-value">${value}</div>
+        </div>`;
 
-    $('#dashboard-stats').innerHTML = `
-        <div class="stat-card">
-            <div class="stat-card-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            </div>
-            <div class="stat-label">Total demandes</div>
-            <div class="stat-value">${stats.total}</div>
-        </div>
-        <div class="stat-card warning">
-            <div class="stat-card-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div class="stat-label">À valider</div>
-            <div class="stat-value">${stats.en_attente}</div>
-        </div>
-        <div class="stat-card success">
-            <div class="stat-card-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <div class="stat-label">Acceptées</div>
-            <div class="stat-value">${stats.acceptee}</div>
-        </div>
-        <div class="stat-card danger">
-            <div class="stat-card-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </div>
-            <div class="stat-label">Refusées</div>
-            <div class="stat-value">${stats.refusee}</div>
-        </div>
-    `;
+    if (isAdmin) {
+        $('#dashboard-stats').innerHTML =
+            card('', icon.doc, 'Demandes reçues', requests.length) +
+            card('accent', icon.cal, "Aujourd'hui", requests.filter(r => new Date(r.created_at).toDateString() === todayStr).length) +
+            card('success', icon.check, '7 derniers jours', since(7)) +
+            card('warning', icon.clock, '30 derniers jours', since(30));
+    } else {
+        $('#dashboard-stats').innerHTML =
+            card('', icon.doc, 'Total demandes', requests.length) +
+            card('warning', icon.clock, 'À valider', requests.filter(r => r.statut === 'en_attente').length) +
+            card('success', icon.check, 'Acceptées', requests.filter(isAccepted).length) +
+            card('danger', icon.cross, 'Refusées', requests.filter(r => r.statut === 'refusee').length);
+    }
 
     // Graphique évolution (30j)
     const days = Array.from({ length: 30 }, (_, i) => {
@@ -4991,18 +4989,37 @@ async function loadDashboard() {
         }
     });
 
-    // Graphique répartition
+    // Second graphique : admin → répartition par entreprise ; entreprise → par statut
+    let labels, values, colors;
+    if (isAdmin) {
+        const byEnt = new Map();
+        for (const r of requests) {
+            const nom = r.entreprises?.nom || '—';
+            byEnt.set(nom, (byEnt.get(nom) || 0) + 1);
+        }
+        const sorted = [...byEnt.entries()].sort((a, b) => b[1] - a[1]);
+        const top = sorted.slice(0, 6);
+        const rest = sorted.slice(6).reduce((n, [, v]) => n + v, 0);
+        if (rest) top.push(['Autres', rest]);
+        labels = top.map(([k]) => k);
+        values = top.map(([, v]) => v);
+        colors = ['#141B4D', '#FC6100', '#1C3775', '#FFA700', '#98B2DD', '#46A84D', '#C1D1EB'];
+    } else {
+        labels = ['À valider', 'Acceptées', 'Refusées'];
+        values = [
+            requests.filter(r => r.statut === 'en_attente').length,
+            requests.filter(isAccepted).length,
+            requests.filter(r => r.statut === 'refusee').length,
+        ];
+        colors = ['#FFA700', '#46A84D', '#B54385'];
+    }
+    const statusTitle = $('#chart-status')?.closest('.card')?.querySelector('.card-title');
+    if (statusTitle) statusTitle.textContent = isAdmin ? 'Répartition par entreprise' : 'Répartition par statut';
+
     if (chartStatus) chartStatus.destroy();
     chartStatus = new Chart($('#chart-status'), {
         type: 'doughnut',
-        data: {
-            labels: ['En attente', 'Acceptées', 'Refusées'],
-            datasets: [{
-                data: [stats.en_attente, stats.acceptee, stats.refusee],
-                backgroundColor: ['#FFA700', '#46A84D', '#B54385'],
-                borderWidth: 0,
-            }]
-        },
+        data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }] },
         options: {
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { position: 'right', labels: { color: '#1C3775', font: { family: 'Roboto' } } } }
@@ -5025,9 +5042,9 @@ async function loadRequests() {
         .order('created_at', { ascending: false });
 
     if (State.profile?.role === 'admin') {
-        // Admin NETEXIAL : voit pre_validee, acceptee, refusee — UNIQUEMENT pour ses entreprises
+        // Admin NETEXIAL : voit les demandes acceptées — UNIQUEMENT pour ses entreprises
         const scope = State.assignedEntrepriseIds?.length ? State.assignedEntrepriseIds : ['00000000-0000-0000-0000-000000000000'];
-        query = query.in('statut', ['pre_validee', 'acceptee', 'refusee']).in('entreprise_id', scope);
+        query = query.in('statut', ['pre_validee', 'acceptee', 'cloturee']).in('entreprise_id', scope);
     } else if (State.profile?.role === 'client') {
         // User entreprise : voit les demandes de SON entreprise
         query = query.eq('entreprise_id', State.profile.entreprise_id);
@@ -5122,16 +5139,6 @@ function requestRowHtml(r) {
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                     </button>
                                     <button class="btn btn-icon" style="background: rgba(211,47,47,0.12); color: #c62828;" onclick="refuseByEntreprise('${r.id}')" title="Refuser">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                    </button>
-                                `;
-                            }
-                            if (role === 'admin' && r.statut === 'pre_validee') {
-                                return `
-                                    <button class="btn btn-icon" style="background: rgba(70,168,77,0.15); color: var(--nx-green);" onclick="acceptRequest('${r.id}')" title="Accepter">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                    </button>
-                                    <button class="btn btn-icon" style="background: rgba(211,47,47,0.12); color: #c62828;" onclick="refuseRequest('${r.id}')" title="Refuser">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                                     </button>
                                 `;
@@ -5476,12 +5483,6 @@ async function viewRequest(id) {
                 <span>Rouvrir la demande</span>
             </button>
         `;
-    } else if (role === 'admin' && r.statut === 'pre_validee') {
-        // Admin NETEXIAL : décision finale
-        footer += `
-            <button class="btn btn-ghost" style="color:#c62828;" onclick="refuseRequest('${r.id}')">Refuser</button>
-            <button class="btn btn-accent" onclick="acceptRequest('${r.id}')">Accepter</button>
-        `;
     } else {
         footer += `<button class="btn btn-primary" onclick="closeModal()">Fermer</button>`;
     }
@@ -5525,7 +5526,7 @@ function applyRequestScope(query) {
     const role = State.profile?.role;
     if (role === 'admin') {
         const scope = State.assignedEntrepriseIds?.length ? State.assignedEntrepriseIds : ['00000000-0000-0000-0000-000000000000'];
-        query = query.in('statut', ['pre_validee', 'acceptee', 'refusee', 'cloturee']).in('entreprise_id', scope);
+        query = query.in('statut', ['pre_validee', 'acceptee', 'cloturee']).in('entreprise_id', scope);
     } else if (role === 'client') {
         query = query.eq('entreprise_id', State.profile.entreprise_id);
         if (State.userSites && State.userSites.length > 0) query = query.in('site_id', State.userSites);
@@ -5869,52 +5870,12 @@ async function openGarmentSheet(key) {
     openModal(`Fiche vêtement`, body, `<button class="btn btn-primary" onclick="closeModal()">Fermer</button>`, { wide: true });
 }
 
-async function acceptRequest(id) {
-    if (!confirm("Confirmer l'acceptation de cette demande ?")) return;
-    try {
-        const { error } = await sb
-            .from('repair_requests')
-            .update({ statut: 'acceptee', traite_at: new Date().toISOString(), traite_par: State.user.id })
-            .eq('id', id);
-        if (error) throw error;
-
-        toast("Demande acceptée", 'success');
-        closeModal();
-        reloadActiveRequests();
-    } catch (err) {
-        toast(err.message, 'error');
-    }
-}
-
-async function refuseRequest(id) {
-    const raison = prompt("Motif du refus (optionnel) :");
-    if (raison === null) return;
-    try {
-        const { error } = await sb
-            .from('repair_requests')
-            .update({
-                statut: 'refusee',
-                raison_refus: raison || null,
-                traite_at: new Date().toISOString(),
-                traite_par: State.user.id
-            })
-            .eq('id', id);
-        if (error) throw error;
-
-        toast("Demande refusée", 'info');
-        closeModal();
-        reloadActiveRequests();
-    } catch (err) {
-        toast(err.message, 'error');
-    }
-}
-
-// User entreprise : pré-validation d'une demande (statut → pre_validee + notif admin)
+// User entreprise : validation d'une demande (statut → acceptee + notif admin NETEXIAL)
 async function preValidateRequest(id) {
-    if (!confirm("Valider cette demande ? Elle sera transmise à NETEXIAL pour acceptation finale.")) return;
+    if (!confirm("Valider cette demande ? Elle sera acceptée et transmise à NETEXIAL pour traitement.")) return;
     try {
         const res = await apiCall(`/requests/${id}/pre-validate`, { method: 'POST' });
-        toast("Demande validée et transmise à NETEXIAL", 'success');
+        toast("Demande acceptée et transmise à NETEXIAL", 'success');
         closeModal();
         reloadActiveRequests();
     } catch (err) {
@@ -6817,8 +6778,15 @@ function subscribeRealtime() {
 
     const channel = sb
         .channel('repair_requests_changes')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'repair_requests' }, payload => {
-            toast(`Nouvelle demande : ${payload.new.ticket_number}`, 'info');
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'repair_requests' }, payload => {
+            // Seules les demandes acceptées concernent NETEXIAL (création en auto-validation,
+            // ou validation par l'entreprise)
+            if (payload.new?.statut !== 'acceptee') return;
+            if (!(State.assignedEntrepriseIds || []).includes(payload.new.entreprise_id)) return;
+            const fresh = payload.eventType === 'INSERT' ||
+                (payload.new.traite_at && Date.now() - new Date(payload.new.traite_at).getTime() < 60000);
+            if (!fresh) return;
+            toast(`Nouvelle demande à traiter : ${payload.new.ticket_number}`, 'info');
             GarmentIndex.fetchedAt = 0;
             if (State.currentView === 'garments') loadGarments(true);
             if (State.currentView === 'admin-pending') loadPendingRequests();
@@ -6986,8 +6954,6 @@ function printQr(qrSrc, clientName, codeClient) {
 
 // Exposer fonctions globales utilisées dans onclick=
 window.viewRequest = viewRequest;
-window.acceptRequest = acceptRequest;
-window.refuseRequest = refuseRequest;
 window.preValidateRequest = preValidateRequest;
 window.refuseByEntreprise = refuseByEntreprise;
 window.reopenRequest = reopenRequest;

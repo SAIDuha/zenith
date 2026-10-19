@@ -421,7 +421,7 @@ def public_submit_request():
         ent_obj = site_res.data.get("entreprises") or {}
         sans_obligation = bool(ent_obj.get("autoriser_sans_photo_desc"))
         # Auto-validation : l'entreprise n'a rien à valider, la demande part
-        # directement chez NETEXIAL (statut pre_validee).
+        # directement chez NETEXIAL, déjà acceptée (NETEXIAL ne refuse plus).
         auto_validation = bool(ent_obj.get("auto_validation"))
 
         # Description obligatoire, sauf si l'entreprise autorise l'envoi sans
@@ -436,7 +436,8 @@ def public_submit_request():
             "nom_porteur": nom_porteur,
             "nom_porteur_source": nom_porteur_source if nom_porteur_source in ("manual", "auto", "corrected") else "manual",
             "description": description,
-            "statut": "pre_validee" if auto_validation else "en_attente",
+            "statut": "acceptee" if auto_validation else "en_attente",
+            **({"traite_at": datetime.utcnow().isoformat()} if auto_validation else {}),
         }).execute()
 
         if not req_res.data:
@@ -585,8 +586,10 @@ def _notify_submission_internal(request_id):
 @app.route("/api/requests/<request_id>/pre-validate", methods=["POST"])
 def pre_validate_request(request_id):
     """
-    Pré-validation par un user entreprise.
-    Passe le statut de 'en_attente' → 'pre_validee' puis notifie l'admin NETEXIAL.
+    Validation par un user entreprise.
+    Passe le statut de 'en_attente' → 'acceptee' (NETEXIAL ne refuse plus :
+    toute demande validée par l'entreprise est acceptée d'office) puis notifie
+    l'admin NETEXIAL pour traitement.
     """
     payload, err = verify_jwt(request)
     if err:
@@ -626,8 +629,9 @@ def pre_validate_request(request_id):
 
     # Update
     upd = supabase.table("repair_requests").update({
-        "statut": "pre_validee",
+        "statut": "acceptee",
         "traite_par": payload["sub"],
+        "traite_at": datetime.utcnow().isoformat(),
     }).eq("id", request_id).execute()
 
     # Notifier l'admin NETEXIAL
@@ -643,6 +647,7 @@ def pre_validate_request(request_id):
 def refuse_request_by_entreprise(request_id):
     """
     Refus par un user entreprise (statut 'en_attente' → 'refusee', définitif).
+    NETEXIAL (admin) n'a plus le droit de refuser une demande.
     """
     payload, err = verify_jwt(request)
     if err:
@@ -660,14 +665,11 @@ def refuse_request_by_entreprise(request_id):
         return jsonify({"error": "Demande introuvable"}), 404
     req = res.data
 
-    # Autorisation
-    if profile.get("role") == "admin":
-        pass
-    elif profile.get("role") == "client":
-        if profile.get("entreprise_id") != req.get("entreprise_id"):
-            return jsonify({"error": "Accès refusé"}), 403
-    else:
-        return jsonify({"error": "Rôle non autorisé"}), 403
+    # Autorisation : seul un user de l'entreprise concernée peut refuser
+    if profile.get("role") != "client":
+        return jsonify({"error": "NETEXIAL ne peut pas refuser une demande"}), 403
+    if profile.get("entreprise_id") != req.get("entreprise_id"):
+        return jsonify({"error": "Accès refusé"}), 403
 
     if req.get("statut") != "en_attente":
         return jsonify({"error": f"Cette demande est déjà au statut '{req.get('statut')}'"}), 400
@@ -722,7 +724,7 @@ def reopen_request(request_id):
 
 
 def _notify_admin_validation(req, validator_profile=None):
-    """Email à l'admin référent de l'entreprise quand une demande passe en pre_validee.
+    """Email à l'admin référent de l'entreprise quand une demande est acceptée (à traiter).
 
     Destinataire : l'admin défini sur entreprises.admin_referent_id (source unique).
     C'est le même admin qui voit la demande dans son espace.
@@ -760,7 +762,7 @@ def _notify_admin_validation(req, validator_profile=None):
 
     contenu = f"""
     <p style="color:#1C3775; margin-bottom:24px;">Bonjour,</p>
-    <p style="color:#1C3775;">Une demande a été <strong>pré-validée</strong> par un utilisateur entreprise et attend votre décision.</p>
+    <p style="color:#1C3775;">Une nouvelle demande de réparation a été <strong>acceptée</strong> et est à traiter.</p>
     <table style="width:100%; margin-top:20px; font-family:Arial; font-size:14px; border-collapse:collapse;">
         <tr style="background:#f5f7fb;"><td style="padding:10px 16px; color:#65748b; width:35%;">N° de ticket</td><td style="padding:10px 16px; font-weight:700; color:#FC6100;">{req.get('ticket_number','—')}</td></tr>
         <tr><td style="padding:10px 16px; color:#65748b;">Entreprise</td><td style="padding:10px 16px;">{ent.get('nom') or '—'}</td></tr>
@@ -772,9 +774,9 @@ def _notify_admin_validation(req, validator_profile=None):
         <tr><td style="padding:10px 16px; color:#65748b; vertical-align:top;">Description</td><td style="padding:10px 16px; color:#1C3775;">{desc_html}</td></tr>
     </table>
     {photos_html}
-    <p style="color:#1C3775; margin-top:24px;">Connectez-vous à l'espace IDEA pour accepter ou refuser cette demande.</p>
+    <p style="color:#1C3775; margin-top:24px;">Retrouvez cette demande dans l'espace IDEA, rubrique « Suivi des demandes ».</p>
     """
-    html = _email_template("Demande pré-validée — Action requise", contenu)
+    html = _email_template("Nouvelle demande à traiter", contenu)
     subject = f"[IDEA] À traiter — {req.get('ticket_number','')}"
 
     # Destinataire unique : l'admin référent de l'ENTREPRISE concernée.
@@ -914,7 +916,6 @@ def send_confirmation():
             </tr>
         </table>
 
-        <p>Vous serez notifié(e) par email dès qu'une décision aura été prise sur votre demande.</p>
         <p style="margin-top:24px;color:#1C3775;">Cordialement,<br><strong>L'équipe IDEA</strong></p>
     """
     html = _email_template(
