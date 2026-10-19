@@ -1317,362 +1317,319 @@ a.contact-card:hover {
 .captcha-logo span { font-size: 8px; color: #9aa0a6; letter-spacing: 0.5px; }
 
 /* =====================================================
-   VUE PUBLIQUE ANONYME (via QR site)
+   VUE PUBLIQUE ANONYME (via QR site) — V2 "appli"
+   Une étape par écran · barre de progression · CTA en bas
    ===================================================== */
 #public-anon-page {
+    --a-bg: #F4F6FB;
+    --a-card: #FFFFFF;
+    --a-border: #E3E8F2;
+    --a-muted: #6B7A99;
+    --a-green: #2E9B4F;
     min-height: 100vh;
-    background: linear-gradient(160deg, #DAEBFD 0%, #C1DCFA 50%, #A8CDF7 100%);
+    min-height: 100dvh;
+    background: var(--a-bg);
+    color: var(--nx-navy);
     padding: 0;
+    transition: background .3s ease;
+}
+#public-anon-page.is-dark {
+    background: radial-gradient(120% 70% at 50% 35%, #2b3048 0%, #161a2b 55%, #0b0d17 100%);
 }
 .anon-shell {
-    max-width: 600px;
+    max-width: 520px;
     margin: 0 auto;
-    padding: 0 16px 32px;
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
 }
-.anon-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 0;
-    margin-bottom: 16px;
-    border-bottom: 1px solid rgba(20, 27, 77, 0.08);
-}
-.anon-brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-.anon-logo {
-    width: 50px;
-    height: 50px;
-    object-fit: contain;
-    background: white;
-    border-radius: 10px;
-    padding: 6px;
-    box-shadow: 0 2px 8px rgba(20, 27, 77, 0.06);
-}
-.anon-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    color: var(--nx-navy-2);
-    font-family: var(--font-display);
-    letter-spacing: 2px;
-}
-.anon-entreprise {
-    font-size: 18px;
-    font-family: var(--font-display);
-    font-weight: 700;
-    color: var(--nx-navy);
-    margin-top: 2px;
-}
-.anon-site-pill {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.8);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-family: var(--font-display);
-    font-weight: 600;
-    color: var(--nx-navy);
-    font-size: 13px;
-}
 
-.anon-state {
-    text-align: center;
-    padding: 32px 16px;
+/* ---------- En-tête : client + site + progression ---------- */
+.anon-top { padding: 16px 20px 0; }
+.anon-brandrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.anon-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.anon-logo {
+    width: 38px; height: 38px; border-radius: 11px; object-fit: contain;
+    background: #fff; border: 1px solid var(--a-border); padding: 3px; flex-shrink: 0;
 }
+.anon-logo-fallback {
+    width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+    background: var(--nx-navy); color: #fff; font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; letter-spacing: .5px;
+}
+.anon-brand-text { min-width: 0; }
+.anon-entreprise {
+    font-size: 15px; font-weight: 700; line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.anon-label { font-size: 12px; color: var(--a-muted); margin-top: 1px; }
+.anon-site-pill {
+    display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+    font-size: 12px; font-weight: 600; padding: 7px 12px; border-radius: 20px;
+    background: #fff; border: 1px solid var(--a-border); color: var(--nx-navy-2);
+    max-width: 45%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.anon-progress { display: flex; gap: 6px; margin-top: 18px; }
+.anon-progress i { flex: 1; height: 5px; border-radius: 3px; background: #D5DCEA; transition: background .3s ease; }
+.anon-progress i.on { background: var(--nx-orange); }
+.anon-steplabel { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 12px; font-weight: 500; color: var(--a-muted); min-height: 28px; }
+.anon-back {
+    display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px 5px 6px;
+    border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--nx-navy-2);
+    background: #fff; border: 1px solid var(--a-border); cursor: pointer;
+}
+.anon-back.hidden { display: none; }
+
+/* Mode sombre (étape scan) */
+.is-dark .anon-entreprise { color: #fff; }
+.is-dark .anon-label, .is-dark .anon-steplabel { color: rgba(255,255,255,.65); }
+.is-dark .anon-site-pill { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.18); color: #fff; }
+.is-dark .anon-progress i { background: rgba(255,255,255,.22); }
+.is-dark .anon-progress i.on { background: var(--nx-orange); }
+.is-dark .anon-logo-fallback { background: #fff; color: var(--nx-navy); }
+
+/* ---------- États (chargement / erreur) ---------- */
+.anon-state { padding: 60px 24px; text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .anon-state.hidden { display: none; }
-.anon-state h2 {
-    font-family: var(--font-display);
-    font-size: 22px;
-    color: var(--nx-navy);
-    margin: 16px 0 8px;
-}
-.anon-state p {
-    color: var(--text);
-    margin-bottom: 0;
-}
+.anon-state h2 { font-family: var(--font-display); font-size: 26px; font-weight: 600; margin: 18px 0 8px; color: var(--nx-navy); }
+.anon-state p { color: var(--a-muted); font-size: 15px; line-height: 1.5; max-width: 320px; }
 .anon-spinner {
-    width: 40px; height: 40px;
-    border: 3px solid rgba(252, 97, 0, 0.18);
-    border-top-color: var(--nx-orange);
-    border-radius: 50%;
-    margin: 32px auto;
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 4px solid rgba(20,27,77,.12); border-top-color: var(--nx-orange);
     animation: anonSpin 0.8s linear infinite;
 }
 .anon-spinner-sm {
-    width: 16px; height: 16px;
-    border: 2px solid rgba(252, 97, 0, 0.18);
-    border-top-color: var(--nx-orange);
-    border-radius: 50%;
-    animation: anonSpin 0.8s linear infinite;
-    display: inline-block;
+    width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+    border: 3px solid rgba(20,27,77,.15); border-top-color: var(--nx-orange);
+    animation: anonSpin 0.7s linear infinite;
 }
-@keyframes anonSpin { to { transform: rotate(360deg); } }
-.anon-icon-error, .anon-icon-success {
-    width: 70px; height: 70px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 16px;
-}
-.anon-icon-error { background: rgba(211, 47, 47, 0.12); color: #d32f2f; }
-.anon-icon-success { background: rgba(70, 168, 77, 0.15); color: var(--nx-green); }
-
-#anon-form {
-    text-align: left;
-    padding: 0;
-    display: block;
-}
-.anon-title {
-    font-family: var(--font-display);
-    font-size: clamp(20px, 5vw, 28px);
-    font-weight: 700;
-    color: var(--nx-navy);
-    margin: 8px 0 6px;
-}
-.anon-subtitle {
-    color: var(--nx-navy-2);
-    font-size: 14px;
-    margin-bottom: 24px;
+.anon-icon-error {
+    width: 84px; height: 84px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(211, 47, 47, 0.1); color: #d32f2f;
 }
 
-.anon-section {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(10px);
-    border-radius: var(--radius-lg);
-    padding: 22px 20px;
-    margin-bottom: 16px;
-    border: 1px solid rgba(20, 27, 77, 0.06);
+/* ---------- Écrans d'étape ---------- */
+#anon-form { flex: 1; display: flex; flex-direction: column; }
+#anon-form.hidden { display: none; }
+.anon-screen { flex: 1; display: flex; flex-direction: column; padding: 18px 20px 0; animation: anonIn .28s ease; }
+.anon-screen.hidden { display: none; }
+@keyframes anonIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+.anon-h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 29px; line-height: 1.12;
+    letter-spacing: -0.2px; color: var(--nx-navy); text-transform: none;
 }
-.anon-section.hidden { display: none; }
-.anon-section-head {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-.anon-step {
-    width: 28px; height: 28px;
-    background: var(--nx-orange);
-    color: white;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 14px;
-    flex-shrink: 0;
-}
-.anon-section-head h2 {
-    font-family: var(--font-display);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--nx-navy);
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
+.is-dark .anon-h1 { color: #fff; }
+.anon-lead { font-size: 15px; color: var(--a-muted); margin-top: 8px; line-height: 1.45; }
+.is-dark .anon-lead { color: rgba(255,255,255,.7); }
 
-.anon-tabs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 16px;
-    background: rgba(20, 27, 77, 0.05);
-    padding: 4px;
-    border-radius: var(--radius-sm);
+/* Barre d'actions collée en bas (à portée de pouce) */
+.anon-actions {
+    position: sticky; bottom: 0; margin: auto -20px 0;
+    padding: 18px 20px calc(18px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(244,246,251,0) 0%, var(--a-bg) 32%);
+    display: flex; flex-direction: column; gap: 10px;
 }
-.anon-tab {
-    padding: 10px;
-    background: transparent;
-    border: none;
-    border-radius: var(--radius-sm);
-    color: var(--nx-navy-2);
-    font-family: var(--font-display);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: all var(--t-fast);
+.is-dark .anon-actions { background: none; }
+.anon-cta {
+    width: 100%; min-height: 58px; border-radius: 16px; border: 0; cursor: pointer;
+    background: var(--nx-orange); color: #fff; font-size: 17px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 10px 22px rgba(252, 97, 0, .3);
+    transition: transform .1s ease, opacity .2s ease;
 }
-.anon-tab.active {
-    background: white;
-    color: var(--nx-orange);
-    box-shadow: 0 2px 6px rgba(20, 27, 77, 0.06);
+.anon-cta:active { transform: scale(.98); }
+.anon-cta:disabled { opacity: .55; cursor: default; box-shadow: none; }
+.anon-ghost {
+    width: 100%; min-height: 52px; border-radius: 14px; cursor: pointer;
+    border: 1.5px solid var(--a-border); background: #fff; color: var(--nx-navy);
+    font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;
 }
+.is-dark .anon-ghost { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.2); color: #fff; }
 
-.anon-mode.hidden { display: none; }
-.anon-video-wrap {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 4/3;
-    background: black;
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin-bottom: 12px;
+/* ---------- Étape 1 : scan ---------- */
+.anon-cam {
+    position: relative; flex: 1; min-height: 320px; margin-top: 18px;
+    border-radius: 24px; overflow: hidden; background: #0d0f18;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
 }
+.anon-video-wrap { position: absolute; inset: 0; }
 .anon-video-wrap.hidden { display: none; }
-#anon-video {
-    width: 100%; height: 100%;
-    object-fit: cover;
+#anon-video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.anon-frame { position: absolute; left: 50%; top: 50%; width: 76%; max-width: 300px; aspect-ratio: 16 / 10; transform: translate(-50%, -50%); pointer-events: none; }
+.anon-frame b { position: absolute; width: 38px; height: 38px; border: 4px solid var(--nx-orange); }
+.anon-frame b:nth-child(1) { left: 0; top: 0; border-right: 0; border-bottom: 0; border-radius: 14px 0 0 0; }
+.anon-frame b:nth-child(2) { right: 0; top: 0; border-left: 0; border-bottom: 0; border-radius: 0 14px 0 0; }
+.anon-frame b:nth-child(3) { left: 0; bottom: 0; border-right: 0; border-top: 0; border-radius: 0 0 0 14px; }
+.anon-frame b:nth-child(4) { right: 0; bottom: 0; border-left: 0; border-top: 0; border-radius: 0 0 14px 0; }
+.anon-laser {
+    position: absolute; left: 12px; right: 12px; top: 50%; height: 2px; background: var(--nx-orange);
+    box-shadow: 0 0 14px 3px rgba(252, 97, 0, .7); animation: anonLaser 1.8s ease-in-out infinite;
 }
-.anon-scan-overlay {
-    position: absolute;
-    inset: 0;
-    border: 4px solid rgba(252, 97, 0, 0.35);
-    pointer-events: none;
+@keyframes anonLaser { 0%,100% { top: 18%; } 50% { top: 82%; } }
+.anon-cam-idle {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; padding: 24px; text-align: center; color: rgba(255,255,255,.8); font-size: 14px;
 }
-.anon-scan-line {
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--nx-orange), transparent);
-    box-shadow: 0 0 12px var(--nx-orange);
-    animation: anonScanLine 2.5s ease-in-out infinite;
+.anon-cam-idle.hidden { display: none; }
+.anon-cam-icon {
+    width: 76px; height: 76px; border-radius: 22px; background: rgba(252,97,0,.14); color: var(--nx-orange);
+    display: flex; align-items: center; justify-content: center;
 }
-@keyframes anonScanLine {
-    0%, 100% { top: 5%; }
-    50%      { top: 95%; }
+.anon-cam-idle .anon-cta { width: auto; padding: 0 26px; min-height: 52px; font-size: 16px; }
+.anon-hint {
+    position: absolute; left: 0; right: 0; bottom: 16px; display: flex; align-items: center; justify-content: center;
+    gap: 8px; color: #fff; font-size: 14px; font-weight: 500; text-shadow: 0 1px 6px rgba(0,0,0,.6);
 }
+.anon-hint .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--nx-orange); box-shadow: 0 0 0 5px rgba(252,97,0,.25); }
+.anon-detect-flash {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    background: rgba(46,155,79,.88); color: #fff; font-size: 18px; font-weight: 700; z-index: 3;
+    animation: anonFade .2s ease;
+}
+.anon-detect-flash.hidden { display: none; }
+.anon-detect-flash code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 22px; letter-spacing: 2px; }
+@keyframes anonFade { from { opacity: 0; } to { opacity: 1; } }
+.anon-manual {
+    margin-top: 18px; background: #fff; border-radius: 18px; padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+}
+.anon-manual.hidden { display: none; }
+.anon-manual label { font-size: 13px; font-weight: 600; color: var(--nx-navy-2); }
+.anon-manual-row { display: flex; gap: 8px; }
+.anon-manual-row .anon-input { flex: 1; min-width: 0; }
+.anon-manual-row .anon-cta { width: auto; min-height: 56px; padding: 0 18px; font-size: 15px; box-shadow: none; }
 
+/* ---------- Champs ---------- */
+.anon-field { margin-top: 22px; }
+.anon-field > label { font-size: 13px; font-weight: 600; color: var(--nx-navy-2); display: block; margin-bottom: 8px; }
+.anon-input {
+    width: 100%; height: 58px; border-radius: 16px; background: #fff;
+    border: 2px solid var(--a-border); padding: 0 16px; font-size: 20px; font-weight: 600;
+    letter-spacing: .5px; color: var(--nx-navy); outline: none; font-family: inherit;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.anon-input:focus, .anon-textarea:focus { border-color: var(--nx-orange); box-shadow: 0 0 0 5px rgba(252,97,0,.12); }
+.anon-input::placeholder { color: #A9B3C7; font-weight: 500; }
+
+/* ---------- Étape 2 : porteur ---------- */
 .anon-detected {
-    background: rgba(70, 168, 77, 0.10);
-    border: 1px solid rgba(70, 168, 77, 0.25);
-    padding: 14px;
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-top: 14px;
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; align-self: flex-start;
+    padding: 9px 12px; border-radius: 12px; background: #fff; border: 1px solid var(--a-border); font-size: 14px;
 }
 .anon-detected.hidden { display: none; }
 .anon-detected-icon {
-    width: 34px; height: 34px;
-    background: var(--nx-green);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+    width: 20px; height: 20px; border-radius: 50%; background: var(--a-green); color: #fff;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.anon-detected-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    letter-spacing: 1.5px;
-    font-family: var(--font-display);
+.anon-detected-value { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-weight: 700; letter-spacing: 1px; }
+.anon-detected button { color: var(--nx-orange); font-weight: 600; font-size: 13px; margin-left: 4px; background: none; border: 0; cursor: pointer; padding: 0; }
+.anon-scan-preview {
+    margin-top: 18px; height: 190px; border-radius: 18px; overflow: hidden; position: relative; background: #1b1e2b;
 }
-.anon-detected-value {
-    font-family: monospace;
-    font-weight: 700;
-    color: var(--nx-navy);
-    font-size: 16px;
-    margin-top: 2px;
+.anon-scan-preview.hidden { display: none; }
+.anon-scan-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.anon-scan-preview span {
+    position: absolute; left: 12px; bottom: 12px; background: rgba(0,0,0,.55); color: #fff;
+    font-size: 12px; padding: 5px 9px; border-radius: 8px;
 }
-.anon-detected > :nth-child(2) { flex: 1; }
-
 .anon-ocr-status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--nx-orange);
-    font-size: 13px;
-    margin-bottom: 10px;
-    padding: 10px;
-    background: rgba(252, 97, 0, 0.06);
-    border-radius: var(--radius-sm);
+    display: flex; align-items: center; gap: 10px; margin-top: 10px;
+    font-size: 13px; color: var(--nx-navy-2);
 }
 .anon-ocr-status.hidden { display: none; }
 .anon-ocr-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: rgba(70, 168, 77, 0.15);
-    color: var(--nx-green);
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-left: 8px;
-    font-family: var(--font-display);
-    font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;
+    font-size: 13px; color: var(--nx-navy-2); background: #EAF0FB; padding: 6px 10px; border-radius: 10px;
 }
 .anon-ocr-badge.hidden { display: none; }
 
-.anon-photos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 8px;
-    margin-top: 12px;
-}
-.anon-photo-thumb {
-    position: relative;
-    aspect-ratio: 1;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    border: 1px solid var(--border);
-}
-.anon-photo-thumb img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-}
+/* ---------- Étape 3 : photos ---------- */
+.anon-photos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+.anon-photo-thumb { position: relative; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden; background: #e6eaf2; }
+.anon-photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: zoom-in; }
 .anon-photo-remove {
-    position: absolute;
-    top: 4px; right: 4px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    border: none;
-    width: 24px; height: 24px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(0,0,0,.58); color: #fff; border: 0; font-size: 18px; line-height: 1; cursor: pointer;
 }
+.anon-photo-tag {
+    position: absolute; left: 8px; bottom: 8px; background: rgba(0,0,0,.55); color: #fff;
+    font-size: 11px; padding: 3px 8px; border-radius: 8px;
+}
+.anon-photo-add {
+    aspect-ratio: 1 / 1; border-radius: 16px; border: 2px dashed #B9C4DA; background: #fff; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    color: var(--nx-navy-2); font-weight: 600; font-size: 14px; font-family: inherit;
+}
+.anon-photo-add .plus {
+    width: 48px; height: 48px; border-radius: 14px; background: #FFF1E8; color: var(--nx-orange);
+    font-size: 28px; display: flex; align-items: center; justify-content: center;
+}
+.anon-tip {
+    margin-top: 16px; display: flex; gap: 10px; align-items: flex-start; background: #fff;
+    border: 1px solid var(--a-border); border-radius: 14px; padding: 12px 14px; font-size: 13px;
+    color: var(--nx-navy-2); line-height: 1.45;
+}
+.anon-check {
+    display: none; align-items: center; gap: 10px; margin-top: 16px; font-size: 14px; color: var(--nx-navy);
+    cursor: pointer; background: #fff; border: 1px solid var(--a-border); border-radius: 14px; padding: 12px 14px;
+}
+.anon-check input { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--nx-orange); }
 
-.anon-ticket-block {
-    background: rgba(252, 97, 0, 0.08);
-    border: 1px solid rgba(252, 97, 0, 0.2);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin: 20px 0 24px;
+/* ---------- Étape 4 : description ---------- */
+.anon-ta-wrap { position: relative; margin-top: 20px; }
+.anon-textarea {
+    width: 100%; min-height: 150px; border-radius: 16px; background: #fff; border: 2px solid var(--a-border);
+    padding: 16px 16px 56px; font-size: 17px; line-height: 1.5; color: var(--nx-navy); resize: vertical;
+    outline: none; font-family: inherit; transition: border-color .15s ease, box-shadow .15s ease;
 }
-.anon-ticket-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    color: var(--nx-navy-2);
-    letter-spacing: 2px;
-    font-family: var(--font-display);
+.anon-textarea:disabled { opacity: .5; }
+.anon-mic {
+    position: absolute; right: 12px; bottom: 12px; width: 46px; height: 46px; border-radius: 50%;
+    background: var(--nx-navy); color: #fff; border: 0; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
 }
-.anon-ticket-number {
-    font-family: var(--font-display);
-    font-weight: 700;
-    color: var(--nx-orange);
-    font-size: 24px;
-    margin-top: 4px;
-    letter-spacing: 2px;
+.anon-mic.hidden { display: none; }
+.anon-mic.rec { background: #d32f2f; animation: anonPulse 1.2s ease-in-out infinite; }
+@keyframes anonPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(211,47,47,.45); } 50% { box-shadow: 0 0 0 10px rgba(211,47,47,0); } }
+.anon-count { font-size: 12px; color: var(--a-muted); text-align: right; margin-top: 6px; }
+.anon-recap { margin-top: 16px; background: #fff; border: 1px solid var(--a-border); border-radius: 16px; padding: 4px 16px; }
+.anon-recap div { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 0; font-size: 14px; border-bottom: 1px solid #EEF1F7; }
+.anon-recap div:last-child { border-bottom: 0; }
+.anon-recap span { color: var(--a-muted); }
+.anon-recap b { font-weight: 600; text-align: right; word-break: break-word; }
+.anon-recap-thumbs { display: flex; gap: 4px; }
+.anon-recap-thumbs img { width: 30px; height: 30px; border-radius: 7px; object-fit: cover; }
+#anon-recaptcha { margin: 18px 0 0; display: flex; justify-content: center; }
+
+/* ---------- Succès ---------- */
+#anon-success { flex: 1; display: flex; flex-direction: column; padding: 0 20px; }
+#anon-success.hidden { display: none; }
+.anon-success-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-top: 30px; }
+.anon-ring {
+    width: 124px; height: 124px; border-radius: 50%; background: rgba(46,155,79,.12);
+    display: flex; align-items: center; justify-content: center; position: relative;
+    animation: anonPop .45s cubic-bezier(.2,1.4,.4,1);
 }
+.anon-ring::before { content: ""; position: absolute; inset: -14px; border-radius: 50%; border: 2px solid rgba(46,155,79,.18); }
+.anon-ring > div {
+    width: 84px; height: 84px; border-radius: 50%; background: var(--a-green);
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 26px rgba(46,155,79,.35);
+}
+@keyframes anonPop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+#anon-success .anon-h1 { margin-top: 30px; font-size: 32px; }
+#anon-success .anon-lead { max-width: 320px; }
+.anon-ticket-block { margin-top: 26px; width: 100%; background: #fff; border: 1px solid var(--a-border); border-radius: 18px; padding: 18px; }
+.anon-ticket-label { font-size: 12px; color: var(--a-muted); letter-spacing: 1px; text-transform: uppercase; font-weight: 600; }
+.anon-ticket-number { font-family: var(--font-display); font-size: 30px; font-weight: 600; color: var(--nx-orange); letter-spacing: 1px; margin-top: 4px; }
+.anon-ticket-meta { font-size: 13px; color: var(--a-muted); margin-top: 6px; }
 
 .anon-footer {
-    text-align: center;
-    padding: 24px 0 16px;
-    color: var(--nx-navy-2);
-    font-size: 11px;
-    letter-spacing: 1px;
-    margin-top: auto;
+    text-align: center; padding: 10px 0 18px; color: var(--a-muted);
+    font-size: 11px; letter-spacing: 1px;
 }
+.is-dark .anon-footer { color: rgba(255,255,255,.45); }
 
 /* Bandeau client (côté client uniquement) */
 .client-banner {
@@ -2495,185 +2452,203 @@ a.contact-card:hover {
      ============================================================= -->
 <div id="public-anon-page" class="view hidden">
     <div class="anon-shell">
-        <!-- Header avec branding entreprise + site -->
-        <header class="anon-header">
-            <div class="anon-brand">
-                <img id="anon-entreprise-logo" src="" alt="" class="anon-logo" style="display:none;">
-                <div>
-                    <div class="anon-label">Espace réparation</div>
-                    <div class="anon-entreprise" id="anon-entreprise-nom">—</div>
+
+        <!-- En-tête : client · site · progression -->
+        <header class="anon-top">
+            <div class="anon-brandrow">
+                <div class="anon-brand">
+                    <img id="anon-entreprise-logo" src="" alt="" class="anon-logo" style="display:none;">
+                    <div id="anon-logo-fallback" class="anon-logo-fallback">—</div>
+                    <div class="anon-brand-text">
+                        <div class="anon-entreprise" id="anon-entreprise-nom">—</div>
+                        <div class="anon-label">Espace réparation</div>
+                    </div>
+                </div>
+                <div class="anon-site-pill">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <span id="anon-site-nom">—</span>
                 </div>
             </div>
-            <div class="anon-site-pill">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span id="anon-site-nom">—</span>
+            <div id="anon-progress-wrap" class="hidden">
+                <div class="anon-progress" id="anon-progress"><i></i><i></i><i></i><i></i></div>
+                <div class="anon-steplabel">
+                    <button type="button" class="anon-back hidden" id="anon-back">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                        Retour
+                    </button>
+                    <span id="anon-step-label">Étape 1 sur 4</span>
+                </div>
             </div>
         </header>
 
         <!-- État : chargement -->
         <div id="anon-loading" class="anon-state">
             <div class="anon-spinner"></div>
-            <p>Chargement de votre espace…</p>
+            <p style="margin-top:16px;">Chargement…</p>
         </div>
 
         <!-- État : erreur -->
         <div id="anon-error" class="anon-state hidden">
             <div class="anon-icon-error">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </div>
             <h2>Site introuvable</h2>
             <p id="anon-error-msg">Ce QR code ne correspond à aucun site actif. Contactez votre administrateur.</p>
         </div>
 
-        <!-- État : formulaire -->
-        <div id="anon-form" class="anon-state hidden">
-            <h1 class="anon-title">Nouvelle demande de réparation</h1>
-            <p class="anon-subtitle">Aucune connexion requise — votre demande sera transmise à votre responsable.</p>
+        <!-- Formulaire en 4 étapes -->
+        <div id="anon-form" class="hidden">
 
-            <!-- Étape 1 : Identification produit -->
-            <section class="anon-section">
-                <div class="anon-section-head">
-                    <span class="anon-step">①</span>
-                    <h2>Identification du vêtement</h2>
-                </div>
+            <!-- ① Scan -->
+            <section class="anon-screen" id="anon-step-scan">
+                <h1 class="anon-h1">Scannez l'étiquette<br>du vêtement</h1>
 
-                <div class="anon-tabs">
-                    <button class="anon-tab active" data-anon-tab="scan">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                        <span>Scanner</span>
-                    </button>
-                    <button class="anon-tab" data-anon-tab="manual">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                        <span>Saisie manuelle</span>
-                    </button>
-                </div>
-
-                <!-- Mode SCAN -->
-                <div id="anon-scan-mode" class="anon-mode">
+                <div class="anon-cam" id="anon-scan-mode">
                     <div id="anon-video-wrap" class="anon-video-wrap hidden">
                         <video id="anon-video" autoplay playsinline muted></video>
-                        <div class="anon-scan-overlay"><div class="anon-scan-line"></div></div>
+                        <div class="anon-frame"><b></b><b></b><b></b><b></b><div class="anon-laser"></div></div>
+                        <div class="anon-hint"><span class="dot"></span>Placez le code-barres dans le cadre</div>
                     </div>
-                    <button id="anon-start-scan" class="btn btn-accent" style="width:100%;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                        <span>Démarrer le scanner</span>
+                    <div class="anon-cam-idle" id="anon-start-scan">
+                        <div class="anon-cam-icon">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="8" x2="7" y2="16"/><line x1="10" y1="8" x2="10" y2="16"/><line x1="13" y1="8" x2="13" y2="16"/><line x1="17" y1="8" x2="17" y2="16"/></svg>
+                        </div>
+                        <div>Autorisez l'accès à la caméra pour scanner le code-barres.</div>
+                        <button type="button" class="anon-cta" id="anon-start-scan-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            Activer la caméra
+                        </button>
+                    </div>
+                    <div class="anon-detect-flash hidden" id="anon-detect-flash">
+                        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        <div>Code détecté</div>
+                        <code id="anon-detect-code"></code>
+                    </div>
+                </div>
+
+                <div class="anon-manual hidden" id="anon-manual-mode">
+                    <label for="anon-code-manual">Code-barres du vêtement</label>
+                    <div class="anon-manual-row">
+                        <input id="anon-code-manual" class="anon-input" type="text" placeholder="Ex : AB123456" autocapitalize="characters" autocomplete="off" enterkeyhint="go">
+                        <button type="button" class="anon-cta" id="anon-manual-ok">Valider</button>
+                    </div>
+                </div>
+
+                <div class="anon-actions">
+                    <button type="button" class="anon-ghost" id="anon-toggle-manual">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="6.01" y2="10"/><line x1="10" y1="10" x2="10.01" y2="10"/><line x1="14" y1="10" x2="14.01" y2="10"/><line x1="18" y1="10" x2="18.01" y2="10"/><line x1="7" y1="14" x2="17" y2="14"/></svg>
+                        <span>Saisir le code à la main</span>
                     </button>
                 </div>
+            </section>
 
-                <!-- Mode SAISIE MANUELLE -->
-                <div id="anon-manual-mode" class="anon-mode hidden">
-                    <div class="field">
-                        <label class="field-label">Code-barres / référence</label>
-                        <input id="anon-code-manual" class="input" type="text" placeholder="Saisissez le code…" autocapitalize="characters">
-                    </div>
-                </div>
+            <!-- ② Porteur -->
+            <section class="anon-screen hidden" id="anon-step-porteur">
+                <h1 class="anon-h1">Qui porte ce<br>vêtement&nbsp;?</h1>
 
-                <!-- Résultat du scan/saisie -->
                 <div id="anon-code-detected" class="anon-detected hidden">
-                    <div class="anon-detected-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span class="anon-detected-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg></span>
+                    <span>Code</span>
+                    <span class="anon-detected-value" id="anon-code-value">—</span>
+                    <button type="button" id="anon-reset-code">Modifier</button>
+                </div>
+
+                <div class="anon-scan-preview hidden" id="anon-scan-preview">
+                    <img id="anon-scan-preview-img" alt="Photo du scan">
+                    <span>Photo du scan</span>
+                </div>
+
+                <div class="anon-field">
+                    <label for="anon-porteur">Nom du porteur</label>
+                    <input id="anon-porteur" class="anon-input" type="text" placeholder="Ex : JEAN DUPONT" autocapitalize="characters" autocomplete="off" required>
+                    <div id="anon-ocr-status" class="anon-ocr-status hidden">
+                        <div class="anon-spinner-sm"></div>
+                        <span>Lecture du nom sur l'étiquette…</span>
                     </div>
-                    <div>
-                        <div class="anon-detected-label">Code détecté</div>
-                        <div class="anon-detected-value" id="anon-code-value">—</div>
-                    </div>
-                    <button class="btn btn-ghost btn-sm" id="anon-reset-code">Modifier</button>
+                    <div id="anon-ocr-badge" class="anon-ocr-badge hidden">✨ Lu sur l'étiquette · vérifiez-le</div>
+                </div>
+
+                <div class="anon-actions">
+                    <button type="button" class="anon-cta" id="anon-next-2">Continuer
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
                 </div>
             </section>
 
-            <!-- Étape 2 : Nom du porteur -->
-            <section class="anon-section hidden" id="anon-step-porteur">
-                <div class="anon-section-head">
-                    <span class="anon-step">②</span>
-                    <h2>Nom du porteur</h2>
-                </div>
-
-                <div id="anon-ocr-status" class="anon-ocr-status hidden">
-                    <div class="anon-spinner-sm"></div>
-                    <span>Détection automatique en cours…</span>
-                </div>
-
-                <div class="field">
-                    <label class="field-label">
-                        Nom du porteur
-                        <span id="anon-ocr-badge" class="anon-ocr-badge hidden">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                            détecté automatiquement
-                        </span>
-                    </label>
-                    <input id="anon-porteur" class="input" type="text" placeholder="Ex: JEAN DUPONT" required>
-                    <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Vérifiez et corrigez si nécessaire</p>
-                </div>
-            </section>
-
-            <!-- Étape 3 : Photos -->
-            <section class="anon-section hidden" id="anon-step-photos">
-                <div class="anon-section-head">
-                    <span class="anon-step">③</span>
-                    <h2>Photos du défaut</h2>
-                </div>
+            <!-- ③ Photos -->
+            <section class="anon-screen hidden" id="anon-step-photos">
+                <h1 class="anon-h1">Montrez-nous<br>le défaut</h1>
+                <p class="anon-lead">Une vue d'ensemble et un gros plan suffisent.</p>
 
                 <input id="anon-photo-input" type="file" accept="image/*" multiple capture="environment" style="display:none;">
-                <button class="btn btn-ghost" id="anon-add-photo-btn" style="width:100%;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                    <span>Prendre / Ajouter des photos</span>
-                </button>
-
                 <div id="anon-photos-grid" class="anon-photos-grid"></div>
 
-                <label id="anon-no-photo-wrap" style="display:none; align-items:center; gap:8px; margin-top:14px; font-size:13px; color:var(--text); cursor:pointer;">
-                    <input id="anon-no-photo" type="checkbox" style="width:16px; height:16px; flex-shrink:0;">
-                    <span>Je n'ai pas de photo du problème</span>
+                <div class="anon-tip">💡<div><b>Astuce :</b> prenez la photo à la lumière du jour, avec le défaut bien au centre.</div></div>
+
+                <label id="anon-no-photo-wrap" class="anon-check">
+                    <input id="anon-no-photo" type="checkbox">
+                    <span>Envoyer sans photo du défaut</span>
                 </label>
+
+                <div class="anon-actions">
+                    <button type="button" class="anon-cta" id="anon-next-3">Continuer</button>
+                </div>
             </section>
 
-            <!-- Étape 4 : Description -->
-            <section class="anon-section hidden" id="anon-step-desc">
-                <div class="anon-section-head">
-                    <span class="anon-step">④</span>
-                    <h2>Description du défaut</h2>
-                </div>
+            <!-- ④ Description + envoi -->
+            <section class="anon-screen hidden" id="anon-step-desc">
+                <h1 class="anon-h1">Décrivez<br>le problème</h1>
 
-                <div class="field">
-                    <textarea id="anon-description" class="textarea" rows="4" maxlength="2000" placeholder="Décrivez précisément le défaut constaté (déchirure, manche cassée, fermeture défectueuse…)"></textarea>
-                    <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">
-                        <span id="anon-desc-count">0</span> / 2000 caractères
-                    </p>
+                <div class="anon-ta-wrap">
+                    <textarea id="anon-description" class="anon-textarea" rows="4" maxlength="2000" placeholder="Ex : déchirure de 5 cm sur la manche gauche, au niveau du coude"></textarea>
+                    <button type="button" class="anon-mic hidden" id="anon-mic" title="Dicter la description" aria-label="Dicter la description">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+                    </button>
                 </div>
+                <div class="anon-count"><span id="anon-desc-count">0</span> / 2000</div>
 
-                <label id="anon-no-desc-wrap" style="display:none; align-items:center; gap:8px; margin:4px 0 14px; font-size:13px; color:var(--text); cursor:pointer;">
-                    <input id="anon-no-desc" type="checkbox" style="width:16px; height:16px; flex-shrink:0;">
+                <label id="anon-no-desc-wrap" class="anon-check">
+                    <input id="anon-no-desc" type="checkbox">
                     <span>Envoyer sans description</span>
                 </label>
 
-                <div id="anon-recaptcha" style="margin: 4px 0 16px; display: flex; justify-content: center;"></div>
+                <div class="anon-recap" id="anon-recap"></div>
 
-                <button id="anon-submit-btn" class="btn btn-accent btn-block-arrow" style="width:100%; padding:14px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                    <span>Envoyer la demande</span>
-                </button>
+                <div id="anon-recaptcha"></div>
+
+                <div class="anon-actions">
+                    <button id="anon-submit-btn" class="anon-cta" type="button">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        <span>Envoyer la demande</span>
+                    </button>
+                </div>
             </section>
         </div>
 
         <!-- État : succès -->
-        <div id="anon-success" class="anon-state hidden">
-            <div class="anon-icon-success">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <div id="anon-success" class="hidden">
+            <div class="anon-success-body">
+                <div class="anon-ring"><div>
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div></div>
+                <h1 class="anon-h1">C'est envoyé&nbsp;!</h1>
+                <p class="anon-lead">Votre demande a bien été transmise. Gardez votre numéro de ticket pour le suivi.</p>
+                <div class="anon-ticket-block">
+                    <div class="anon-ticket-label">Numéro de ticket</div>
+                    <div class="anon-ticket-number" id="anon-ticket">—</div>
+                    <div class="anon-ticket-meta" id="anon-ticket-meta"></div>
+                </div>
             </div>
-            <h2>Demande enregistrée !</h2>
-            <p>Votre demande a bien été transmise. Vous serez prévenu(e) dès qu'une décision sera prise.</p>
-            <div class="anon-ticket-block">
-                <div class="anon-ticket-label">Numéro de ticket</div>
-                <div class="anon-ticket-number" id="anon-ticket">—</div>
+            <div class="anon-actions">
+                <button class="anon-cta" id="anon-new-demande" type="button">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    <span>Déclarer un autre vêtement</span>
+                </button>
             </div>
-            <button class="btn btn-accent" id="anon-new-demande" style="width:100%;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                <span>Nouvelle demande</span>
-            </button>
         </div>
 
         <footer class="anon-footer">
-            <span>Propulsé par <strong style="color:var(--nx-orange); font-family:var(--font-mono); letter-spacing:1px;">IDEA</strong> · NETEXIAL</span>
+            Propulsé par <strong style="color:var(--nx-orange); letter-spacing:1px;">IDEA</strong> · NETEXIAL
         </footer>
     </div>
 </div>
@@ -3830,6 +3805,7 @@ const AnonState = {
     scannerActive: false,
     codeReader: null,
     optionsFacultatives: false,  // l'entreprise autorise-t-elle "sans photo"/"sans description"
+    step: 1,                     // étape affichée (1 scan · 2 porteur · 3 photos · 4 description)
 };
 
 // Polling robuste : rend le widget anon dès que grecaptcha est réellement
@@ -3892,17 +3868,31 @@ async function initAnonView() {
         $('#anon-entreprise-nom').textContent = data.entreprise.nom || '—';
         $('#anon-site-nom').textContent = data.site.nom || '—';
         const logoEl = $('#anon-entreprise-logo');
+        const fallbackEl = $('#anon-logo-fallback');
+        fallbackEl.textContent = (data.entreprise.nom || '?')
+            .split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
         if (data.entreprise.logo_url) {
             logoEl.src = data.entreprise.logo_url;
             logoEl.style.display = '';
-            logoEl.onerror = () => { logoEl.style.display = 'none'; };
+            fallbackEl.style.display = 'none';
+            logoEl.onerror = () => { logoEl.style.display = 'none'; fallbackEl.style.display = ''; };
         }
 
-        // Afficher formulaire
+        // Afficher formulaire (étape 1 : scan)
         $('#anon-loading').classList.add('hidden');
         $('#anon-form').classList.remove('hidden');
+        $('#anon-progress-wrap').classList.remove('hidden');
         bindAnonHandlers();
+        goAnonStep(1);
         ensureAnonCaptcha(); // démarre le polling de rendu du reCAPTCHA
+
+        // "Déclarer un autre vêtement" → la caméra se relance toute seule
+        if (params.get('autoscan') === '1') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('autoscan');
+            try { history.replaceState(null, '', url.toString()); } catch (e) {}
+            startAnonScanner();
+        }
     } catch (err) {
         $('#anon-loading').classList.add('hidden');
         $('#anon-error').classList.remove('hidden');
@@ -3911,39 +3901,78 @@ async function initAnonView() {
     return true;
 }
 
+// ------------------------------------------------------------
+// Parcours en 4 étapes (1 écran par étape)
+//   1 = scan · 2 = porteur · 3 = photos · 4 = description + envoi
+// ------------------------------------------------------------
+const ANON_STEPS = { 1: 'anon-step-scan', 2: 'anon-step-porteur', 3: 'anon-step-photos', 4: 'anon-step-desc' };
+
+function goAnonStep(n) {
+    AnonState.step = n;
+    Object.entries(ANON_STEPS).forEach(([k, id]) => $('#' + id).classList.toggle('hidden', Number(k) !== n));
+    $$('#anon-progress i').forEach((el, i) => el.classList.toggle('on', i < n));
+    $('#anon-step-label').textContent = `Étape ${n} sur 4`;
+    $('#anon-back').classList.toggle('hidden', n === 1);
+    $('#public-anon-page').classList.toggle('is-dark', n === 1);
+    if (n !== 1) stopAnonScanner();
+    if (n === 3) renderAnonPhotos();
+    if (n === 4) {
+        renderAnonRecap();
+        // L'étape contenant le reCAPTCHA devient visible → on force son rendu
+        setTimeout(() => window.renderCaptchaWidget('anon', true), 150);
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+}
+
+function resetAnonCode() {
+    AnonState.barcode = null;
+    AnonState.barcodePhoto = null;
+    AnonState.porteurAuto = false;
+    AnonState.photos = AnonState.photos.filter(p => p.name !== 'scan.jpg');
+    $('#anon-code-detected').classList.add('hidden');
+    $('#anon-scan-preview').classList.add('hidden');
+    $('#anon-ocr-badge').classList.add('hidden');
+    $('#anon-code-manual').value = '';
+    goAnonStep(1);
+}
+
 function bindAnonHandlers() {
-    // Tabs scan / manuel
-    $$('.anon-tab').forEach(t => t.addEventListener('click', () => {
-        $$('.anon-tab').forEach(x => x.classList.remove('active'));
-        t.classList.add('active');
-        const mode = t.dataset.anonTab;
-        $('#anon-scan-mode').classList.toggle('hidden', mode !== 'scan');
-        $('#anon-manual-mode').classList.toggle('hidden', mode !== 'manual');
-        if (mode !== 'scan') stopAnonScanner();
-    }));
+    // Étape 1 — caméra / saisie manuelle
+    $('#anon-start-scan-btn').addEventListener('click', startAnonScanner);
+    $('#anon-toggle-manual').addEventListener('click', () => {
+        const manual = $('#anon-manual-mode');
+        const opening = manual.classList.contains('hidden');
+        manual.classList.toggle('hidden', !opening);
+        $('#anon-toggle-manual span').textContent = opening ? 'Scanner avec la caméra' : 'Saisir le code à la main';
+        if (opening) { stopAnonScanner(); setTimeout(() => $('#anon-code-manual').focus(), 50); }
+    });
+    const submitManual = () => {
+        const code = $('#anon-code-manual').value.trim().toUpperCase();
+        if (!code) return toast("Saisissez le code-barres", 'warning');
+        onAnonBarcodeDetected(code, null); // pas de photo en mode manuel
+    };
+    $('#anon-manual-ok').addEventListener('click', submitManual);
+    $('#anon-code-manual').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submitManual(); } });
 
-    // Démarrer le scanner
-    $('#anon-start-scan').addEventListener('click', startAnonScanner);
+    // Navigation
+    $('#anon-back').addEventListener('click', () => {
+        if (AnonState.step === 2) return resetAnonCode();
+        goAnonStep(Math.max(1, AnonState.step - 1));
+    });
+    $('#anon-reset-code').addEventListener('click', resetAnonCode);
 
-    // Saisie manuelle
-    $('#anon-code-manual').addEventListener('change', e => {
-        const code = e.target.value.trim().toUpperCase();
-        if (code) onAnonBarcodeDetected(code, null); // pas de photo en mode manuel
+    // Étape 2 — porteur
+    $('#anon-porteur').addEventListener('input', e => { AnonState.porteur = e.target.value; });
+    $('#anon-porteur').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#anon-next-2').click(); } });
+    $('#anon-next-2').addEventListener('click', () => {
+        if (!$('#anon-porteur').value.trim()) {
+            $('#anon-porteur').focus();
+            return toast("Indiquez le nom du porteur", 'warning');
+        }
+        goAnonStep(3);
     });
 
-    // Reset code
-    $('#anon-reset-code').addEventListener('click', () => {
-        AnonState.barcode = null;
-        AnonState.barcodePhoto = null;
-        $('#anon-code-detected').classList.add('hidden');
-        $('#anon-step-porteur').classList.add('hidden');
-        $('#anon-step-photos').classList.add('hidden');
-        $('#anon-step-desc').classList.add('hidden');
-        $('#anon-code-manual').value = '';
-    });
-
-    // Photos
-    $('#anon-add-photo-btn').addEventListener('click', () => $('#anon-photo-input').click());
+    // Étape 3 — photos
     $('#anon-photo-input').addEventListener('change', async e => {
         for (const file of e.target.files) {
             const blob = await compressImage(file);
@@ -3952,52 +3981,77 @@ function bindAnonHandlers() {
         }
         renderAnonPhotos();
         e.target.value = '';
-        if (AnonState.photos.length > 0) {
-            $('#anon-step-desc').classList.remove('hidden');
-            // L'étape devient visible → on force le rendu du reCAPTCHA
-            setTimeout(() => window.renderCaptchaWidget('anon', true), 150);
-        }
+    });
+    $('#anon-next-3').addEventListener('click', () => {
+        const noPhoto = AnonState.optionsFacultatives && $('#anon-no-photo')?.checked;
+        if (!noPhoto && AnonState.photos.length === 0) return toast("Ajoutez au moins une photo", 'warning');
+        goAnonStep(4);
     });
 
-    // Description
+    // Étape 4 — description (+ dictée vocale si le navigateur la propose)
     $('#anon-description').addEventListener('input', e => {
         AnonState.description = e.target.value;
         $('#anon-desc-count').textContent = e.target.value.length;
     });
-
-    // Submit
+    setupAnonDictation();
     $('#anon-submit-btn').addEventListener('click', submitAnonRequest);
 
     // Options "sans photo" / "sans description" (si l'entreprise les autorise)
     if (AnonState.optionsFacultatives) {
-        const noPhotoWrap = $('#anon-no-photo-wrap');
-        const noDescWrap  = $('#anon-no-desc-wrap');
-        if (noPhotoWrap) noPhotoWrap.style.display = 'flex';
-        if (noDescWrap)  noDescWrap.style.display = 'flex';
+        $('#anon-no-photo-wrap').style.display = 'flex';
+        $('#anon-no-desc-wrap').style.display = 'flex';
 
-        const noPhotoCb = $('#anon-no-photo');
-        if (noPhotoCb) noPhotoCb.addEventListener('change', () => {
-            const on = noPhotoCb.checked;
-            $('#anon-add-photo-btn').style.display = on ? 'none' : '';
+        $('#anon-no-photo').addEventListener('change', () => {
+            const on = $('#anon-no-photo').checked;
             $('#anon-photos-grid').style.display = on ? 'none' : '';
-            if (on) {
-                // Sans photo : on révèle directement l'étape description pour pouvoir envoyer
-                $('#anon-step-desc').classList.remove('hidden');
-                setTimeout(() => window.renderCaptchaWidget('anon', true), 150);
-            }
+            renderAnonPhotos();
         });
-
-        const noDescCb = $('#anon-no-desc');
-        if (noDescCb) noDescCb.addEventListener('change', () => {
+        $('#anon-no-desc').addEventListener('change', () => {
             const ta = $('#anon-description');
-            ta.disabled = noDescCb.checked;
-            ta.style.opacity = noDescCb.checked ? '0.5' : '';
+            ta.disabled = $('#anon-no-desc').checked;
+            $('#anon-mic').disabled = ta.disabled;
         });
     }
 
-    // Nouvelle demande
+    // Nouvelle demande : on recharge et on relance directement la caméra
     $('#anon-new-demande').addEventListener('click', () => {
-        window.location.reload();
+        const url = new URL(window.location.href);
+        url.searchParams.set('autoscan', '1');
+        window.location.href = url.toString();
+    });
+}
+
+// Dictée vocale (Web Speech API — Chrome, Safari iOS…). Bouton masqué si non supportée.
+function setupAnonDictation() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const mic = $('#anon-mic');
+    if (!SR || !mic) return;
+    mic.classList.remove('hidden');
+    let rec = null;
+    mic.addEventListener('click', () => {
+        if (rec) { rec.stop(); return; }
+        const ta = $('#anon-description');
+        const base = ta.value ? ta.value.replace(/\s*$/, ' ') : '';
+        rec = new SR();
+        rec.lang = 'fr-FR';
+        rec.interimResults = true;
+        rec.continuous = true;
+        let finalText = '';
+        rec.onresult = ev => {
+            let interim = '';
+            for (let i = ev.resultIndex; i < ev.results.length; i++) {
+                const t = ev.results[i][0].transcript;
+                if (ev.results[i].isFinal) finalText += t; else interim += t;
+            }
+            ta.value = (base + finalText + interim).slice(0, 2000);
+            ta.dispatchEvent(new Event('input'));
+        };
+        rec.onerror = ev => {
+            if (ev.error === 'not-allowed') toast("Autorisez le micro pour dicter", 'warning');
+        };
+        rec.onend = () => { rec = null; mic.classList.remove('rec'); };
+        mic.classList.add('rec');
+        try { rec.start(); } catch (e) { rec = null; mic.classList.remove('rec'); }
     });
 }
 
@@ -4007,6 +4061,8 @@ async function startAnonScanner() {
 
     $('#anon-start-scan').classList.add('hidden');
     $('#anon-video-wrap').classList.remove('hidden');
+    $('#anon-manual-mode').classList.add('hidden');
+    $('#anon-toggle-manual span').textContent = 'Saisir le code à la main';
 
     try {
         AnonState.codeReader = new ZXing.BrowserMultiFormatReader();
@@ -4015,6 +4071,7 @@ async function startAnonScanner() {
 
         await AnonState.codeReader.decodeFromVideoDevice(null, video, async (result, err) => {
             if (result && AnonState.scannerActive) {
+                AnonState.scannerActive = false; // évite les doubles détections
                 const code = result.text;
                 // Capturer la frame actuelle pour OCR
                 const canvas = document.createElement('canvas');
@@ -4028,7 +4085,8 @@ async function startAnonScanner() {
             }
         });
     } catch (err) {
-        toast("Impossible d'accéder à la caméra", 'error');
+        AnonState.scannerActive = false;
+        toast("Impossible d'accéder à la caméra — saisissez le code à la main", 'error');
         $('#anon-start-scan').classList.remove('hidden');
         $('#anon-video-wrap').classList.add('hidden');
     }
@@ -4040,8 +4098,8 @@ function stopAnonScanner() {
         AnonState.codeReader = null;
     }
     AnonState.scannerActive = false;
-    $('#anon-video-wrap').classList.add('hidden');
-    $('#anon-start-scan').classList.remove('hidden');
+    $('#anon-video-wrap')?.classList.add('hidden');
+    $('#anon-start-scan')?.classList.remove('hidden');
 }
 
 async function onAnonBarcodeDetected(code, capturedPhoto) {
@@ -4049,15 +4107,28 @@ async function onAnonBarcodeDetected(code, capturedPhoto) {
     AnonState.barcodePhoto = capturedPhoto;
     $('#anon-code-value').textContent = code;
     $('#anon-code-detected').classList.remove('hidden');
+
+    // Petit retour visuel "Code détecté" avant de passer à l'étape suivante
+    if (navigator.vibrate) { try { navigator.vibrate(60); } catch (e) {} }
+    $('#anon-detect-code').textContent = code;
+    $('#anon-detect-flash').classList.remove('hidden');
     stopAnonScanner();
-    // Ajouter photo capturée à la liste de photos
+
+    // Photo capturée au scan : sert à l'OCR et part avec la demande
+    AnonState.photos = AnonState.photos.filter(p => p.name !== 'scan.jpg');
     if (capturedPhoto) {
-        AnonState.photos.push({ name: 'scan.jpg', blob: capturedPhoto.blob, dataUrl: capturedPhoto.dataUrl });
-        renderAnonPhotos();
+        AnonState.photos.unshift({ name: 'scan.jpg', blob: capturedPhoto.blob, dataUrl: capturedPhoto.dataUrl });
+        $('#anon-scan-preview-img').src = capturedPhoto.dataUrl;
+        $('#anon-scan-preview').classList.remove('hidden');
+    } else {
+        $('#anon-scan-preview').classList.add('hidden');
     }
-    // Étape suivante : OCR du porteur
-    $('#anon-step-porteur').classList.remove('hidden');
-    $('#anon-step-photos').classList.remove('hidden');
+
+    setTimeout(() => {
+        $('#anon-detect-flash').classList.add('hidden');
+        goAnonStep(2);
+        if (!capturedPhoto) setTimeout(() => $('#anon-porteur').focus(), 80);
+    }, capturedPhoto ? 650 : 250);
 
     if (capturedPhoto) {
         await runOcrPorteur(capturedPhoto);
@@ -4066,6 +4137,7 @@ async function onAnonBarcodeDetected(code, capturedPhoto) {
 
 async function runOcrPorteur(capturedPhoto) {
     $('#anon-ocr-status').classList.remove('hidden');
+    $('#anon-ocr-badge').classList.add('hidden');
     try {
         // Extraire la partie base64 du dataUrl
         const b64 = capturedPhoto.dataUrl.split(',')[1];
@@ -4075,7 +4147,8 @@ async function runOcrPorteur(capturedPhoto) {
             body: JSON.stringify({ image_b64: b64, mime_type: 'image/jpeg' }),
         });
         const data = await res.json();
-        if (data.name) {
+        // On ne remplace pas un nom que l'utilisateur a déjà commencé à taper
+        if (data.name && !$('#anon-porteur').value.trim()) {
             $('#anon-porteur').value = data.name;
             AnonState.porteur = data.name;
             AnonState.porteurAuto = true;
@@ -4090,17 +4163,47 @@ async function runOcrPorteur(capturedPhoto) {
 
 function renderAnonPhotos() {
     const grid = $('#anon-photos-grid');
-    grid.innerHTML = AnonState.photos.map((p, i) => `
+    const tiles = AnonState.photos.map((p, i) => `
         <div class="anon-photo-thumb">
-            <img src="${p.dataUrl}" alt="photo ${i + 1}">
-            <button class="anon-photo-remove" onclick="removeAnonPhoto(${i})" type="button">×</button>
+            <img src="${p.dataUrl}" alt="photo ${i + 1}" onclick="openLightbox(this.src)">
+            <button class="anon-photo-remove" onclick="removeAnonPhoto(${i})" type="button" aria-label="Supprimer">×</button>
+            <span class="anon-photo-tag">${p.name === 'scan.jpg' ? 'Photo du scan' : `Photo ${i + 1}`}</span>
         </div>
     `).join('');
+    const addTile = AnonState.photos.length < 10 ? `
+        <button type="button" class="anon-photo-add" id="anon-add-photo-btn" onclick="document.getElementById('anon-photo-input').click()">
+            <span class="plus">+</span>${AnonState.photos.length ? 'Ajouter une photo' : 'Prendre une photo'}
+        </button>` : '';
+    grid.innerHTML = tiles + addTile;
+
+    // Libellé du bouton "Continuer"
+    const n = AnonState.photos.length;
+    const noPhoto = AnonState.optionsFacultatives && $('#anon-no-photo')?.checked;
+    const btn = $('#anon-next-3');
+    if (btn) {
+        btn.innerHTML = noPhoto || n === 0
+            ? `Continuer <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`
+            : `Continuer · ${n} photo${n > 1 ? 's' : ''} <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
+    }
 }
 window.removeAnonPhoto = (i) => {
-    AnonState.photos.splice(i, 1);
+    const removed = AnonState.photos.splice(i, 1)[0];
+    if (removed?.name === 'scan.jpg') $('#anon-scan-preview').classList.add('hidden');
     renderAnonPhotos();
 };
+
+// Récapitulatif avant envoi
+function renderAnonRecap() {
+    const noPhoto = AnonState.optionsFacultatives && $('#anon-no-photo')?.checked;
+    const photos = noPhoto ? AnonState.photos.filter(p => p.name === 'scan.jpg') : AnonState.photos;
+    $('#anon-recap').innerHTML = `
+        <div><span>Code-barres</span><b>${escapeHtml(AnonState.barcode || '—')}</b></div>
+        <div><span>Porteur</span><b>${escapeHtml($('#anon-porteur').value.trim() || '—')}</b></div>
+        <div><span>Photos</span>${photos.length
+            ? `<span class="anon-recap-thumbs">${photos.slice(0, 5).map(p => `<img src="${p.dataUrl}" alt="">`).join('')}</span>`
+            : '<b>Aucune</b>'}</div>
+    `;
+}
 
 async function submitAnonRequest() {
     const porteur = $('#anon-porteur').value.trim();
@@ -4159,8 +4262,12 @@ async function submitAnonRequest() {
 
         // Succès
         $('#anon-form').classList.add('hidden');
+        $('#anon-progress-wrap').classList.add('hidden');
+        $('#public-anon-page').classList.remove('is-dark');
         $('#anon-success').classList.remove('hidden');
         $('#anon-ticket').textContent = data.ticket_number || (data.id || '').slice(0, 8).toUpperCase();
+        $('#anon-ticket-meta').textContent = [AnonState.barcode, porteur, `${photos.length} photo${photos.length > 1 ? 's' : ''}`].filter(Boolean).join(' · ');
+        window.scrollTo(0, 0);
     } catch (err) {
         toast(err.message || "Erreur lors de l'envoi", 'error');
         if (window.recaptchaWidgets.anon !== null && typeof grecaptcha !== 'undefined') {
