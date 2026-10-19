@@ -3099,7 +3099,7 @@ a.contact-card:hover {
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     <span>Suivi des demandes</span>
                 </button>
-                <button class="nav-item" data-view="garments">
+                <button class="nav-item" data-view="garments" data-admin-only>
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
                     <span>Parc vêtements</span>
                 </button>
@@ -4486,7 +4486,10 @@ function showView(viewName) {
     if (viewName === 'admin-sites') loadSites();
     if (viewName === 'admin-users') loadUsers();
     if (viewName === 'client-history') loadClientHistory();
-    if (viewName === 'garments') loadGarments();
+    if (viewName === 'garments') {
+        if (State.profile?.role !== 'admin') return showView('admin-requests');
+        loadGarments();
+    }
 }
 
 $('#menu-toggle').addEventListener('click', () => $('#sidebar').classList.toggle('open'));
@@ -5588,7 +5591,8 @@ function healthRecoText(h) {
 
 // Charge (ou réutilise) l'index de toutes les demandes visibles, groupées par vêtement
 async function loadGarmentIndex(force = false) {
-    if (!State.profile) return GarmentIndex;
+    // Parc vêtements : réservé à NETEXIAL (admin)
+    if (!State.profile || State.profile.role !== 'admin') return GarmentIndex;
     if (!force && Date.now() - GarmentIndex.fetchedAt < GARMENT_RULES.cacheMs) return GarmentIndex;
     if (GarmentIndex.loading) return GarmentIndex.loading;
 
@@ -5630,6 +5634,7 @@ async function loadGarmentIndex(force = false) {
 }
 
 function garmentOf(r) {
+    if (State.profile?.role !== 'admin') return null;
     const key = GarmentIndex.byReqId.get(r.id) || garmentKey(r);
     return key ? GarmentIndex.byKey.get(key) : null;
 }
