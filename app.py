@@ -560,20 +560,29 @@ def public_forgot_password():
         return generic
 
     try:
-        # Compte connu de l'appli ? (sinon on ne fait rien, sans le dire)
-        # ilike pour ignorer la casse ; on échappe les jokers % et _ de l'email
-        email_pattern = email.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-        prof = supabase.table("users").select("id, email, nom_complet") \
-            .ilike("email", email_pattern).limit(1).execute()
-        if not prof.data:
-            logger.info("forgot-password : email inconnu (réponse générique)")
+        # Source de vérité = l'authentification Supabase (auth.users).
+        # generate_link échoue si aucun compte n'existe → réponse générique.
+        try:
+            link = supabase.auth.admin.generate_link({"type": "recovery", "email": email})
+        except Exception as e_link:
+            logger.info(f"forgot-password : aucun compte auth pour cet email ({e_link})")
             return generic
-        user = prof.data[0]
 
-        link = supabase.auth.admin.generate_link({"type": "recovery", "email": user["email"]})
         hashed_token = link.properties.hashed_token
         if not hashed_token:
             raise RuntimeError("hashed_token absent de la réponse Supabase")
+        auth_user = getattr(link, "user", None)
+        user_id = getattr(auth_user, "id", None)
+        user = {"id": user_id, "email": getattr(auth_user, "email", None) or email, "nom_complet": ""}
+
+        # Nom complet depuis le profil applicatif (facultatif, pour personnaliser l'email)
+        if user_id:
+            try:
+                prof = supabase.table("users").select("nom_complet").eq("id", user_id).limit(1).execute()
+                if prof.data:
+                    user["nom_complet"] = prof.data[0].get("nom_complet") or ""
+            except Exception:
+                pass
 
         from urllib.parse import urlencode
         reset_url = f"{APP_URL}/?{urlencode({'reset_token': hashed_token})}"
