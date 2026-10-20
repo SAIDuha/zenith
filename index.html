@@ -2453,6 +2453,157 @@ a.contact-card:hover {
 .gt-photos { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
 .gt-photos img { width: 56px; height: 56px; object-fit: cover; border-radius: var(--radius-sm); cursor: pointer; }
 .gt-open { margin-left: auto; }
+
+/* =============================================================
+   PAGE D'ACCUEIL / CONNEXION — V2 (sobre + téléphone animé)
+   ============================================================= */
+#auth-page { background: #F4F6FB; min-height: 100vh; }
+
+/* Barre de navigation publique : plus légère, sans majuscules */
+#auth-page .public-nav {
+    height: 80px; background: rgba(244, 246, 251, .82); border-bottom: 1px solid transparent;
+    padding: 0 clamp(16px, 5vw, 90px);
+}
+#auth-page .public-nav-brand img { height: 46px; }
+#auth-page .public-nav-link {
+    font-family: var(--font-body); text-transform: none; letter-spacing: 0;
+    font-size: 15px; font-weight: 500; color: var(--nx-navy-2); padding: 10px 14px;
+}
+#auth-page .public-nav-link:hover { background: rgba(20, 27, 77, .05); color: var(--nx-navy); }
+#auth-page .public-nav-link.active { color: var(--nx-navy); font-weight: 700; background: transparent; }
+#auth-page .public-nav-link.active::after { bottom: 2px; left: 14px; right: 14px; }
+.public-nav-burger {
+    display: none; width: 42px; height: 42px; border-radius: 12px; background: #fff;
+    border: 1px solid #E3E8F2; align-items: center; justify-content: center; cursor: pointer; color: var(--nx-navy);
+}
+
+/* Mise en page */
+.home { position: relative; min-height: calc(100vh - 80px); display: flex; flex-direction: column; overflow: hidden; }
+.home-glow {
+    position: absolute; left: 50%; top: 46%; width: 820px; height: 640px; transform: translate(-50%, -50%);
+    background: radial-gradient(closest-side, rgba(252, 97, 0, .12), transparent); pointer-events: none;
+}
+.home-glow2 {
+    position: absolute; right: 2%; top: 52%; width: 540px; height: 540px; transform: translateY(-50%);
+    background: radial-gradient(closest-side, rgba(28, 55, 117, .10), transparent); pointer-events: none;
+}
+.home-center {
+    position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px 16px 20px; z-index: 2;
+}
+.home-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 2px; color: var(--nx-orange); text-transform: uppercase; }
+.home-title {
+    font-family: var(--font-display); font-size: clamp(32px, 4vw, 48px); font-weight: 700; line-height: 1.06;
+    color: var(--nx-navy); text-align: center; margin: 10px 0 26px; text-transform: none; letter-spacing: -.3px;
+}
+.home-card.auth-card {
+    max-width: 420px; padding: 32px 34px 26px; border-radius: 22px;
+    box-shadow: 0 30px 70px rgba(20, 27, 77, .12); position: relative; z-index: 3;
+}
+#auth-page .auth-tabs { border-radius: 12px; margin-bottom: 22px; }
+#auth-page .auth-tab {
+    font-family: var(--font-body); text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 600;
+    padding: 10px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+}
+#auth-page .field-label { text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 600; color: var(--nx-navy-2); }
+#auth-page .input { height: 50px; border-radius: 13px; font-size: 15px; }
+#auth-page #login-btn { height: 54px; border-radius: 14px; font-size: 16px; box-shadow: 0 10px 22px rgba(252, 97, 0, .28); width: 100%; }
+#auth-page .auth-support-link { display: block; text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-muted); }
+#auth-page .auth-support-link strong { color: var(--nx-navy-2); }
+.home-perks { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 26px; margin-top: 26px; font-size: 14px; color: var(--nx-navy-2); }
+.home-perks div { display: flex; align-items: center; gap: 9px; }
+.home-perks i {
+    width: 22px; height: 22px; border-radius: 50%; background: rgba(46, 155, 79, .14); color: #2E9B4F;
+    display: inline-flex; align-items: center; justify-content: center; font-style: normal; font-size: 12px; font-weight: 700;
+}
+.home-foot { position: relative; text-align: center; font-size: 12px; color: var(--text-muted); padding: 10px 16px 22px; z-index: 2; }
+.home-foot button { background: none; border: 0; color: var(--nx-navy-2); font-weight: 600; cursor: pointer; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- Téléphone animé ---------- */
+.home-phone { position: absolute; right: max(30px, calc(50% - 640px)); top: 50%; width: 300px; height: 610px; transform: translateY(-50%) scale(.84); pointer-events: none; }
+.home-phone-body {
+    position: absolute; inset: 0; border-radius: 44px; background: #0c0f24; padding: 11px;
+    transform: rotate(6deg); box-shadow: 0 50px 90px rgba(20, 27, 77, .28);
+}
+.home-phone-screen {
+    width: 100%; height: 100%; border-radius: 34px; overflow: hidden; position: relative; color: #fff;
+    background: radial-gradient(120% 70% at 50% 35%, #2b3048, #0b0d17); padding: 50px 20px;
+}
+.hp-bar { display: flex; gap: 5px; margin-bottom: 6px; }
+.hp-bar i { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.22); }
+.hp-bar i:first-child { background: var(--nx-orange); }
+.hp-step { font-size: 11px; color: rgba(255,255,255,.6); margin-bottom: 14px; }
+.hp-title { font-family: var(--font-display); font-size: 23px; font-weight: 600; line-height: 1.12; }
+.hp-cam { margin-top: 18px; height: 290px; border-radius: 20px; position: relative; background: repeating-linear-gradient(45deg, #2c3a63 0 7px, #33437a 7px 14px); }
+.hp-label { position: absolute; left: 50%; top: 50%; width: 150px; height: 78px; transform: translate(-50%, -50%) rotate(-4deg); background: #f4f1ea; border-radius: 6px; padding: 9px 10px; }
+.hp-bars { height: 38px; background: repeating-linear-gradient(90deg, #111 0 2px, transparent 2px 4px, #111 4px 5px, transparent 5px 8px, #111 8px 11px, transparent 11px 13px); }
+.hp-label p { font-size: 9px; font-weight: 800; color: #222; margin-top: 5px; letter-spacing: 1px; }
+.hp-frame { position: absolute; left: 50%; top: 50%; width: 200px; height: 120px; transform: translate(-50%, -50%); }
+.hp-frame b { position: absolute; width: 28px; height: 28px; border: 3.5px solid var(--nx-orange); }
+.hp-frame b:nth-child(1) { left: 0; top: 0; border-right: 0; border-bottom: 0; border-radius: 10px 0 0 0; }
+.hp-frame b:nth-child(2) { right: 0; top: 0; border-left: 0; border-bottom: 0; border-radius: 0 10px 0 0; }
+.hp-frame b:nth-child(3) { left: 0; bottom: 0; border-right: 0; border-top: 0; border-radius: 0 0 0 10px; }
+.hp-frame b:nth-child(4) { right: 0; bottom: 0; border-left: 0; border-top: 0; border-radius: 0 0 10px 0; }
+.hp-laser { position: absolute; left: 10px; right: 10px; top: 50%; height: 2px; background: var(--nx-orange); box-shadow: 0 0 12px 3px rgba(252,97,0,.7); animation: hpLaser 2.2s ease-in-out infinite; }
+@keyframes hpLaser { 0%,100% { top: 14%; } 50% { top: 86%; } }
+.hp-btn {
+    position: absolute; left: 20px; right: 20px; bottom: 30px; height: 50px; border-radius: 14px;
+    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+    display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600;
+}
+.hp-toast {
+    position: absolute; left: -64px; top: 330px; background: #fff; border-radius: 16px; padding: 12px 16px 12px 12px;
+    display: flex; align-items: center; gap: 12px; box-shadow: 0 18px 40px rgba(20, 27, 77, .18); z-index: 2;
+    animation: hpToast 4.4s ease-in-out infinite; transform-origin: left center;
+}
+.hp-toast i { width: 34px; height: 34px; border-radius: 50%; background: #2E9B4F; color: #fff; display: flex; align-items: center; justify-content: center; font-style: normal; font-weight: 800; }
+.hp-toast b { display: block; font-size: 14px; color: var(--nx-navy); }
+.hp-toast span { font-size: 12px; color: var(--text-muted); }
+@keyframes hpToast {
+    0%, 38% { opacity: 0; transform: rotate(-3deg) translateY(10px) scale(.92); }
+    46%, 90% { opacity: 1; transform: rotate(-3deg) translateY(0) scale(1); }
+    100% { opacity: 0; transform: rotate(-3deg) translateY(-4px) scale(.98); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hp-laser, .hp-toast { animation: none; }
+    .hp-toast { opacity: 1; transform: rotate(-3deg); }
+}
+
+/* Écrans moyens : pas assez de place pour le téléphone à côté */
+@media (max-width: 1180px) and (min-width: 881px) {
+    .home-phone { display: none; }
+}
+
+/* Mobile : menu burger + téléphone en aperçu derrière le titre */
+@media (max-width: 880px) {
+    #auth-page .public-nav { height: 70px; }
+    #auth-page .public-nav-brand img { height: 38px; }
+    .public-nav-burger { display: inline-flex; }
+    #auth-page .public-nav-links {
+        display: none; position: absolute; top: 64px; right: 16px; flex-direction: column; gap: 2px;
+        background: #fff; border: 1px solid #E3E8F2; border-radius: 16px; padding: 8px; min-width: 220px;
+        box-shadow: 0 20px 40px rgba(20, 27, 77, .14);
+    }
+    #auth-page .public-nav.open .public-nav-links { display: flex; }
+    #auth-page .public-nav-link { text-align: left; padding: 12px 14px; }
+    #auth-page .public-nav-link.active::after { display: none; }
+    #auth-page .public-nav-link.active { background: rgba(252, 97, 0, .08); color: var(--nx-orange); }
+
+    .home-center { justify-content: flex-start; align-items: stretch; padding: 14px 16px 10px; }
+    .home-eyebrow { font-size: 11px; letter-spacing: 1.6px; }
+    .home-title { text-align: left; font-size: 26px; line-height: 1.1; margin: 8px 0 22px; max-width: 235px; }
+    .home-card.auth-card { max-width: none; padding: 24px 22px 20px; }
+    .home-perks { display: none; }
+    .home-glow2 { display: none; }
+    .home-phone { right: -40px; top: 16px; width: 158px; height: 300px; transform: none; z-index: 1; }
+    .home-phone-body { border-radius: 28px; padding: 7px; box-shadow: 0 20px 40px rgba(20, 27, 77, .25); transform: rotate(8deg); }
+    .home-phone-screen { border-radius: 22px; padding: 0; }
+    .home-phone-screen > :not(.hp-cam) { display: none; }
+    .hp-cam { margin: 0; height: 100%; border-radius: 22px; background: radial-gradient(120% 70% at 50% 35%, #2b3048, #0b0d17); }
+    .hp-cam .hp-label, .hp-frame b { display: none; }
+    .hp-frame { width: 80%; height: 50%; }
+    .hp-toast { display: none; }
+}
 </style>
 </head>
 <body>
@@ -2678,63 +2829,37 @@ a.contact-card:hover {
             <button class="public-nav-link" data-page="philosophie">Notre philosophie</button>
             <button class="public-nav-link" data-page="contact">Nous contacter</button>
         </div>
+        <button type="button" class="public-nav-burger" id="public-nav-burger" aria-label="Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+        </button>
     </nav>
 
     <!-- Page : Connexion -->
     <div class="public-page active" id="public-page-connexion">
-    <div class="auth-shell">
-        <!-- Côté gauche : visuel charte NETEXIAL -->
-        <div class="auth-art">
-            <div class="auth-art-hero">
-                <p class="idea-tagline">L'expertise <strong>NETEXIAL</strong>,<br>en une seule</p>
-                <div class="idea-brand">IDEA</div>
-                <p class="idea-desc">Déclarez, suivez et résolvez vos demandes de réparation en quelques clics. Chaque équipement abîmé prend une seconde vie.</p>
+    <div class="home">
+        <div class="home-glow" aria-hidden="true"></div>
+        <div class="home-glow2" aria-hidden="true"></div>
 
-                <!-- 3 cartes feature (avec descriptions enrichies) -->
-                <div class="auth-features">
-                    <div class="auth-feature">
-                        <div class="auth-feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M16 6h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"/><polyline points="9 14 11 16 15 12"/></svg>
-                        </div>
-                        <div class="auth-feature-label">Déclarez</div>
-                        <div class="auth-feature-sub">Scannez le code-barres, ajoutez vos photos, décrivez le défaut.</div>
-                    </div>
-                    <div class="auth-feature">
-                        <div class="auth-feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        </div>
-                        <div class="auth-feature-label">Suivez</div>
-                        <div class="auth-feature-sub">Statut en temps réel et historique complet de vos demandes.</div>
-                    </div>
-                    <div class="auth-feature">
-                        <div class="auth-feature-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-                        </div>
-                        <div class="auth-feature-label">Résolvez</div>
-                        <div class="auth-feature-sub">Notification dès qu'une décision est prise par nos équipes.</div>
-                    </div>
-                </div>
+        <div class="home-center">
+            <div class="home-eyebrow">Espace réparation IDEA</div>
+            <h1 class="home-title">Un scan, une photo,<br>c'est déclaré.</h1>
 
-                <!-- Banner invitant à découvrir l'histoire -->
-                <button class="auth-banner" data-page="philosophie">
-                    <div class="auth-banner-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <!-- Téléphone (animé) : à droite sur ordinateur, en aperçu sur mobile -->
+            <div class="home-phone" aria-hidden="true">
+                <div class="home-phone-body"><div class="home-phone-screen">
+                    <div class="hp-bar"><i></i><i></i><i></i><i></i></div>
+                    <div class="hp-step">Étape 1 sur 4</div>
+                    <div class="hp-title">Scannez l'étiquette<br>du vêtement</div>
+                    <div class="hp-cam">
+                        <div class="hp-label"><div class="hp-bars"></div><p>AB123456 · J. DUPONT</p></div>
+                        <div class="hp-frame"><b></b><b></b><b></b><b></b><div class="hp-laser"></div></div>
                     </div>
-                    <div class="auth-banner-text">
-                        <div class="auth-banner-title">Plus d'un siècle d'expertise</div>
-                        <div class="auth-banner-sub">Découvrez l'histoire NETEXIAL et la philosophie IDEA</div>
-                    </div>
-                    <svg class="auth-banner-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </button>
+                    <div class="hp-btn">⌨ Saisir le code à la main</div>
+                </div></div>
+                <div class="hp-toast"><i>✓</i><div><b>Code détecté</b><span>AB123456 · Jean Dupont</span></div></div>
             </div>
-        </div>
 
-        <!-- Côté droit : formulaire -->
-        <div class="auth-form-side">
-            <div class="auth-card">
-                <h2>Connexion</h2>
-                <p class="sub">Accédez à votre espace <span style="color: var(--nx-orange); font-weight: 600;">IDEA</span></p>
-
+            <div class="auth-card home-card">
                 <div class="auth-tabs">
                     <button class="auth-tab active" data-tab="client">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -2742,20 +2867,20 @@ a.contact-card:hover {
                     </button>
                     <button class="auth-tab" data-tab="admin">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        <span>Administrateur</span>
+                        <span>NETEXIAL</span>
                     </button>
                 </div>
 
                 <form id="login-form" autocomplete="on">
                     <div class="field">
                         <label class="field-label" for="login-email">Email</label>
-                        <input id="login-email" class="input" type="email" placeholder="votre.email@exemple.com" required autocomplete="email">
+                        <input id="login-email" class="input" type="email" placeholder="prenom.nom@entreprise.com" required autocomplete="email">
                     </div>
 
                     <div class="field">
                         <div class="field-label-row">
                             <label class="field-label" for="login-password">Mot de passe</label>
-                            <a href="#" class="field-link" id="forgot-pwd-link">Mot de passe oublié ?</a>
+                            <a href="#" class="field-link" id="forgot-pwd-link">Oublié ?</a>
                         </div>
                         <div class="input-wrap">
                             <input id="login-password" class="input" type="password" required autocomplete="current-password">
@@ -2779,17 +2904,23 @@ a.contact-card:hover {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                     </button>
 
-                    <div class="auth-divider"><span>ou</span></div>
-
                     <a href="mailto:support@netexial.com" class="auth-support-link">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-                        Besoin d'aide ? Contactez le support
+                        Besoin d'aide ? <strong>Contactez le support</strong>
                     </a>
                 </form>
+            </div>
 
-                <p class="auth-copyright">© 2026 NETEXIAL. Tous droits réservés.</p>
+            <div class="home-perks">
+                <div><i>✓</i>Déclarez en 30 s</div>
+                <div><i>✓</i>Suivez vos demandes</div>
+                <div><i>✓</i>Historique complet</div>
             </div>
         </div>
+
+        <footer class="home-foot">
+            © 2026 NETEXIAL · Plus d'un siècle d'expertise textile ·
+            <button type="button" data-page="philosophie">Découvrir notre histoire</button>
+        </footer>
     </div>
     </div><!-- /page connexion -->
 
@@ -4367,6 +4498,15 @@ function showPublicPage(pageName) {
     // Scroll en haut
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+// Menu burger (mobile) de la barre publique
+$('#public-nav-burger')?.addEventListener('click', e => {
+    e.stopPropagation();
+    $('#auth-page .public-nav')?.classList.toggle('open');
+});
+document.addEventListener('click', e => {
+    if (!e.target.closest('#public-nav-burger')) $('#auth-page .public-nav')?.classList.remove('open');
+});
 
 document.addEventListener('click', e => {
     const trigger = e.target.closest('[data-page]');
