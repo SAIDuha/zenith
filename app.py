@@ -1162,7 +1162,7 @@ def export_pdf(request_id):
         "en_attente": "En attente",
         "acceptee":   "Acceptée",
         "refusee":    "Refusée",
-        "cloturee":   "Clôturée",
+        "cloturee":   "Traitée",
     }.get(req["statut"], req["statut"])
 
     rows = [
