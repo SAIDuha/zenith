@@ -2604,6 +2604,188 @@ a.contact-card:hover {
     .hp-frame { width: 80%; height: 50%; }
     .hp-toast { display: none; }
 }
+
+/* =============================================================
+   ESPACE CONNECTÉ — V2 (liste, panneau latéral, menu profil)
+   ============================================================= */
+/* Titres de page en minuscules, comme l'accueil */
+.main-content .page-header h1 { text-transform: none; letter-spacing: -.3px; font-weight: 700; }
+.page-header .sub strong { color: var(--text); }
+
+/* Compteur dans le menu */
+.nav-item { position: relative; }
+.nav-badge {
+    margin-left: auto; background: var(--nx-orange); color: #fff; font-size: 11px; font-weight: 700;
+    min-width: 22px; height: 20px; padding: 0 7px; border-radius: 10px;
+    display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-body);
+}
+
+/* Onglets de statut */
+.seg-tabs { display: inline-flex; background: var(--bg); border-radius: 12px; padding: 4px; gap: 2px; flex-wrap: wrap; }
+.seg-tab {
+    border: 0; background: transparent; cursor: pointer; padding: 8px 13px; border-radius: 9px;
+    font-size: 13px; font-weight: 600; color: var(--text-muted); display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--font-body); white-space: nowrap;
+}
+.seg-tab.active { background: var(--bg-card); color: var(--text); box-shadow: 0 2px 8px rgba(20,27,77,.08); }
+.seg-tab em { font-style: normal; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 9px; background: rgba(20,27,77,.08); color: var(--text-muted); }
+.seg-tab em.hot { background: var(--nx-orange); color: #fff; }
+[data-theme="dark"] .seg-tab em { background: rgba(255,255,255,.1); }
+
+/* Barre d'actions groupées */
+.bulk-bar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 16px; font-size: 14px;
+    background: rgba(252, 97, 0, .07); border-bottom: 1px solid rgba(252, 97, 0, .2);
+}
+.bulk-bar strong { color: var(--nx-orange); margin-right: 4px; }
+.bulk-bar .btn { display: inline-flex; align-items: center; gap: 6px; }
+.bulk-cancel { margin-left: auto; background: none; border: 0; color: var(--text-muted); cursor: pointer; font-size: 13px; }
+
+/* Cases à cocher */
+.cbx { width: 18px; height: 18px; border-radius: 5px; border: 1.8px solid #C3CCDC; display: inline-block; position: relative; cursor: pointer; vertical-align: middle; background: var(--bg-card); }
+.cbx.on { background: var(--nx-orange); border-color: var(--nx-orange); }
+.cbx.on::after { content: ""; position: absolute; left: 5px; top: 1px; width: 5px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.cbx.partial { background: var(--nx-orange); border-color: var(--nx-orange); }
+.cbx.partial::after { content: ""; position: absolute; left: 3px; right: 3px; top: 7px; height: 2px; background: #fff; }
+
+/* Lignes */
+.req-row { cursor: pointer; }
+.req-row td { vertical-align: middle; }
+.req-row.is-selected td { background: rgba(252, 97, 0, .05); }
+.req-row.is-open td { background: rgba(28, 55, 117, .07); }
+.req-row.is-cursor td:first-child { box-shadow: inset 3px 0 0 var(--nx-orange); }
+.col-check { width: 44px; }
+.col-thumb { width: 64px; }
+.col-actions { width: 96px; text-align: right; }
+.req-thumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; display: block; background: var(--bg); }
+.req-thumb-empty { background: repeating-linear-gradient(45deg, var(--bg) 0 6px, var(--border) 6px 7px); }
+.req-ticket { font-family: var(--font-display); font-weight: 600; letter-spacing: .3px; white-space: nowrap; }
+.req-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.req-desc { max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.req-desc.is-empty { color: var(--text-muted); opacity: .6; font-style: italic; }
+.btn-refuse { background: rgba(211,47,47,0.12); color: #c62828; }
+.age-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+.age-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.age-ok   { background: rgba(70,168,77,.12);  color: var(--nx-green); }
+.age-warn { background: rgba(255,167,0,.15);  color: #b87300; }
+.age-late { background: rgba(211,47,47,.10);  color: #c62828; }
+[data-theme="dark"] .age-warn { color: #ffc961; }
+[data-theme="dark"] .age-late { color: #ff9999; }
+
+/* Pied de tableau : raccourcis + pagination */
+.table-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 16px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--text-muted); }
+.table-foot .table-pagination { padding: 0; border: 0; }
+.kbd {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 6px;
+    border-radius: 6px; background: var(--bg-card); border: 1px solid var(--border); border-bottom-width: 2px;
+    font-size: 11px; font-weight: 700; color: var(--nx-navy-2); margin: 0 2px; font-family: var(--font-body);
+}
+.kbd-light { background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.35); color: #fff; margin-left: 4px; }
+@media (max-width: 900px) { .kbd-hints { display: none; } }
+
+/* ---------- Panneau latéral ---------- */
+.drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(480px, 100vw); background: var(--bg-card); z-index: 900;
+    box-shadow: -30px 0 60px rgba(20, 27, 77, .16); display: flex; flex-direction: column;
+    transform: translateX(105%); transition: transform .22s ease;
+}
+.drawer.open { transform: none; }
+.drawer-head { padding: 18px 22px 14px; border-bottom: 1px solid var(--border); }
+.drawer-head .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.drawer-nav { display: flex; gap: 6px; }
+.drawer-nav button {
+    width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--nx-navy-2); cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+}
+.drawer-nav button:disabled { opacity: .35; cursor: default; }
+.drawer-title { font-family: var(--font-display); font-size: 24px; font-weight: 700; margin-top: 12px; color: var(--text); }
+.drawer-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.drawer-body { flex: 1; overflow-y: auto; padding: 18px 22px; }
+.drawer-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; }
+.drawer-footer .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 46px; }
+.drawer-footer .btn-grow { flex: 1; }
+/* La liste reste visible : on lui laisse la place à droite sur grand écran */
+@media (min-width: 1200px) {
+    body.drawer-open .main-content { padding-right: 500px; transition: padding-right .22s ease; }
+}
+.req-gallery { display: grid; gap: 8px; height: 230px; grid-template-columns: 2fr 1fr; grid-template-rows: repeat(2, minmax(0, 1fr)); }
+.req-gallery.n1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+.req-gallery.n2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+.req-gallery.n3 .req-gallery-item:first-child { grid-row: 1 / 3; }
+.req-gallery-item { position: relative; border: 0; padding: 0; border-radius: 12px; overflow: hidden; cursor: zoom-in; background: var(--bg); min-height: 0; }
+.req-gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.req-gallery-item .more { position: absolute; inset: 0; background: rgba(10,15,46,.55); color: #fff; font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.req-gallery-rest { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.req-gallery-rest img { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; cursor: zoom-in; }
+.req-nophoto { height: 90px; border-radius: 12px; background: var(--bg); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.req-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; margin-top: 18px; }
+.req-facts small, .req-block small { display: block; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
+.req-facts b { font-size: 14.5px; font-weight: 600; color: var(--text); display: block; }
+.req-facts span { font-size: 12px; color: var(--text-muted); }
+.req-facts .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: .5px; }
+.req-block { margin-top: 18px; padding: 12px 14px; border-radius: 12px; background: var(--bg); }
+.req-block p { font-size: 14px; line-height: 1.5; color: var(--text); white-space: pre-wrap; }
+.req-block p.is-empty { color: var(--text-muted); font-style: italic; }
+.refus-info { padding: 12px 16px; background: rgba(252, 97, 0, 0.08); border-left: 3px solid var(--nx-orange); border-radius: var(--radius-sm); font-size: 13px; margin-top: 12px; }
+
+/* ---------- Menu profil ---------- */
+.sidebar-footer .theme-row { display: none !important; }
+#user-badge { cursor: pointer; border-radius: 14px; transition: background .15s; }
+#user-badge:hover, #user-badge.open { background: rgba(255,255,255,.07); }
+.user-menu {
+    position: fixed; left: 16px; bottom: 84px; width: 320px; background: var(--bg-card); color: var(--text);
+    border-radius: 18px; box-shadow: 0 30px 70px rgba(10, 15, 46, .35); z-index: 950; overflow: hidden;
+    opacity: 0; transform: translateY(8px) scale(.98); pointer-events: none; transition: opacity .15s, transform .15s;
+}
+.user-menu.open { opacity: 1; transform: none; pointer-events: auto; }
+.um-head { display: flex; gap: 12px; align-items: center; padding: 18px 18px 14px; border-bottom: 1px solid var(--border); }
+.um-avatar { width: 46px; height: 46px; font-size: 15px; }
+.um-id { min-width: 0; }
+.um-id b { display: block; font-size: 15px; }
+.um-id span { display: block; font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.um-id em { display: inline-block; margin-top: 5px; font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--nx-orange); background: rgba(252,97,0,.1); padding: 2px 8px; border-radius: 8px; }
+.um-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 12px 14px; border-bottom: 1px solid var(--border); background: var(--bg); }
+.um-stats div { text-align: center; }
+.um-stats b { display: block; font-size: 19px; font-family: var(--font-display); }
+.um-stats span { font-size: 11px; color: var(--text-muted); }
+.um-list { padding: 6px 0; }
+.um-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 18px; font-size: 14px; background: none; border: 0; color: var(--text); cursor: pointer; text-align: left; font-family: var(--font-body); }
+.um-item:hover { background: var(--bg); }
+.um-item i { width: 30px; height: 30px; border-radius: 9px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 14px; flex-shrink: 0; }
+.um-item small { margin-left: auto; font-size: 12px; color: var(--text-muted); }
+.um-sep { height: 1px; background: var(--border); margin: 4px 0; }
+.um-toggle { margin-left: auto; width: 40px; height: 22px; border-radius: 11px; background: #D5DCEA; position: relative; transition: background .15s; }
+.um-toggle::after { content: ""; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+.um-toggle.on { background: var(--nx-orange); }
+.um-toggle.on::after { left: 21px; }
+.um-out { color: #c62828; }
+.um-out i { background: rgba(211,47,47,.08); }
+.um-foot { padding: 10px 18px 14px; font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; opacity: .8; }
+.shortcuts { display: flex; flex-direction: column; gap: 12px; }
+.shortcuts div { display: flex; align-items: center; gap: 4px; font-size: 14px; }
+.shortcuts span:not(.kbd) { margin-left: 12px; color: var(--text); }
+.scope-list { display: flex; flex-direction: column; gap: 8px; }
+.scope-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); cursor: pointer; text-align: left; color: var(--text); font-family: var(--font-body); }
+.scope-item:hover { border-color: var(--nx-orange); }
+.scope-item b { display: block; font-size: 14px; }
+.scope-item small { font-size: 12px; color: var(--text-muted); }
+.scope-item em { font-style: normal; font-size: 12px; font-weight: 700; color: var(--nx-orange); background: rgba(252,97,0,.1); padding: 4px 10px; border-radius: 10px; white-space: nowrap; }
+.scope-item em.zero { color: var(--text-muted); background: var(--bg); }
+@media (max-width: 760px) { .user-menu { left: 8px; right: 8px; width: auto; } }
+
+.requests-toolbar { flex-wrap: wrap; }
+.requests-toolbar .search-input { flex: 1; min-width: 220px; }
+.nav-item.active .nav-badge { background: #fff; color: var(--nx-orange); }
+@media (min-width: 1200px) {
+    body.drawer-open #view-admin-requests th:nth-child(6),
+    body.drawer-open #view-admin-requests td:nth-child(6),
+    body.drawer-open #view-admin-pending th:nth-child(5),
+    body.drawer-open #view-admin-pending td:nth-child(5) { display: none; }
+}
+
+.col-actions > div { display: flex; flex-wrap: nowrap; }
+.col-actions { width: 110px; }
+.drawer:not(.open) { box-shadow: none; visibility: hidden; transition: transform .22s ease, visibility 0s .22s; }
 </style>
 </head>
 <body>
@@ -3235,18 +3417,19 @@ a.contact-card:hover {
             </nav>
 
             <div class="sidebar-footer">
-                <div class="flex-between" style="margin-bottom: 12px;">
+                <div class="flex-between theme-row" style="margin-bottom: 12px;">
                     <span style="color: var(--nx-blue-light); font-size: 11px; letter-spacing: 1px; text-transform: uppercase;">Thème</span>
                     <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"></button>
                 </div>
 
-                <div class="user-badge">
+                <div class="user-badge" id="user-badge" onclick="toggleUserMenu()" title="Mon compte">
                     <div class="avatar" id="user-avatar">?</div>
                     <div class="user-info">
                         <div class="user-name" id="user-name">—</div>
                         <div class="user-role" id="user-role">—</div>
                     </div>
-                    <button class="btn-icon" id="logout-btn" title="Déconnexion" style="color: var(--nx-blue-mid);">
+                    <svg class="user-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--nx-blue-mid); flex-shrink:0;"><polyline points="18 15 12 9 6 15"/></svg>
+                    <button class="btn-icon" id="logout-btn" title="Déconnexion" style="display:none;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     </button>
                 </div>
@@ -3480,14 +3663,13 @@ a.contact-card:hover {
                         <table class="table">
                             <thead>
                                 <tr>
+                                    <th class="col-thumb">Photo</th>
                                     <th>Ticket</th>
-                                    <th>Raison sociale</th>
-                                    <th>Ville</th>
-                                    <th>Type de réparation</th>
-                                    <th>Nom porteur</th>
-                                    <th>Date</th>
-                                    <th>Statut</th>
-                                    <th>Actions</th>
+                                    <th>Entreprise · site</th>
+                                    <th>Porteur</th>
+                                    <th>Description</th>
+                                    <th>En attente depuis</th>
+                                    <th class="col-actions"></th>
                                 </tr>
                             </thead>
                             <tbody id="pending-tbody"></tbody>
@@ -3501,7 +3683,7 @@ a.contact-card:hover {
                 <div class="page-header">
                     <div>
                         <h1>Suivi des demandes</h1>
-                        <p class="sub">Gérez les demandes de réparation entrantes</p>
+                        <p class="sub" id="requests-subtitle">Gérez les demandes de réparation entrantes</p>
                     </div>
                     <div class="page-header-actions">
                         <button class="btn btn-accent" id="export-requests-btn">
@@ -3512,12 +3694,13 @@ a.contact-card:hover {
                 </div>
 
                 <div class="table-wrap">
-                    <div class="table-toolbar">
-                        <input type="text" id="requests-search" class="search-input" placeholder="Rechercher par ticket, client, référence...">
+                    <div class="table-toolbar requests-toolbar">
+                        <div class="seg-tabs" id="requests-tabs"></div>
+                        <input type="text" id="requests-search" class="search-input" placeholder="Rechercher un ticket, un porteur, un code-barres…">
                         <select id="requests-filter-site" class="select" style="width: auto; min-width: 160px; display: none;">
                             <option value="">Tous les sites</option>
                         </select>
-                        <select id="requests-filter-status" class="select" style="width: auto; min-width: 160px;">
+                        <select id="requests-filter-status" class="select" style="display:none;">
                             <option value="">Tous statuts</option>
                             <option value="en_attente">En attente</option>
                             <option value="acceptee">Acceptées</option>
@@ -3530,27 +3713,29 @@ a.contact-card:hover {
                             <span>au</span>
                             <input id="requests-date-to" type="date" class="input" style="padding:8px 10px; width:auto;">
                         </span>
-                        <span id="requests-count" style="margin-left:auto; font-size:13px; color:var(--text-muted); font-weight:600; white-space:nowrap;">0 résultat</span>
                     </div>
+                    <div class="bulk-bar hidden" id="requests-bulk"></div>
                     <div style="overflow-x: auto;">
                         <table class="table">
                             <thead>
                                 <tr>
+                                    <th class="col-check"><span class="cbx" id="requests-check-all" onclick="toggleSelectAllRequests()"></span></th>
+                                    <th class="col-thumb">Photo</th>
                                     <th>Ticket</th>
-                                    <th>Raison sociale</th>
-                                    <th>Ville</th>
-                                    <th>Type de réparation</th>
-                                    <th>Nom porteur</th>
-                                    <th>Date</th>
-                                    <th>Statut</th>
-                                    <th>Actions</th>
+                                    <th>Entreprise · site</th>
+                                    <th>Porteur</th>
+                                    <th>Description</th>
+                                    <th id="requests-col-status">En attente depuis</th>
+                                    <th class="col-actions"></th>
                                 </tr>
                             </thead>
                             <tbody id="requests-tbody"></tbody>
                         </table>
                     </div>
-                    <div class="table-pagination">
-                        <div class="page-btns" id="requests-pages"></div>
+                    <div class="table-foot">
+                        <span class="kbd-hints">Raccourcis : <span class="kbd">↑</span><span class="kbd">↓</span> naviguer · <span class="kbd">Entrée</span> ouvrir · <span class="kbd">Espace</span> sélectionner<span class="admin-only-hint"> · <span class="kbd">T</span> traitée</span> · <span class="kbd">?</span> aide</span>
+                        <span id="requests-count" style="font-weight:600;">0 résultat</span>
+                        <div class="table-pagination"><div class="page-btns" id="requests-pages"></div></div>
                     </div>
                 </div>
             </section>
@@ -3733,6 +3918,27 @@ a.contact-card:hover {
 <div id="toast-container"></div>
 
 <!-- Modal générique -->
+<!-- Panneau latéral : détail d'une demande -->
+<aside class="drawer" id="drawer" aria-label="Détail de la demande">
+    <div class="drawer-head">
+        <div class="row">
+            <div id="drawer-pill"></div>
+            <div class="drawer-nav">
+                <button type="button" id="drawer-prev" onclick="drawerStep(-1)" title="Précédente (↑)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg></button>
+                <button type="button" id="drawer-next" onclick="drawerStep(1)" title="Suivante (↓)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+                <button type="button" onclick="closeDrawer()" title="Fermer (Échap)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+        </div>
+        <div class="drawer-title" id="drawer-title"></div>
+        <div class="drawer-subtitle" id="drawer-subtitle"></div>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+    <div class="drawer-footer" id="drawer-footer"></div>
+</aside>
+
+<!-- Menu profil (clic sur le nom en bas du menu) -->
+<div class="user-menu" id="user-menu" role="menu"></div>
+
 <div class="modal-overlay" id="modal-overlay">
     <div class="modal" id="modal-box">
         <div class="modal-header">
@@ -3807,6 +4013,10 @@ const State = {
     requestsFilter: { search: '', status: '', site: '', entreprise: '', dateFrom: '', dateTo: '' },
     pendingCache: [],
     pendingFilter: { dateFrom: '', dateTo: '' },
+    selectedIds: new Set(),   // sélection multiple (Suivi des demandes)
+    cursorId: null,           // ligne "focus" au clavier
+    waitingCount: null,       // demandes en attente d'action (badge du menu)
+    sessionStart: null,
     realtimeChannels: [],
 };
 
@@ -3899,7 +4109,10 @@ function openModal(title, bodyHtml, footerHtml = '', opts = {}) {
     $('#modal-footer').innerHTML = footerHtml;
     $('#modal-overlay').classList.add('open');
 }
-function closeModal() { $('#modal-overlay').classList.remove('open'); }
+function closeModal() {
+    $('#modal-overlay').classList.remove('open');
+    if (typeof closeDrawer === 'function' && Drawer.currentId) closeDrawer();
+}
 $('#modal-overlay').addEventListener('click', e => {
     if (e.target.id === 'modal-overlay') closeModal();
 });
@@ -4922,6 +5135,9 @@ async function enterApp() {
 
     // Notifs temps réel
     subscribeRealtime();
+    State.sessionStart = new Date();
+    refreshNavBadges();
+    $$('.admin-only-hint').forEach(el => el.style.display = State.profile.role === 'admin' ? '' : 'none');
 }
 
 // ============================================================
@@ -4932,7 +5148,10 @@ $$('.nav-item').forEach(item => {
 });
 
 function showView(viewName) {
+    if (typeof closeDrawer === 'function') closeDrawer();
+    $('#user-menu')?.classList.remove('open');
     State.currentView = viewName;
+    State.cursorId = null;
     $$('.main-content .view').forEach(v => v.classList.remove('active'));
     const target = $(`#view-${viewName}`);
     if (target) target.classList.add('active');
@@ -5495,15 +5714,15 @@ async function loadDashboard() {
 // ============================================================
 // ADMIN : DEMANDES
 // ============================================================
-const REQUESTS_PAGE_SIZE = 10;
+const REQUESTS_PAGE_SIZE = 25;
 
 async function loadRequests() {
     const tbody = $('#requests-tbody');
-    tbody.innerHTML = `<tr><td colspan="8"><div class="full-loader"><span class="loader"></span></div></td></tr>`;
+    if (!State.requestsCache.length) tbody.innerHTML = `<tr><td colspan="8"><div class="full-loader"><span class="loader"></span></div></td></tr>`;
 
     let query = sb
         .from('repair_requests')
-        .select('*, entreprises(nom, code_entreprise), sites(nom), request_images(id)')
+        .select('*, entreprises(nom, code_entreprise), sites(nom), request_images(url_publique, ordre)')
         .order('created_at', { ascending: false });
 
     if (State.profile?.role === 'admin') {
@@ -5577,50 +5796,327 @@ function populateSiteFilter() {
     }
 }
 
-// Rendu d'une ligne de demande (partagé entre "Suivi des demandes" et "Demandes en attente")
-function requestRowHtml(r) {
+// ------------------------------------------------------------
+// Helpers d'affichage d'une demande dans les listes
+// ------------------------------------------------------------
+const ICON_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+const ICON_CROSS = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+// Miniature : de préférence une photo du défaut (la 1re est souvent celle du scan)
+function requestThumb(r) {
+    const imgs = (r.request_images || []).slice().sort((a, b) => (a.ordre ?? 0) - (b.ordre ?? 0));
+    const img = imgs[1] || imgs[0];
+    return img?.url_publique || '';
+}
+
+// Demande "en attente d'action" pour l'utilisateur courant ?
+function isWaitingForMe(r) {
+    const role = State.profile?.role;
+    if (role === 'admin') return r.statut === 'acceptee' || r.statut === 'pre_validee';
+    if (role === 'client') return r.statut === 'en_attente';
+    return false;
+}
+
+// Depuis quand la demande attend (admin : depuis son acceptation)
+function waitingSinceMs(r) {
+    const ref = State.profile?.role === 'admin' ? (r.traite_at || r.created_at) : r.created_at;
+    return Date.now() - new Date(ref).getTime();
+}
+function formatWait(ms, short = false) {
+    const h = Math.max(0, Math.floor(ms / 3600000));
+    if (h < 1) return short ? '< 1 h' : "moins d'1 h";
+    if (h < 24) return `${h} h`;
+    const d = Math.floor(h / 24);
+    return short ? `${d} j` : `${d} jour${d > 1 ? 's' : ''}`;
+}
+function agePillHtml(r, short = false) {
+    const ms = waitingSinceMs(r);
+    const cls = ms < 24 * 3600000 ? 'age-ok' : ms < 72 * 3600000 ? 'age-warn' : 'age-late';
+    return `<span class="age-pill ${cls}">${formatWait(ms, short)}</span>`;
+}
+
+// Rendu d'une ligne (partagé entre "Suivi des demandes" et "Demandes en attente")
+function requestRowHtml(r, opts = {}) {
+    const role = State.profile?.role;
+    const thumb = requestThumb(r);
+    const selected = opts.selectable && State.selectedIds.has(r.id);
+    const desc = (r.description || '').trim();
+    let actions = '';
+    if (role === 'client' && r.statut === 'en_attente') {
+        actions = `
+            <button class="btn btn-icon btn-done" onclick="event.stopPropagation(); preValidateRequest('${r.id}')" title="Valider et transmettre à NETEXIAL">${ICON_CHECK}</button>
+            <button class="btn btn-icon btn-refuse" onclick="event.stopPropagation(); refuseByEntreprise('${r.id}')" title="Refuser">${ICON_CROSS}</button>`;
+    } else if (role === 'admin' && (r.statut === 'acceptee' || r.statut === 'pre_validee')) {
+        actions = `<button class="btn btn-icon btn-done" onclick="event.stopPropagation(); markRequestDone('${r.id}', this)" title="Marquer comme traitée (T)">${ICON_CHECK}</button>`;
+    }
     return `
-            <tr>
-                <td><strong style="font-family: var(--font-display);">${escapeHtml(r.ticket_number)}</strong></td>
-                <td>
-                    <div>${escapeHtml(r.entreprises?.nom || '—')}</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(r.entreprises?.code_entreprise || '')}</div>
-                </td>
-                <td>${escapeHtml(r.sites?.nom || '—')}</td>
-                <td>${r.description ? escapeHtml(r.description.length > 60 ? r.description.slice(0, 60) + '…' : r.description) : '—'}</td>
-                <td>${escapeHtml(r.nom_porteur || '—')}${garmentRepeatBadgeHtml(r)}</td>
-                <td>${formatRelative(r.created_at)}</td>
-                <td>${statusBadge(r.statut)}</td>
-                <td>
-                    <div class="flex-row" style="gap: 4px;">
-                        <button class="btn btn-ghost btn-icon" onclick="viewRequest('${r.id}')" title="Voir">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </button>
-                        ${(() => {
-                            const role = State.profile?.role;
-                            if (role === 'client' && r.statut === 'en_attente') {
-                                return `
-                                    <button class="btn btn-icon" style="background: rgba(70,168,77,0.15); color: var(--nx-green);" onclick="preValidateRequest('${r.id}')" title="Valider et transmettre à NETEXIAL">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                    </button>
-                                    <button class="btn btn-icon" style="background: rgba(211,47,47,0.12); color: #c62828;" onclick="refuseByEntreprise('${r.id}')" title="Refuser">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                    </button>
-                                `;
-                            }
-                            if (role === 'admin' && (r.statut === 'acceptee' || r.statut === 'pre_validee')) {
-                                return `
-                                    <button class="btn btn-icon btn-done" onclick="markRequestDone('${r.id}', this)" title="Marquer comme traitée">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                    </button>
-                                `;
-                            }
-                            return '';
-                        })()}
-                    </div>
-                </td>
-            </tr>
-        `;
+        <tr class="req-row${selected ? ' is-selected' : ''}${Drawer.currentId === r.id ? ' is-open' : ''}" data-id="${r.id}" onclick="onRequestRowClick(event, '${r.id}')">
+            ${opts.selectable ? `<td class="col-check" onclick="event.stopPropagation(); toggleRequestSelection('${r.id}')"><span class="cbx${selected ? ' on' : ''}"></span></td>` : ''}
+            <td class="col-thumb">${thumb
+                ? `<img class="req-thumb" src="${escapeHtml(thumb)}" alt="" loading="lazy">`
+                : '<div class="req-thumb req-thumb-empty"></div>'}</td>
+            <td>
+                <div class="req-ticket">${escapeHtml(r.ticket_number || '')}</div>
+                <div class="req-sub">${escapeHtml(r.code_barre || '')}</div>
+            </td>
+            <td>
+                <div>${escapeHtml(r.entreprises?.nom || '—')}</div>
+                <div class="req-sub">${escapeHtml(r.sites?.nom || '')}</div>
+            </td>
+            <td>${escapeHtml(r.nom_porteur || '—')}${garmentRepeatBadgeHtml(r)}</td>
+            <td><div class="req-desc${desc ? '' : ' is-empty'}">${desc ? escapeHtml(desc) : 'Pas de description'}</div></td>
+            <td>${isWaitingForMe(r)
+                ? agePillHtml(r)
+                : `${statusBadge(r.statut)}<div class="req-sub">${formatRelative(r.statut === 'cloturee' && r.cloture_at ? r.cloture_at : r.created_at)}</div>`}</td>
+            <td class="col-actions"><div class="flex-row" style="gap:4px; justify-content:flex-end;">${actions}</div></td>
+        </tr>`;
+}
+
+// Sous-titre de la page : combien attendent, et depuis quand pour la plus ancienne
+function updateRequestsSubtitle() {
+    const el = $('#requests-subtitle');
+    if (!el) return;
+    const waiting = State.requestsCache.filter(isWaitingForMe);
+    if (!waiting.length) {
+        el.textContent = State.profile?.role === 'admin' ? 'Aucune demande à traiter, tout est à jour.' : 'Aucune demande à valider.';
+        return;
+    }
+    const oldest = Math.max(...waiting.map(waitingSinceMs));
+    const n = waiting.length;
+    const verb = State.profile?.role === 'admin' ? 'à traiter' : 'à valider';
+    el.innerHTML = `<strong>${n} demande${n > 1 ? 's' : ''} ${verb}</strong> · la plus ancienne attend depuis ${formatWait(oldest)}`;
+}
+
+function onRequestRowClick(e, id) {
+    if (e.target.closest('button, a, .col-check')) return;
+    viewRequest(id);
+}
+
+// ------------------------------------------------------------
+// Onglets de statut (remplacent le menu déroulant)
+// ------------------------------------------------------------
+function requestTabsConfig() {
+    if (State.profile?.role === 'admin') {
+        return [
+            { value: 'acceptee', label: 'À traiter', match: r => r.statut === 'acceptee' || r.statut === 'pre_validee', accent: true },
+            { value: 'cloturee', label: 'Traitées',  match: r => r.statut === 'cloturee' },
+            { value: '',         label: 'Toutes',    match: () => true, noCount: true },
+        ];
+    }
+    return [
+        { value: 'en_attente', label: 'À valider', match: r => r.statut === 'en_attente', accent: true },
+        { value: 'acceptee',   label: 'Acceptées', match: r => r.statut === 'acceptee' || r.statut === 'pre_validee' },
+        { value: 'cloturee',   label: 'Traitées',  match: r => r.statut === 'cloturee' },
+        { value: 'refusee',    label: 'Refusées',  match: r => r.statut === 'refusee' },
+        { value: '',           label: 'Toutes',    match: () => true, noCount: true },
+    ];
+}
+function renderRequestsTabs() {
+    const el = $('#requests-tabs');
+    if (!el) return;
+    const cur = State.requestsFilter.status;
+    el.innerHTML = requestTabsConfig().map(t => {
+        const n = State.requestsCache.filter(t.match).length;
+        return `<button type="button" class="seg-tab${t.value === cur ? ' active' : ''}" data-status="${t.value}">
+            ${t.label}${t.noCount ? '' : `<em class="${t.accent && n ? 'hot' : ''}">${n}</em>`}
+        </button>`;
+    }).join('');
+    el.querySelectorAll('.seg-tab').forEach(b => b.addEventListener('click', () => {
+        State.requestsFilter.status = b.dataset.status;
+        const sel = $('#requests-filter-status'); if (sel) sel.value = b.dataset.status;
+        State.requestsPage = 1;
+        clearRequestSelection(false);
+        renderRequestsTable();
+    }));
+}
+
+// ------------------------------------------------------------
+// Sélection multiple + actions groupées
+// ------------------------------------------------------------
+function currentPageRequests() {
+    const filtered = getFilteredRequests();
+    const start = (State.requestsPage - 1) * REQUESTS_PAGE_SIZE;
+    return filtered.slice(start, start + REQUESTS_PAGE_SIZE);
+}
+function toggleRequestSelection(id) {
+    if (State.selectedIds.has(id)) State.selectedIds.delete(id); else State.selectedIds.add(id);
+    renderRequestsTable();
+}
+function toggleSelectAllRequests() {
+    const page = currentPageRequests();
+    const allOn = page.length && page.every(r => State.selectedIds.has(r.id));
+    page.forEach(r => allOn ? State.selectedIds.delete(r.id) : State.selectedIds.add(r.id));
+    renderRequestsTable();
+}
+function clearRequestSelection(rerender = true) {
+    State.selectedIds.clear();
+    if (rerender) renderRequestsTable();
+}
+function renderBulkBar() {
+    const bar = $('#requests-bulk');
+    if (!bar) return;
+    const ids = [...State.selectedIds];
+    if (!ids.length) { bar.classList.add('hidden'); return; }
+    const rows = State.requestsCache.filter(r => State.selectedIds.has(r.id));
+    const role = State.profile?.role;
+    const doable = role === 'admin'
+        ? rows.filter(r => r.statut === 'acceptee' || r.statut === 'pre_validee').length
+        : rows.filter(r => r.statut === 'en_attente').length;
+    bar.classList.remove('hidden');
+    bar.innerHTML = `
+        <span class="cbx on" onclick="clearRequestSelection()"></span>
+        <strong>${ids.length} demande${ids.length > 1 ? 's' : ''} sélectionnée${ids.length > 1 ? 's' : ''}</strong>
+        ${doable ? (role === 'admin'
+            ? `<button class="btn btn-primary btn-sm" onclick="bulkMarkDone()">${ICON_CHECK}<span>Marquer comme traitée${doable > 1 ? 's' : ''} (${doable})</span></button>`
+            : `<button class="btn btn-primary btn-sm" onclick="bulkValidate()">${ICON_CHECK}<span>Valider (${doable})</span></button>`) : ''}
+        <button class="btn btn-ghost btn-sm" onclick="exportRequestsExcel(true)">Exporter la sélection</button>
+        <button class="bulk-cancel" onclick="clearRequestSelection()">Annuler</button>`;
+}
+
+async function bulkMarkDone() {
+    const ids = State.requestsCache
+        .filter(r => State.selectedIds.has(r.id) && (r.statut === 'acceptee' || r.statut === 'pre_validee'))
+        .map(r => r.id);
+    if (!ids.length) return;
+    try {
+        const { data, error } = await sb
+            .from('repair_requests')
+            .update({ statut: 'cloturee', cloture_at: new Date().toISOString(), cloture_par: State.user.id })
+            .in('id', ids)
+            .in('statut', ['acceptee', 'pre_validee'])
+            .select('id');
+        if (error) throw error;
+        const n = data?.length || 0;
+        toast(`${n} demande${n > 1 ? 's' : ''} marquée${n > 1 ? 's' : ''} comme traitée${n > 1 ? 's' : ''}`, 'success');
+        clearRequestSelection(false);
+        reloadActiveRequests();
+    } catch (err) {
+        toast(err.message || "Erreur lors de la mise à jour", 'error');
+    }
+}
+
+async function bulkValidate() {
+    const ids = State.requestsCache
+        .filter(r => State.selectedIds.has(r.id) && r.statut === 'en_attente')
+        .map(r => r.id);
+    if (!ids.length) return;
+    if (!confirm(`Valider ${ids.length} demande${ids.length > 1 ? 's' : ''} et les transmettre à NETEXIAL ?`)) return;
+    let ok = 0;
+    for (const id of ids) {
+        try { await apiCall(`/requests/${id}/pre-validate`, { method: 'POST' }); ok++; } catch (e) { /* on continue */ }
+    }
+    toast(`${ok} demande${ok > 1 ? 's' : ''} validée${ok > 1 ? 's' : ''}${ok < ids.length ? ` (${ids.length - ok} en échec)` : ''}`, ok === ids.length ? 'success' : 'warning');
+    clearRequestSelection(false);
+    reloadActiveRequests();
+}
+
+// ------------------------------------------------------------
+// Panneau latéral (détail d'une demande)
+// ------------------------------------------------------------
+const Drawer = { currentId: null, list: [] };
+
+function drawerListForCurrentView() {
+    if (State.currentView === 'admin-pending') return getFilteredPending().map(r => r.id);
+    if (State.currentView === 'admin-requests') return getFilteredRequests().map(r => r.id);
+    return [];
+}
+function openDrawer({ id, pill, title, subtitle, body, footer }) {
+    Drawer.currentId = id;
+    Drawer.list = drawerListForCurrentView();
+    const idx = Drawer.list.indexOf(id);
+    $('#drawer-pill').innerHTML = pill || '';
+    $('#drawer-title').textContent = title || '';
+    $('#drawer-subtitle').textContent = subtitle || '';
+    $('#drawer-body').innerHTML = body;
+    $('#drawer-footer').innerHTML = footer;
+    $('#drawer-prev').disabled = idx <= 0;
+    $('#drawer-next').disabled = idx < 0 || idx >= Drawer.list.length - 1;
+    $('#drawer').classList.add('open');
+    document.body.classList.add('drawer-open');
+    $('#drawer-body').scrollTop = 0;
+    $$('.req-row').forEach(tr => tr.classList.toggle('is-open', tr.dataset.id === id));
+    const row = document.querySelector(`.view.active .req-row[data-id="${id}"]`);
+    row?.scrollIntoView({ block: 'nearest' });
+}
+function closeDrawer() {
+    Drawer.currentId = null;
+    $('#drawer')?.classList.remove('open');
+    document.body.classList.remove('drawer-open');
+    $$('.req-row.is-open').forEach(tr => tr.classList.remove('is-open'));
+}
+function drawerStep(delta) {
+    if (!Drawer.currentId) return;
+    const list = drawerListForCurrentView();
+    const idx = list.indexOf(Drawer.currentId);
+    const next = list[idx + delta];
+    if (next) viewRequest(next);
+}
+// Après une action (ex. "traitée"), on enchaîne sur la demande suivante de la liste
+function drawerAdvanceAfter(id) {
+    if (Drawer.currentId !== id) return false;
+    const list = Drawer.list;
+    const idx = list.indexOf(id);
+    const next = list[idx + 1] || list[idx - 1];
+    if (next && next !== id) { setTimeout(() => viewRequest(next), 150); return true; }
+    closeDrawer();
+    return true;
+}
+
+// ------------------------------------------------------------
+// Raccourcis clavier (Suivi des demandes)
+//   ↑/↓ : demande précédente/suivante · Entrée : ouvrir
+//   Espace : sélectionner · T : marquer traitée · Échap : fermer
+// ------------------------------------------------------------
+document.addEventListener('keydown', e => {
+    if (!State.profile) return;
+    if (!['admin-requests', 'admin-pending'].includes(State.currentView)) return;
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (['input', 'textarea', 'select'].includes(tag) || e.target.isContentEditable) return;
+    if ($('#modal-overlay')?.classList.contains('open')) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+    const rows = [...document.querySelectorAll('.view.active .req-row')];
+    const ids = rows.map(r => r.dataset.id);
+    let cur = Drawer.currentId || State.cursorId;
+    let idx = ids.indexOf(cur);
+
+    const focusRow = (i) => {
+        if (i < 0 || i >= ids.length) return;
+        State.cursorId = ids[i];
+        rows.forEach(r => r.classList.toggle('is-cursor', r.dataset.id === ids[i]));
+        rows[i].scrollIntoView({ block: 'nearest' });
+        if (Drawer.currentId) viewRequest(ids[i]);
+    };
+
+    switch (e.key) {
+        case 'ArrowDown': e.preventDefault(); focusRow(idx < 0 ? 0 : idx + 1); break;
+        case 'ArrowUp':   e.preventDefault(); focusRow(idx < 0 ? 0 : idx - 1); break;
+        case 'Enter':     if (idx >= 0) { e.preventDefault(); viewRequest(ids[idx]); } break;
+        case ' ':
+            if (idx >= 0 && State.currentView === 'admin-requests') { e.preventDefault(); toggleRequestSelection(ids[idx]); }
+            break;
+        case 't': case 'T':
+            if (idx >= 0 && State.profile.role === 'admin') {
+                const r = State.requestsCache.concat(State.pendingCache).find(x => x.id === ids[idx]);
+                if (r && (r.statut === 'acceptee' || r.statut === 'pre_validee')) { e.preventDefault(); markRequestDone(r.id); }
+            }
+            break;
+        case 'Escape': if (Drawer.currentId) { e.preventDefault(); closeDrawer(); } break;
+        case '?': e.preventDefault(); openShortcutsHelp(); break;
+    }
+});
+
+function openShortcutsHelp() {
+    const k = s => `<span class="kbd">${s}</span>`;
+    openModal('Raccourcis clavier', `
+        <div class="shortcuts">
+            <div>${k('↑')} ${k('↓')}<span>Demande précédente / suivante</span></div>
+            <div>${k('Entrée')}<span>Ouvrir la demande</span></div>
+            <div>${k('Espace')}<span>Sélectionner / désélectionner</span></div>
+            ${State.profile?.role === 'admin' ? `<div>${k('T')}<span>Marquer comme traitée</span></div>` : ''}
+            <div>${k('Échap')}<span>Fermer le panneau</span></div>
+            <div>${k('?')}<span>Afficher cette aide</span></div>
+        </div>`, `<button class="btn btn-primary" onclick="closeModal()">Fermer</button>`);
 }
 
 // Page "Demandes en attente" : uniquement les demandes qui attendent une action.
@@ -5634,7 +6130,7 @@ async function loadPendingRequests() {
     const role = State.profile?.role;
     let query = sb
         .from('repair_requests')
-        .select('*, entreprises(nom, code_entreprise), sites(nom), request_images(id)')
+        .select('*, entreprises(nom, code_entreprise), sites(nom), request_images(url_publique, ordre)')
         .order('created_at', { ascending: false });
 
     if (role === 'admin') {
@@ -5677,8 +6173,8 @@ function renderPendingTable() {
     const rows = getFilteredPending();
 
     tbody.innerHTML = rows.length
-        ? rows.map(requestRowHtml).join('')
-        : `<tr><td colspan="8"><div class="empty-state"><p>Aucune demande en attente.</p></div></td></tr>`;
+        ? rows.map(r => requestRowHtml(r)).join('')
+        : `<tr><td colspan="7"><div class="empty-state"><p>🎉 Aucune demande en attente.</p></div></td></tr>`;
 
     const cnt = $('#pending-count');
     if (cnt) cnt.textContent = `${rows.length} demande${rows.length > 1 ? 's' : ''} en attente`;
@@ -5716,6 +6212,7 @@ function exportPendingExcel() {
 
 // Recharge la bonne vue après une action (selon la page courante)
 function reloadActiveRequests() {
+    setTimeout(refreshNavBadges, 300);
     GarmentIndex.fetchedAt = 0; // un statut a changé → l'historique doit être recalculé
     if (State.currentView === 'garments') loadGarments(true);
     else if (State.currentView === 'admin-pending') loadPendingRequests();
@@ -5757,12 +6254,14 @@ function getFilteredRequests() {
 }
 
 // Export Excel (.xlsx) des demandes affichées
-function exportRequestsExcel() {
+function exportRequestsExcel(onlySelected = false) {
     if (typeof XLSX === 'undefined') {
         toast("Module d'export indisponible (réessayez dans un instant)", 'error');
         return;
     }
-    const rows = getFilteredRequests();
+    const rows = onlySelected === true
+        ? State.requestsCache.filter(r => State.selectedIds.has(r.id))
+        : getFilteredRequests();
     if (!rows.length) {
         toast("Aucune demande à exporter", 'warning');
         return;
@@ -5799,11 +6298,23 @@ function renderRequestsTable() {
     const pageData = filtered.slice(start, start + REQUESTS_PAGE_SIZE);
 
     const tbody = $('#requests-tbody');
+    // On oublie la sélection des demandes qui ne sont plus affichées
+    const visible = new Set(filtered.map(r => r.id));
+    [...State.selectedIds].forEach(id => { if (!visible.has(id)) State.selectedIds.delete(id); });
     if (!pageData.length) {
-        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><p>Aucune demande trouvée.</p></div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><p>${State.requestsFilter.status === 'acceptee' && State.profile?.role === 'admin' ? '🎉 Tout est traité, rien en attente.' : 'Aucune demande trouvée.'}</p></div></td></tr>`;
     } else {
-        tbody.innerHTML = pageData.map(requestRowHtml).join('');
+        tbody.innerHTML = pageData.map(r => requestRowHtml(r, { selectable: true })).join('');
     }
+    const all = $('#requests-check-all');
+    if (all) {
+        const nSel = pageData.filter(r => State.selectedIds.has(r.id)).length;
+        all.classList.toggle('on', nSel > 0 && nSel === pageData.length);
+        all.classList.toggle('partial', nSel > 0 && nSel < pageData.length);
+    }
+    renderRequestsTabs();
+    renderBulkBar();
+    updateRequestsSubtitle();
 
     $('#requests-count').textContent = `${total} résultat${total > 1 ? 's' : ''}`;
 
@@ -5850,7 +6361,8 @@ $('#requests-filter-site').addEventListener('change', e => {
     State.requestsPage = 1;
     renderRequestsTable();
 });
-$('#export-requests-btn')?.addEventListener('click', exportRequestsExcel);
+$('#export-requests-btn')?.addEventListener('click', () => exportRequestsExcel(false));
+window.exportRequestsExcel = exportRequestsExcel;
 $('#export-pending-btn')?.addEventListener('click', exportPendingExcel);
 
 // Filtres date — Suivi des demandes
@@ -5879,7 +6391,7 @@ async function viewRequest(id) {
     await loadGarmentIndex().catch(() => {});
     const { data, error } = await sb
         .from('repair_requests')
-        .select('*, entreprises(nom, code_entreprise, email_contact), sites(nom), request_images(*)')
+        .select('*, entreprises(nom, code_entreprise, email_contact, code_client_sis), sites(nom, code_client_livre), request_images(*)')
         .eq('id', id)
         .single();
 
@@ -5896,32 +6408,45 @@ async function viewRequest(id) {
             closerName = u?.nom_complet || u?.email || '';
         } catch (e) { /* facultatif */ }
     }
-    const imagesHtml = (r.request_images || []).length ? `
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0;">
-            ${r.request_images.map(img => {
-                const src = img.url_publique || img.url || '';
-                return `
-                <img src="${src}" style="width:88px;height:88px;object-fit:cover;border-radius:var(--radius-sm);cursor:pointer;"
-                     onclick="openLightbox('${src}')" alt="${escapeJs(img.filename || '')}">
-            `;}).join('')}
+
+    // Galerie : grande photo + vignettes (photo du défaut en premier si possible)
+    const imgs = (r.request_images || []).slice().sort((a, b) => (a.ordre ?? 0) - (b.ordre ?? 0));
+    if (imgs.length > 1) imgs.push(imgs.shift()); // la photo du scan passe en dernier
+    const srcs = imgs.map(img => img.url_publique || img.url || '').filter(Boolean);
+    const imagesHtml = srcs.length ? `
+        <div class="req-gallery n${Math.min(srcs.length, 3)}">
+            ${srcs.slice(0, 3).map((src, i) => `
+                <button type="button" class="req-gallery-item" onclick="openLightbox('${escapeJs(src)}')">
+                    <img src="${escapeHtml(src)}" alt="Photo ${i + 1}">
+                    ${i === 2 && srcs.length > 3 ? `<span class="more">+${srcs.length - 3}</span>` : ''}
+                </button>`).join('')}
         </div>
-    ` : '<p style="color: var(--text-muted); font-size: 13px;">Aucune photo</p>';
+        ${srcs.length > 3 ? `<div class="req-gallery-rest">${srcs.slice(3).map(src => `<img src="${escapeHtml(src)}" alt="" onclick="openLightbox('${escapeJs(src)}')">`).join('')}</div>` : ''}
+    ` : '<div class="req-nophoto">Aucune photo</div>';
 
     const sourceBadge = {
         'auto':      '<span class="badge badge-info" style="margin-left:6px;font-size:9px;">OCR auto</span>',
         'corrected': '<span class="badge badge-warning" style="margin-left:6px;font-size:9px;">OCR corrigé</span>',
         'manual':    '',
     }[r.nom_porteur_source] || '';
+    const isAdmin = State.profile?.role === 'admin';
 
     const body = `
-        <div class="detail-grid">
-            <div class="detail-item"><div class="label">Ticket</div><div class="value" style="font-family: var(--font-display); font-size: 16px;">${escapeHtml(r.ticket_number)}</div></div>
-            <div class="detail-item"><div class="label">Statut</div><div class="value">${statusBadge(r.statut)}</div></div>
-            <div class="detail-item"><div class="label">Entreprise</div><div class="value">${escapeHtml(r.entreprises?.nom || '—')}<div style="font-size:11px;color:var(--text-muted);font-family:var(--font-display);">${escapeHtml(r.entreprises?.code_entreprise || '')}</div></div></div>
-            <div class="detail-item"><div class="label">Site</div><div class="value">${escapeHtml(r.sites?.nom || '—')}</div></div>
-            <div class="detail-item"><div class="label">Nom du porteur</div><div class="value">${escapeHtml(r.nom_porteur || '—')}${sourceBadge}</div></div>
-            <div class="detail-item"><div class="label">Date</div><div class="value">${formatDate(r.created_at)}</div></div>
-            <div class="detail-item"><div class="label">Code-barres</div><div class="value" style="font-family:monospace;">${escapeHtml(r.code_barre || '—')}</div></div>
+        ${imagesHtml}
+        <div class="req-facts">
+            <div><small>Porteur</small><b>${escapeHtml(r.nom_porteur || '—')}${sourceBadge}</b></div>
+            <div><small>Code-barres</small><b class="mono">${escapeHtml(r.code_barre || '—')}</b></div>
+            <div><small>Entreprise</small><b>${escapeHtml(r.entreprises?.nom || '—')}</b><span>${escapeHtml(r.entreprises?.code_entreprise || '')}</span></div>
+            <div><small>Site</small><b>${escapeHtml(r.sites?.nom || '—')}</b></div>
+            ${isAdmin ? `
+            <div><small>Code client SIS</small><b class="mono">${escapeHtml(r.entreprises?.code_client_sis || '—')}</b></div>
+            <div><small>Code livré ATLAS</small><b class="mono">${escapeHtml(r.sites?.code_client_livre || '—')}</b></div>` : ''}
+            <div><small>Statut</small><b>${statusBadge(r.statut)}</b></div>
+            <div><small>Reçue le</small><b>${formatDate(r.created_at)}</b></div>
+        </div>
+        <div class="req-block">
+            <small>Description</small>
+            <p class="${r.description ? '' : 'is-empty'}">${r.description ? escapeHtml(r.description) : 'Pas de description'}</p>
         </div>
         ${garmentHistoryHintHtml(r)}
         ${r.statut === 'cloturee' ? `
@@ -5929,63 +6454,44 @@ async function viewRequest(id) {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                 <span>Traitée${r.cloture_at ? ` le ${formatDate(r.cloture_at)}` : ''}${closerName ? ` par <strong>${escapeHtml(closerName)}</strong>` : ''}</span>
             </div>` : ''}
-        <div class="field" style="margin-top: 16px;">
-            <div class="field-label">Description</div>
-            <div style="padding: 12px 14px; background: var(--bg); border-radius: var(--radius-sm); font-size: 13px;">${escapeHtml(r.description || '—')}</div>
-        </div>
-        <div class="field">
-            <div class="field-label">Photos (${(r.request_images || []).length})</div>
-            ${imagesHtml}
-        </div>
         ${r.raison_refus ? `
-            <div style="padding: 12px 16px; background: rgba(252, 97, 0, 0.08); border-left: 3px solid var(--nx-orange); border-radius: var(--radius-sm); font-size: 13px; margin-top: 12px;">
-                <strong>Motif de refus :</strong> ${escapeHtml(r.raison_refus)}
-            </div>` : ''}
+            <div class="refus-info"><strong>Motif de refus :</strong> ${escapeHtml(r.raison_refus)}</div>` : ''}
     `;
 
     let footer = `
-        <button class="btn btn-ghost" onclick="exportPdf('${r.id}', '${r.ticket_number}')">
+        <button class="btn btn-ghost" onclick="exportPdf('${r.id}', '${escapeJs(r.ticket_number)}')" title="Exporter en PDF">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span>Export PDF</span>
+            <span>PDF</span>
         </button>
     `;
     const role = State.profile?.role;
     if (role === 'client' && r.statut === 'en_attente') {
-        // User entreprise : pré-validation OU refus définitif
         footer += `
             <button class="btn btn-ghost" style="color:#c62828;" onclick="refuseByEntreprise('${r.id}')">Refuser</button>
-            <button class="btn btn-accent" onclick="preValidateRequest('${r.id}')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Valider et transmettre à NETEXIAL</span>
-            </button>
+            <button class="btn btn-accent btn-grow" onclick="preValidateRequest('${r.id}')">${ICON_CHECK}<span>Valider et transmettre</span></button>
         `;
     } else if (role === 'admin' && (r.statut === 'acceptee' || r.statut === 'pre_validee')) {
-        // NETEXIAL : la demande est à traiter
         footer += `
-            <button class="btn btn-accent" onclick="markRequestDone('${r.id}')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Marquer comme traitée</span>
-            </button>
+            <button class="btn btn-accent btn-grow" onclick="markRequestDone('${r.id}')">${ICON_CHECK}<span>Marquer comme traitée</span><span class="kbd kbd-light">T</span></button>
         `;
     } else if (role === 'admin' && r.statut === 'cloturee') {
-        // NETEXIAL : annuler en cas d'erreur
-        footer += `
-            <button class="btn btn-ghost" onclick="markRequestUndone('${r.id}')">Remettre à traiter</button>
-            <button class="btn btn-primary" onclick="closeModal()">Fermer</button>
-        `;
+        footer += `<button class="btn btn-ghost btn-grow" onclick="markRequestUndone('${r.id}')">Remettre à traiter</button>`;
     } else if (role === 'client' && r.statut === 'refusee') {
-        // User entreprise : possibilité de rouvrir une demande refusée par erreur
         footer += `
-            <button class="btn btn-accent" onclick="reopenRequest('${r.id}')">
+            <button class="btn btn-accent btn-grow" onclick="reopenRequest('${r.id}')">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
                 <span>Rouvrir la demande</span>
-            </button>
-        `;
-    } else {
-        footer += `<button class="btn btn-primary" onclick="closeModal()">Fermer</button>`;
+            </button>`;
     }
 
-    openModal(`Demande ${r.ticket_number}`, body, footer);
+    const pill = isWaitingForMe(r)
+        ? agePillHtml(r).replace('">', '">En attente depuis ')
+        : statusBadge(r.statut);
+    const subtitle = [r.entreprises?.nom, r.sites?.nom, `reçue le ${formatDate(r.created_at)}`].filter(Boolean).join(' · ');
+
+    // Si la fiche vêtement (modale) est ouverte, on la ferme pour laisser place au panneau
+    $('#modal-overlay')?.classList.remove('open');
+    openDrawer({ id: r.id, pill, title: r.ticket_number, subtitle, body, footer });
 }
 
 // ============================================================
@@ -6383,7 +6889,7 @@ async function markRequestDone(id, btn) {
         if (error) throw error;
         if (!data || !data.length) throw new Error("Cette demande a déjà été traitée (ou n'est plus à traiter).");
         toast(`Demande ${data[0].ticket_number} marquée comme traitée`, 'success');
-        closeModal();
+        if (!drawerAdvanceAfter(id)) closeModal();
         reloadActiveRequests();
     } catch (err) {
         toast(err.message || "Erreur lors de la mise à jour", 'error');
@@ -7325,6 +7831,7 @@ function subscribeRealtime() {
                 (payload.new.traite_at && Date.now() - new Date(payload.new.traite_at).getTime() < 60000);
             if (!fresh) return;
             toast(`Nouvelle demande à traiter : ${payload.new.ticket_number}`, 'info');
+            refreshNavBadges();
             GarmentIndex.fetchedAt = 0;
             if (State.currentView === 'garments') loadGarments(true);
             if (State.currentView === 'admin-pending') loadPendingRequests();
@@ -7492,8 +7999,257 @@ function printQr(qrSrc, clientName, codeClient) {
     w.document.close();
 }
 
+// ============================================================
+// COMPTEURS DU MENU (demandes qui attendent une action)
+// ============================================================
+async function refreshNavBadges() {
+    if (!State.profile) return;
+    try {
+        const role = State.profile.role;
+        let q = sb.from('repair_requests').select('id', { count: 'exact', head: true });
+        let targetView;
+        if (role === 'admin') {
+            const scope = State.assignedEntrepriseIds?.length ? State.assignedEntrepriseIds : ['00000000-0000-0000-0000-000000000000'];
+            q = q.in('statut', ['acceptee', 'pre_validee']).in('entreprise_id', scope);
+            targetView = 'admin-requests';
+        } else {
+            q = q.eq('statut', 'en_attente').eq('entreprise_id', State.profile.entreprise_id);
+            if (State.userSites?.length) q = q.in('site_id', State.userSites);
+            targetView = 'admin-pending';
+        }
+        const { count } = await q;
+        State.waitingCount = count || 0;
+        $$('.nav-badge').forEach(b => b.remove());
+        if (count) {
+            const item = $(`#nav-admin .nav-item[data-view="${targetView}"]`);
+            item?.insertAdjacentHTML('beforeend', `<span class="nav-badge">${count > 99 ? '99+' : count}</span>`);
+        }
+    } catch (e) { /* non bloquant */ }
+}
+
+// ============================================================
+// MENU PROFIL (clic sur le nom en bas du menu)
+// ============================================================
+function toggleUserMenu(force) {
+    const menu = $('#user-menu');
+    const open = force !== undefined ? force : !menu.classList.contains('open');
+    menu.classList.toggle('open', open);
+    $('#user-badge')?.classList.toggle('open', open);
+    if (open) renderUserMenu();
+}
+
+async function renderUserMenu() {
+    const p = State.profile;
+    if (!p) return;
+    const isAdmin = p.role === 'admin';
+    const initials = (p.nom_complet || p.email || '?').split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase();
+    const since = State.sessionStart ? State.sessionStart.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const roleLabel = isAdmin ? 'Administrateur NETEXIAL' : `Valideur · ${State.entreprise?.nom || 'Entreprise'}`;
+
+    $('#user-menu').innerHTML = `
+        <div class="um-head">
+            <div class="avatar um-avatar">${escapeHtml(initials)}</div>
+            <div class="um-id">
+                <b>${escapeHtml(p.nom_complet || p.email)}</b>
+                <span>${escapeHtml(p.email || '')}</span>
+                <em>${escapeHtml(roleLabel)}</em>
+            </div>
+        </div>
+        <div class="um-stats" id="um-stats">
+            <div><b>…</b><span>${isAdmin ? 'entreprises' : 'sites'}</span></div>
+            <div><b>${State.waitingCount ?? '…'}</b><span>${isAdmin ? 'à traiter' : 'à valider'}</span></div>
+            <div><b>…</b><span>${isAdmin ? 'traitées ce mois' : 'validées ce mois'}</span></div>
+        </div>
+        <div class="um-list">
+            <button class="um-item" onclick="openMyProfile()"><i>👤</i>Mon profil</button>
+            <button class="um-item" onclick="openChangePassword()"><i>🔒</i>Changer mon mot de passe</button>
+            <button class="um-item" onclick="openMyScope()"><i>🏢</i>${isAdmin ? 'Mes entreprises' : 'Mes sites'}<small id="um-scope-count"></small></button>
+            <div class="um-sep"></div>
+            <button class="um-item" onclick="toggleThemeFromMenu(event)"><i>🌙</i>Mode sombre<span class="um-toggle${dark ? ' on' : ''}"></span></button>
+            <button class="um-item" onclick="toggleUserMenu(false); openShortcutsHelp()"><i>⌨️</i>Raccourcis clavier<small>?</small></button>
+            <div class="um-sep"></div>
+            <button class="um-item um-out" onclick="$('#logout-btn').click()"><i>⎋</i>Se déconnecter</button>
+        </div>
+        <div class="um-foot"><span>IDEA v2.0</span>${since ? `<span>Connecté depuis ${since}</span>` : ''}</div>
+    `;
+
+    // Chiffres perso (chargés en arrière-plan)
+    try {
+        const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+        let scopeCount, doneCount;
+        if (isAdmin) {
+            scopeCount = State.assignedEntrepriseIds?.length || 0;
+            const { count } = await sb.from('repair_requests').select('id', { count: 'exact', head: true })
+                .eq('statut', 'cloturee').eq('cloture_par', p.id).gte('cloture_at', monthStart.toISOString());
+            doneCount = count || 0;
+        } else {
+            if (State.userSites?.length) scopeCount = State.userSites.length;
+            else {
+                const { count } = await sb.from('sites').select('id', { count: 'exact', head: true }).eq('entreprise_id', p.entreprise_id);
+                scopeCount = count || 0;
+            }
+            const { count } = await sb.from('repair_requests').select('id', { count: 'exact', head: true })
+                .eq('traite_par', p.id).gte('traite_at', monthStart.toISOString());
+            doneCount = count || 0;
+        }
+        const stats = $('#um-stats');
+        if (stats) {
+            const b = stats.querySelectorAll('b');
+            b[0].textContent = scopeCount; b[1].textContent = State.waitingCount ?? 0; b[2].textContent = doneCount;
+        }
+        const sc = $('#um-scope-count'); if (sc) sc.textContent = scopeCount;
+    } catch (e) { /* non bloquant */ }
+}
+
+function toggleThemeFromMenu(e) {
+    e.stopPropagation();
+    $('#theme-toggle').click();
+    $('#user-menu .um-toggle')?.classList.toggle('on', document.documentElement.getAttribute('data-theme') === 'dark');
+}
+
+function openMyProfile() {
+    toggleUserMenu(false);
+    const p = State.profile;
+    const isAdmin = p.role === 'admin';
+    openModal('Mon profil', `
+        <div class="detail-grid">
+            <div class="detail-item"><div class="label">Nom</div><div class="value">${escapeHtml(p.nom_complet || '—')}</div></div>
+            <div class="detail-item"><div class="label">Email</div><div class="value">${escapeHtml(p.email || '—')}</div></div>
+            <div class="detail-item"><div class="label">Rôle</div><div class="value">${isAdmin ? 'Administrateur NETEXIAL' : 'Utilisateur entreprise'}</div></div>
+            ${!isAdmin ? `<div class="detail-item"><div class="label">Entreprise</div><div class="value">${escapeHtml(State.entreprise?.nom || '—')}</div></div>` : ''}
+        </div>
+        <p style="margin-top:16px; font-size:13px; color:var(--text-muted);">
+            Pour modifier votre nom ou votre email, contactez ${isAdmin ? 'un autre administrateur' : 'votre administrateur NETEXIAL'}.
+        </p>`,
+        `<button class="btn btn-ghost" onclick="openChangePassword()">Changer mon mot de passe</button>
+         <button class="btn btn-primary" onclick="closeModal()">Fermer</button>`);
+}
+
+function openChangePassword() {
+    toggleUserMenu(false);
+    openModal('Changer mon mot de passe', `
+        <form id="chpwd-form" novalidate>
+            <div class="field">
+                <label class="field-label" for="chpwd-1">Nouveau mot de passe</label>
+                <input id="chpwd-1" class="input" type="password" autocomplete="new-password">
+                <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+                    <div style="flex:1; height:6px; border-radius:3px; background:var(--border); overflow:hidden;"><div id="chpwd-bar" style="height:100%; width:0; transition:width .2s;"></div></div>
+                    <span id="chpwd-label" style="font-size:11px; min-width:62px; text-align:right;"></span>
+                </div>
+            </div>
+            <div class="field">
+                <label class="field-label" for="chpwd-2">Confirmer</label>
+                <input id="chpwd-2" class="input" type="password" autocomplete="new-password">
+            </div>
+        </form>`,
+        `<button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+         <button class="btn btn-accent" id="chpwd-btn" onclick="submitChangePassword()">Enregistrer</button>`);
+    $('#chpwd-1').addEventListener('input', e => {
+        const v = e.target.value;
+        const lvl = v.length < PWD_MIN_LENGTH ? 0 : passwordStrength(v);
+        $('#chpwd-bar').style.width = v ? `${Math.max(lvl, 1) * 25}%` : '0';
+        $('#chpwd-bar').style.background = PWD_LEVELS[lvl].color;
+        $('#chpwd-label').textContent = v ? PWD_LEVELS[lvl].label : '';
+        $('#chpwd-label').style.color = PWD_LEVELS[lvl].color;
+    });
+    $('#chpwd-form').addEventListener('submit', e => { e.preventDefault(); submitChangePassword(); });
+    setTimeout(() => $('#chpwd-1')?.focus(), 50);
+}
+
+async function submitChangePassword() {
+    const p1 = $('#chpwd-1').value, p2 = $('#chpwd-2').value;
+    if (p1.length < PWD_MIN_LENGTH) return toast(`Le mot de passe doit faire au moins ${PWD_MIN_LENGTH} caractères`, 'warning');
+    if (p1 !== p2) return toast("Les deux mots de passe ne correspondent pas", 'warning');
+    const btn = $('#chpwd-btn'); btn.disabled = true;
+    try {
+        const { error } = await sb.auth.updateUser({ password: p1 });
+        if (error) {
+            if (error.code === 'same_password' || /different from the old/i.test(error.message || '')) throw new Error("Ce mot de passe est identique à l'actuel.");
+            if (error.code === 'weak_password') throw new Error("Mot de passe trop faible : ajoutez majuscules, chiffres et symboles.");
+            throw error;
+        }
+        toast("Mot de passe modifié", 'success');
+        closeModal();
+    } catch (err) {
+        toast(err.message || "Erreur lors du changement de mot de passe", 'error');
+        btn.disabled = false;
+    }
+}
+
+async function openMyScope() {
+    toggleUserMenu(false);
+    const isAdmin = State.profile.role === 'admin';
+    openModal(isAdmin ? 'Mes entreprises' : 'Mes sites', '<div class="full-loader"><span class="loader"></span></div>', `<button class="btn btn-primary" onclick="closeModal()">Fermer</button>`);
+    try {
+        let items = [];
+        if (isAdmin) {
+            const ids = State.assignedEntrepriseIds || [];
+            if (ids.length) {
+                const [{ data: ents }, { data: reqs }] = await Promise.all([
+                    sb.from('entreprises').select('id, nom, code_entreprise').in('id', ids).order('nom'),
+                    sb.from('repair_requests').select('entreprise_id').in('entreprise_id', ids).in('statut', ['acceptee', 'pre_validee']),
+                ]);
+                const cnt = {}; (reqs || []).forEach(r => cnt[r.entreprise_id] = (cnt[r.entreprise_id] || 0) + 1);
+                items = (ents || []).map(e => ({ id: e.id, nom: e.nom, sub: e.code_entreprise, n: cnt[e.id] || 0 }));
+            }
+        } else {
+            let q = sb.from('sites').select('id, nom').eq('entreprise_id', State.profile.entreprise_id).order('nom');
+            if (State.userSites?.length) q = q.in('id', State.userSites);
+            const { data: sites } = await q;
+            const { data: reqs } = await sb.from('repair_requests').select('site_id').eq('entreprise_id', State.profile.entreprise_id).eq('statut', 'en_attente');
+            const cnt = {}; (reqs || []).forEach(r => cnt[r.site_id] = (cnt[r.site_id] || 0) + 1);
+            items = (sites || []).map(s => ({ id: s.id, nom: s.nom, sub: '', n: cnt[s.id] || 0 }));
+        }
+        $('#modal-body').innerHTML = items.length ? `
+            <div class="scope-list">${items.map(it => `
+                <button class="scope-item" onclick="filterRequestsBy('${isAdmin ? 'entreprise' : 'site'}', '${it.id}')">
+                    <span><b>${escapeHtml(it.nom || '—')}</b>${it.sub ? `<small>${escapeHtml(it.sub)}</small>` : ''}</span>
+                    ${it.n ? `<em>${it.n} ${isAdmin ? 'à traiter' : 'à valider'}</em>` : '<em class="zero">RAS</em>'}
+                </button>`).join('')}
+            </div>` : `<p style="color:var(--text-muted);">Aucun${isAdmin ? 'e entreprise' : ' site'} pour le moment.</p>`;
+    } catch (e) {
+        $('#modal-body').innerHTML = `<p style="color:var(--nx-red);">Erreur de chargement.</p>`;
+    }
+}
+
+// Ouvre "Suivi des demandes" filtré sur une entreprise (admin) ou un site (entreprise)
+function filterRequestsBy(kind, id) {
+    closeModal();
+    State.requestsFilter.entreprise = kind === 'entreprise' ? id : '';
+    State.requestsFilter.site = kind === 'site' ? id : '';
+    State.requestsFilter.status = State.profile.role === 'admin' ? 'acceptee' : 'en_attente';
+    State.requestsPage = 1;
+    showView('admin-requests');
+}
+
+document.addEventListener('click', e => {
+    const menu = $('#user-menu');
+    if (!menu?.classList.contains('open')) return;
+    if (e.target.closest('#user-menu') || e.target.closest('#user-badge')) return;
+    toggleUserMenu(false);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('#user-menu')?.classList.contains('open') && toggleUserMenu(false); } });
+
+window.toggleUserMenu = toggleUserMenu;
+window.openMyProfile = openMyProfile;
+window.openChangePassword = openChangePassword;
+window.submitChangePassword = submitChangePassword;
+window.openMyScope = openMyScope;
+window.filterRequestsBy = filterRequestsBy;
+window.toggleThemeFromMenu = toggleThemeFromMenu;
+window.openShortcutsHelp = openShortcutsHelp;
+window.toggleRequestSelection = toggleRequestSelection;
+window.toggleSelectAllRequests = toggleSelectAllRequests;
+window.clearRequestSelection = clearRequestSelection;
+window.bulkMarkDone = bulkMarkDone;
+window.bulkValidate = bulkValidate;
+window.onRequestRowClick = onRequestRowClick;
+window.closeDrawer = closeDrawer;
+
 // Exposer fonctions globales utilisées dans onclick=
 window.viewRequest = viewRequest;
+window.drawerStep = drawerStep;
 window.preValidateRequest = preValidateRequest;
 window.markRequestDone = markRequestDone;
 window.markRequestUndone = markRequestUndone;
