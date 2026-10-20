@@ -5676,9 +5676,14 @@ async function loadDashboard() {
     const now = Date.now();
 
     // --- Greeting
-    const firstName = (State.profile?.nom_complet || '').split(' ')[0];
+    // Compte nominatif → "Bonjour Saïd" ; compte de service (ex. "Service Client Chavagnes")
+    // → "Bonjour" + le nom du compte sous le titre
+    const fullName = (State.profile?.nom_complet || '').trim();
+    const isServiceAccount = /^(service|équipe|equipe|atelier|sav|support|accueil|admin|agence|site|compte)\b/i.test(fullName);
+    const firstName = isServiceAccount ? '' : fullName.split(/\s+/)[0];
+    const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
     $('#dash-hello').textContent = firstName ? `Bonjour ${firstName}` : 'Bonjour';
-    $('#dash-date').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    $('#dash-date').textContent = isServiceAccount && fullName ? `${fullName} · ${today}` : today;
 
     // --- À traiter / à valider
     const waiting = reqs.filter(isWaitingForMe);
