@@ -2786,6 +2786,87 @@ a.contact-card:hover {
 .col-actions > div { display: flex; flex-wrap: nowrap; }
 .col-actions { width: 110px; }
 .drawer:not(.open) { box-shadow: none; visibility: hidden; transition: transform .22s ease, visibility 0s .22s; }
+
+/* =============================================================
+   TABLEAU DE BORD "BENTO"
+   ============================================================= */
+.dash-head { margin-bottom: 18px; }
+.dash-head h1 { text-transform: none; letter-spacing: -.3px; font-weight: 700; margin-bottom: 4px; }
+.dash-head .sub { color: var(--text-muted); font-size: 14px; }
+.dash-head .sub::first-letter { text-transform: uppercase; }
+.bento {
+    display: grid; gap: 14px;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: minmax(190px, auto) minmax(190px, auto) minmax(170px, auto);
+    grid-template-areas:
+        "hero week  week  ring"
+        "hero photo photo delay"
+        "dark photo photo top";
+}
+.bt {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 18px;
+    position: relative; overflow: hidden; text-align: left; color: var(--text); font-family: var(--font-body);
+    display: flex; flex-direction: column; min-width: 0;
+}
+button.bt { cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+button.bt:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(20, 27, 77, .1); }
+.bt small { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+.bt-num { font-family: var(--font-display); font-size: 46px; font-weight: 700; line-height: 1.05; margin-top: 8px; }
+.bt-sub { font-size: 13px; color: var(--text-muted); margin-top: auto; padding-top: 6px; }
+.bt-trend { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-top: 4px; }
+.bt-trend.up { color: var(--nx-green); }
+.bt-trend.down { color: #c62828; }
+.bt-head { display: flex; justify-content: space-between; align-items: baseline; }
+.bt-head b { font-family: var(--font-display); font-size: 22px; }
+
+.bt-hero { grid-area: hero; background: linear-gradient(160deg, #FC6100, #FF8A3D); border: 0; color: #fff; }
+.bt-hero small { color: rgba(255,255,255,.88); }
+.bt-hero-num { font-family: var(--font-display); font-size: clamp(80px, 9vw, 130px); font-weight: 700; line-height: .9; margin: auto 0; }
+.bt-hero-foot { font-size: 14px; }
+.bt-hero-foot b { font-weight: 700; }
+
+.bt-week { grid-area: week; }
+.bt-bars { flex: 1; display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; align-items: end; margin-top: 10px; min-height: 110px; }
+.bt-bar { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; }
+.bt-bar i { display: block; border-radius: 6px 6px 2px 2px; background: #C9D3E6; min-height: 4px; transition: height .4s ease; }
+.bt-bar.today i { background: var(--nx-orange); }
+.bt-bar.future i { background: var(--border); }
+.bt-bar-n { text-align: center; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
+.bt-bar.today .bt-bar-n { color: var(--nx-orange); }
+.bt-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 6px; font-size: 11px; color: var(--text-muted); text-align: center; }
+.bt-days .today { color: var(--nx-orange); font-weight: 700; }
+[data-theme="dark"] .bt-bar i { background: rgba(193, 209, 235, .3); }
+
+.bt-ringbox { grid-area: ring; align-items: center; text-align: center; }
+.bt-ring { width: 128px; height: 128px; margin: 6px 0 2px; }
+.bt-ring text { font-family: var(--font-display); font-size: 30px; font-weight: 700; fill: var(--text); }
+
+.bt-photos { grid-area: photo; }
+.bt-mosaic { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+.bt-tile { position: relative; aspect-ratio: 1 / 1; border: 0; padding: 0; border-radius: 12px; overflow: hidden; cursor: pointer; background: var(--bg); }
+.bt-tile img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s ease; }
+.bt-tile:hover img { transform: scale(1.06); }
+.bt-tile span { position: absolute; left: 6px; bottom: 6px; background: rgba(10, 15, 46, .62); color: #fff; font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 7px; }
+.bt-empty { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 13px; }
+
+.bt-delay { grid-area: delay; }
+.bt-dark { grid-area: dark; background: var(--nx-navy); border: 0; color: #fff; }
+.bt-dark small, .bt-dark .bt-sub { color: rgba(255,255,255,.72); }
+[data-theme="dark"] .bt-dark { background: #1C3775; }
+.bt-top { grid-area: top; }
+.bt-top-name { font-size: 22px; font-weight: 700; margin-top: 10px; line-height: 1.2; }
+
+@media (max-width: 1150px) {
+    .bento {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: none;
+        grid-template-areas: "hero ring" "hero delay" "week week" "photo photo" "dark top";
+    }
+}
+@media (max-width: 640px) {
+    .bento { grid-template-columns: 1fr; grid-template-areas: "hero" "week" "ring" "delay" "photo" "dark" "top"; }
+    .bt-hero { min-height: 220px; }
+}
 </style>
 </head>
 <body>
@@ -3606,31 +3687,12 @@ a.contact-card:hover {
 
             <!-- ===== VUE : Admin - Dashboard ===== -->
             <section id="view-admin-dashboard" class="view">
-                <div class="page-header">
-                    <div>
-                        <h1>Tableau de bord</h1>
-                        <p class="sub">Vos demandes de réparation</p>
-                    </div>
+                <div class="dash-head">
+                    <h1 id="dash-hello">Bonjour</h1>
+                    <p class="sub" id="dash-date"></p>
                 </div>
-
-                <div class="stats-grid" id="dashboard-stats"></div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Évolution des demandes (30 derniers jours)</h3>
-                    </div>
-                    <div style="height: 280px; position: relative;">
-                        <canvas id="chart-evolution"></canvas>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Répartition par statut</h3>
-                    </div>
-                    <div style="height: 240px; position: relative;">
-                        <canvas id="chart-status"></canvas>
-                    </div>
+                <div class="bento" id="dash-bento">
+                    <div class="full-loader" style="grid-column: 1 / -1;"><span class="loader"></span></div>
                 </div>
             </section>
 
@@ -5584,132 +5646,193 @@ function statusBadge(status) {
 // ============================================================
 // DASHBOARD ADMIN
 // ============================================================
-let chartEvol = null, chartStatus = null;
+// ============================================================
+// TABLEAU DE BORD — version "bento"
+// Tout est calculé à partir des demandes visibles par l'utilisateur.
+// ============================================================
+let chartEvol = null, chartStatus = null; // (anciens graphiques, conservés pour compatibilité)
+const DAY_MS = 86400000;
 
 async function loadDashboard() {
+    const el = $('#dash-bento');
+    if (!el) return;
     const isAdmin = State.profile?.role === 'admin';
+
     let query = sb
         .from('repair_requests')
-        .select('id, statut, created_at, entreprise_id, entreprises(nom)');
-
-    // Admin NETEXIAL : uniquement les demandes acceptées de SES entreprises
+        .select('id, ticket_number, statut, created_at, traite_at, cloture_at, entreprise_id, site_id, nom_porteur, code_barre, entreprises(nom), sites(nom), request_images(url_publique, ordre)')
+        .order('created_at', { ascending: false });
     if (isAdmin) {
         const scope = State.assignedEntrepriseIds?.length ? State.assignedEntrepriseIds : ['00000000-0000-0000-0000-000000000000'];
         query = query.in('statut', ['pre_validee', 'acceptee', 'cloturee']).in('entreprise_id', scope);
+    } else {
+        query = query.eq('entreprise_id', State.profile.entreprise_id);
+        if (State.userSites?.length) query = query.in('site_id', State.userSites);
     }
 
-    const { data: requests, error } = await query;
+    const [{ data: requests, error }] = await Promise.all([query, isAdmin ? loadGarmentIndex().catch(() => {}) : null]);
+    if (error) { toast("Erreur chargement du tableau de bord", 'error'); return; }
+    const reqs = requests || [];
+    const now = Date.now();
 
-    if (error) {
-        toast("Erreur chargement dashboard", 'error');
-        return;
-    }
+    // --- Greeting
+    const firstName = (State.profile?.nom_complet || '').split(' ')[0];
+    $('#dash-hello').textContent = firstName ? `Bonjour ${firstName}` : 'Bonjour';
+    $('#dash-date').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
-    const since = (days) => requests.filter(r => new Date(r.created_at) > new Date(Date.now() - days * 86400000)).length;
-    const todayStr = new Date().toDateString();
-    const isAccepted = r => ['acceptee', 'pre_validee', 'cloturee'].includes(r.statut);
-    const icon = {
-        doc:   '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
-        clock: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-        check: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>',
-        cross: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-        cal:   '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    // --- À traiter / à valider
+    const waiting = reqs.filter(isWaitingForMe);
+    const late = waiting.filter(r => now - new Date(r.created_at).getTime() > 3 * DAY_MS).length;
+
+    // --- Reçues cette semaine (lundi → dimanche)
+    const monday = new Date(); monday.setHours(0, 0, 0, 0);
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    const week = Array.from({ length: 7 }, (_, i) => {
+        const start = monday.getTime() + i * DAY_MS;
+        return reqs.filter(r => { const t = new Date(r.created_at).getTime(); return t >= start && t < start + DAY_MS; }).length;
+    });
+    const todayIdx = (new Date().getDay() + 6) % 7;
+    const weekMax = Math.max(1, ...week);
+    const weekTotal = week.reduce((a, b) => a + b, 0);
+
+    // --- Délai de traitement (admin : demande → traitée ; entreprise : demande → validée)
+    const doneAt = r => isAdmin ? r.cloture_at : r.traite_at;
+    const doneIn = (from, to) => reqs.filter(r => {
+        const d = doneAt(r); if (!d) return false;
+        const t = new Date(d).getTime(); return t >= from && t < to;
+    });
+    const recentDone = doneIn(now - 30 * DAY_MS, now + 1);
+    const prevDone = doneIn(now - 60 * DAY_MS, now - 30 * DAY_MS);
+    const avgDays = list => list.length
+        ? list.reduce((s, r) => s + (new Date(doneAt(r)) - new Date(r.created_at)), 0) / list.length / DAY_MS
+        : null;
+    const avgNow = avgDays(recentDone), avgPrev = avgDays(prevDone);
+    const fast = recentDone.filter(r => new Date(doneAt(r)) - new Date(r.created_at) < 2 * DAY_MS).length;
+    const fastPct = recentDone.length ? Math.round(fast / recentDone.length * 100) : null;
+
+    // --- Derniers dommages reçus (avec photo)
+    const latest = reqs.filter(r => requestThumb(r)).slice(0, 8);
+
+    // --- Entreprise (admin) / site (entreprise) le plus actif ce mois
+    const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+    const thisMonth = reqs.filter(r => new Date(r.created_at) >= monthStart);
+    const counts = new Map();
+    thisMonth.forEach(r => {
+        const key = isAdmin ? r.entreprise_id : r.site_id;
+        const name = isAdmin ? r.entreprises?.nom : r.sites?.nom;
+        if (!key) return;
+        const c = counts.get(key) || { id: key, name: name || '—', n: 0 };
+        c.n++; counts.set(key, c);
+    });
+    const top = [...counts.values()].sort((a, b) => b.n - a.n)[0];
+
+    // --- Parc vêtements (admin)
+    const toReplace = isAdmin ? [...GarmentIndex.byKey.values()].filter(g => g.health.level === 'replace').length : 0;
+
+    const fmtDays = d => d === null ? '—' : d < 1 ? `${Math.round(d * 24)} h` : `${d.toFixed(1).replace('.', ',')} j`;
+    const trend = (avgNow !== null && avgPrev !== null)
+        ? (() => {
+            const diff = avgNow - avgPrev;
+            if (Math.abs(diff) < 0.05) return '<div class="bt-trend">= stable vs mois précédent</div>';
+            return diff < 0
+                ? `<div class="bt-trend up">▼ ${fmtDays(-diff)} vs mois précédent</div>`
+                : `<div class="bt-trend down">▲ ${fmtDays(diff)} vs mois précédent</div>`;
+          })()
+        : '<div class="bt-trend">sur les 30 derniers jours</div>';
+
+    const ring = (pct) => {
+        const r = 58, c = 2 * Math.PI * r, p = pct ?? 0;
+        const col = pct === null ? 'var(--border)' : p >= 80 ? 'var(--nx-green)' : p >= 50 ? '#E39B00' : '#d32f2f';
+        return `<svg class="bt-ring" viewBox="0 0 150 150">
+            <circle cx="75" cy="75" r="${r}" fill="none" stroke="var(--border)" stroke-width="14"/>
+            <circle cx="75" cy="75" r="${r}" fill="none" stroke="${col}" stroke-width="14" stroke-linecap="round"
+                stroke-dasharray="${(c * p / 100).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 75 75)"/>
+            <text x="75" y="84" text-anchor="middle">${pct === null ? '—' : pct + '%'}</text></svg>`;
     };
-    const card = (cls, ic, label, value) => `
-        <div class="stat-card ${cls}">
-            <div class="stat-card-icon">${ic}</div>
-            <div class="stat-label">${label}</div>
-            <div class="stat-value">${value}</div>
-        </div>`;
+    const dayNames = ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'];
 
-    if (isAdmin) {
-        $('#dashboard-stats').innerHTML =
-            card('', icon.doc, 'Demandes reçues', requests.length) +
-            card('accent', icon.clock, 'À traiter', requests.filter(r => r.statut === 'acceptee' || r.statut === 'pre_validee').length) +
-            card('success', icon.check, '7 derniers jours', since(7)) +
-            card('warning', icon.clock, '30 derniers jours', since(30));
-    } else {
-        $('#dashboard-stats').innerHTML =
-            card('', icon.doc, 'Total demandes', requests.length) +
-            card('warning', icon.clock, 'À valider', requests.filter(r => r.statut === 'en_attente').length) +
-            card('success', icon.check, 'Acceptées', requests.filter(isAccepted).length) +
-            card('danger', icon.cross, 'Refusées', requests.filter(r => r.statut === 'refusee').length);
-    }
+    el.innerHTML = `
+        <button class="bt bt-hero" onclick="openDashWaiting()">
+            <small>${isAdmin ? 'À traiter' : 'À valider'}</small>
+            <div class="bt-hero-num">${waiting.length}</div>
+            <div class="bt-hero-foot">${waiting.length
+                ? `${late ? `dont <b>${late} en retard</b> · ` : ''}<u>${isAdmin ? 'tout traiter' : 'tout valider'} →</u>`
+                : '🎉 Rien en attente'}</div>
+        </button>
 
-    // Graphique évolution (30j)
-    const days = Array.from({ length: 30 }, (_, i) => {
-        const d = new Date(); d.setDate(d.getDate() - (29 - i)); d.setHours(0, 0, 0, 0);
-        return d;
-    });
-    const counts = days.map(d => requests.filter(r => {
-        const rd = new Date(r.created_at); rd.setHours(0, 0, 0, 0);
-        return rd.getTime() === d.getTime();
-    }).length);
+        <div class="bt bt-week">
+            <div class="bt-head"><small>Reçues cette semaine</small><b>${weekTotal}</b></div>
+            <div class="bt-bars">${week.map((n, i) => `
+                <div class="bt-bar${i === todayIdx ? ' today' : ''}${i > todayIdx ? ' future' : ''}" title="${n} demande${n > 1 ? 's' : ''}">
+                    <span class="bt-bar-n">${i <= todayIdx ? n : ''}</span>
+                    <i style="height:${i > todayIdx ? 4 : Math.max(4, n / weekMax * 100)}%"></i>
+                </div>`).join('')}
+            </div>
+            <div class="bt-days">${dayNames.map((d, i) => `<span class="${i === todayIdx ? 'today' : ''}">${d}</span>`).join('')}</div>
+        </div>
 
-    if (chartEvol) chartEvol.destroy();
-    chartEvol = new Chart($('#chart-evolution'), {
-        type: 'line',
-        data: {
-            labels: days.map(d => d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })),
-            datasets: [{
-                label: 'Demandes',
-                data: counts,
-                borderColor: '#FC6100',
-                backgroundColor: 'rgba(252, 97, 0, 0.1)',
-                tension: 0.35,
-                fill: true,
-                pointRadius: 0,
-                pointHoverRadius: 5,
-                borderWidth: 2.5,
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#1C3775' }, grid: { color: 'rgba(193, 209, 235, 0.3)' } },
-                x: { ticks: { color: '#1C3775', maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } }
-            }
-        }
-    });
+        <div class="bt bt-ringbox">
+            <small>${isAdmin ? 'Traitées en moins de 48 h' : 'Validées en moins de 48 h'}</small>
+            ${ring(fastPct)}
+            <div class="bt-sub">${recentDone.length ? `${fast} sur ${recentDone.length} · 30 derniers jours` : 'Pas encore de données'}</div>
+        </div>
 
-    // Second graphique : admin → répartition par entreprise ; entreprise → par statut
-    let labels, values, colors;
-    if (isAdmin) {
-        const byEnt = new Map();
-        for (const r of requests) {
-            const nom = r.entreprises?.nom || '—';
-            byEnt.set(nom, (byEnt.get(nom) || 0) + 1);
-        }
-        const sorted = [...byEnt.entries()].sort((a, b) => b[1] - a[1]);
-        const top = sorted.slice(0, 6);
-        const rest = sorted.slice(6).reduce((n, [, v]) => n + v, 0);
-        if (rest) top.push(['Autres', rest]);
-        labels = top.map(([k]) => k);
-        values = top.map(([, v]) => v);
-        colors = ['#141B4D', '#FC6100', '#1C3775', '#FFA700', '#98B2DD', '#46A84D', '#C1D1EB'];
-    } else {
-        labels = ['À valider', 'Acceptées', 'Refusées'];
-        values = [
-            requests.filter(r => r.statut === 'en_attente').length,
-            requests.filter(isAccepted).length,
-            requests.filter(r => r.statut === 'refusee').length,
-        ];
-        colors = ['#FFA700', '#46A84D', '#B54385'];
-    }
-    const statusTitle = $('#chart-status')?.closest('.card')?.querySelector('.card-title');
-    if (statusTitle) statusTitle.textContent = isAdmin ? 'Répartition par entreprise' : 'Répartition par statut';
+        <div class="bt bt-photos">
+            <div class="bt-head"><small>Derniers dommages reçus</small></div>
+            ${latest.length ? `<div class="bt-mosaic">${latest.map(r => `
+                <button class="bt-tile" onclick="viewRequest('${r.id}')" title="${escapeHtml(r.ticket_number || '')} · ${escapeHtml(r.nom_porteur || '')}">
+                    <img src="${escapeHtml(requestThumb(r))}" alt="" loading="lazy">
+                    <span>${escapeHtml((r.ticket_number || '').slice(-6))}</span>
+                </button>`).join('')}</div>`
+            : '<div class="bt-empty">Aucune photo pour le moment</div>'}
+        </div>
 
-    if (chartStatus) chartStatus.destroy();
-    chartStatus = new Chart($('#chart-status'), {
-        type: 'doughnut',
-        data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }] },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position: 'right', labels: { color: '#1C3775', font: { family: 'Roboto' } } } }
-        }
-    });
+        <div class="bt bt-delay">
+            <small>${isAdmin ? 'Délai moyen de traitement' : 'Délai moyen de validation'}</small>
+            <div class="bt-num">${fmtDays(avgNow)}</div>
+            ${trend}
+        </div>
+
+        ${isAdmin ? `
+        <button class="bt bt-dark" onclick="showView('garments')">
+            <small>Parc vêtements</small>
+            <div class="bt-num">${toReplace}</div>
+            <div class="bt-sub">vêtement${toReplace > 1 ? 's' : ''} à remplacer →</div>
+        </button>` : `
+        <button class="bt bt-dark" onclick="showView('admin-requests')">
+            <small>Ce mois-ci</small>
+            <div class="bt-num">${thisMonth.length}</div>
+            <div class="bt-sub">demande${thisMonth.length > 1 ? 's' : ''} déclarée${thisMonth.length > 1 ? 's' : ''} →</div>
+        </button>`}
+
+        <button class="bt bt-top" ${top ? `onclick="openDashTop('${isAdmin ? 'entreprise' : 'site'}', '${top.id}')"` : 'disabled'}>
+            <small>${isAdmin ? 'Entreprise la plus active' : 'Site le plus actif'}</small>
+            <div class="bt-top-name">${top ? escapeHtml(top.name) : '—'}</div>
+            <div class="bt-sub">${top ? `${top.n} demande${top.n > 1 ? 's' : ''} ce mois` : 'Aucune demande ce mois'}</div>
+        </button>
+    `;
 }
+
+// "Entreprise / site le plus actif" → Suivi des demandes filtré, tous statuts
+function openDashTop(kind, id) {
+    State.requestsFilter.entreprise = kind === 'entreprise' ? id : '';
+    State.requestsFilter.site = kind === 'site' ? id : '';
+    State.requestsFilter.status = '';
+    State.requestsPage = 1;
+    showView('admin-requests');
+}
+window.openDashTop = openDashTop;
+
+// Bloc "À traiter" → la liste des demandes en attente, sans filtre résiduel
+function openDashWaiting() {
+    if (State.profile?.role !== 'admin') return showView('admin-pending');
+    State.requestsFilter.entreprise = '';
+    State.requestsFilter.site = '';
+    State.requestsFilter.status = 'acceptee';
+    State.requestsPage = 1;
+    showView('admin-requests');
+}
+window.openDashWaiting = openDashWaiting;
 
 // ============================================================
 // ADMIN : DEMANDES
@@ -6213,6 +6336,7 @@ function exportPendingExcel() {
 // Recharge la bonne vue après une action (selon la page courante)
 function reloadActiveRequests() {
     setTimeout(refreshNavBadges, 300);
+    if (State.currentView === 'admin-dashboard') { loadDashboard(); return; }
     GarmentIndex.fetchedAt = 0; // un statut a changé → l'historique doit être recalculé
     if (State.currentView === 'garments') loadGarments(true);
     else if (State.currentView === 'admin-pending') loadPendingRequests();
