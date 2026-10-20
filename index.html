@@ -5817,10 +5817,10 @@ function isWaitingForMe(r) {
     return false;
 }
 
-// Depuis quand la demande attend (admin : depuis son acceptation)
+// Depuis quand la demande attend : on compte depuis la date de la demande
+// (c'est depuis ce moment que le porteur attend son vêtement)
 function waitingSinceMs(r) {
-    const ref = State.profile?.role === 'admin' ? (r.traite_at || r.created_at) : r.created_at;
-    return Date.now() - new Date(ref).getTime();
+    return Date.now() - new Date(r.created_at).getTime();
 }
 function formatWait(ms, short = false) {
     const h = Math.max(0, Math.floor(ms / 3600000));
