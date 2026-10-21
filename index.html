@@ -1579,6 +1579,45 @@ a.contact-card:hover {
 
 /* ---------- Étape 4 : description ---------- */
 .anon-ta-wrap { position: relative; margin-top: 20px; }
+/* Listes : type de réparation + emplacement */
+.anon-lbl { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; font-weight: 700; color: var(--nx-navy-2); margin: 22px 0 10px; }
+.anon-lbl em { font-style: normal; font-weight: 500; color: var(--a-muted); font-size: 12px; }
+.anon-lbl + .anon-ta-wrap { margin-top: 0; }
+.anon-select { position: relative; display: block; }
+.anon-select select, .anon-select button {
+    appearance: none; -webkit-appearance: none; width: 100%; min-height: 56px; border: 2px solid var(--a-border); border-radius: 16px;
+    background: #fff; padding: 0 46px 0 16px; font-size: 16px; font-weight: 600; color: var(--nx-navy); font-family: inherit;
+    text-align: left; cursor: pointer; outline: none; transition: border-color .15s ease, box-shadow .15s ease;
+}
+.anon-select select:focus, .anon-select button:focus-visible { border-color: var(--nx-orange); box-shadow: 0 0 0 5px rgba(252,97,0,.12); }
+.anon-select .is-empty, .anon-select select:invalid { color: #9AA3B8; font-weight: 500; }
+.anon-select::after {
+    content: ''; position: absolute; right: 20px; top: 50%; width: 9px; height: 9px; pointer-events: none;
+    border-right: 2.5px solid var(--nx-navy); border-bottom: 2.5px solid var(--nx-navy); transform: translateY(-70%) rotate(45deg);
+}
+.anon-picked { display: flex; align-items: center; gap: 12px; margin-top: 8px; background: #fff; border: 1px solid var(--a-border); border-radius: 14px; padding: 8px; }
+.anon-picked img { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; flex-shrink: 0; cursor: zoom-in; }
+.anon-picked b { font-size: 14px; color: var(--nx-navy); }
+.anon-picked small { display: block; color: var(--a-muted); font-size: 12px; margin-top: 2px; }
+.anon-sheet-back { position: fixed; inset: 0; background: rgba(10,14,40,.45); z-index: 1000; opacity: 0; transition: opacity .2s ease; }
+.anon-sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; max-height: 80vh; max-width: 560px; margin: 0 auto; background: #fff;
+    border-radius: 22px 22px 0 0; z-index: 1001; display: flex; flex-direction: column;
+    transform: translateY(100%); transition: transform .25s cubic-bezier(.2,.8,.2,1);
+}
+.anon-sheet-open .anon-sheet-back { opacity: 1; }
+.anon-sheet-open .anon-sheet { transform: none; }
+.anon-sheet header { padding: 12px 18px 12px; border-bottom: 1px solid #EEF1F7; }
+.anon-sheet header i { display: block; width: 40px; height: 5px; border-radius: 3px; background: #D5DCEA; margin: 0 auto 12px; }
+.anon-sheet header b { font-size: 17px; color: var(--nx-navy); }
+.anon-sheet-list { overflow: auto; padding: 4px 10px calc(20px + env(safe-area-inset-bottom)); -webkit-overflow-scrolling: touch; }
+.anon-sheet-group { font-size: 11px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--a-muted); margin: 14px 8px 6px; }
+.anon-sheet-row { display: flex; width: 100%; align-items: center; gap: 12px; padding: 8px; border: 0; background: none; border-radius: 12px; font-family: inherit; cursor: pointer; text-align: left; }
+.anon-sheet-row:active, .anon-sheet-row:hover { background: #F4F6FB; }
+.anon-sheet-row img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+.anon-sheet-row span { font-size: 15px; font-weight: 600; color: var(--nx-navy); flex: 1; }
+.anon-sheet-row.on { background: rgba(252,97,0,.08); }
+.anon-sheet-row.on::after { content: '✓'; color: var(--nx-orange); font-weight: 800; font-size: 18px; margin-right: 6px; }
 .anon-textarea {
     width: 100%; min-height: 150px; border-radius: 16px; background: #fff; border: 2px solid var(--a-border);
     padding: 16px 16px 56px; font-size: 17px; line-height: 1.5; color: var(--nx-navy); resize: vertical;
@@ -3023,8 +3062,22 @@ button.bt:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 14px
             <section class="anon-screen hidden" id="anon-step-desc">
                 <h1 class="anon-h1">Décrivez<br>le problème</h1>
 
+                <div class="anon-lbl">Type de réparation</div>
+                <div class="anon-select">
+                    <button type="button" id="anon-type-btn" class="is-empty" onclick="openRepairTypeSheet()">Choisir le type de réparation</button>
+                </div>
+                <div id="anon-type-picked"></div>
+
+                <div class="anon-lbl"><label for="anon-emplacement">Emplacement</label></div>
+                <label class="anon-select">
+                    <select id="anon-emplacement" required>
+                        <option value="" disabled selected hidden>Choisir l'emplacement</option>
+                    </select>
+                </label>
+
+                <div class="anon-lbl"><label for="anon-description">Précisions</label><em>facultatif</em></div>
                 <div class="anon-ta-wrap">
-                    <textarea id="anon-description" class="anon-textarea" rows="4" maxlength="2000" placeholder="Ex : déchirure de 5 cm sur la manche gauche, au niveau du coude"></textarea>
+                    <textarea id="anon-description" class="anon-textarea" rows="3" maxlength="2000" placeholder="Ex : environ 5 cm, sous la bringuette"></textarea>
                     <button type="button" class="anon-mic hidden" id="anon-mic" title="Dicter la description" aria-label="Dicter la description">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
                     </button>
@@ -4219,6 +4272,8 @@ const AnonState = {
     porteurAuto: false,
     photos: [],            // [{name, blob, dataUrl}]
     description: '',
+    typeReparation: '',     // code CP/CR/CB…
+    emplacement: '',
     scannerActive: false,
     codeReader: null,
     optionsFacultatives: false,  // l'entreprise autorise-t-elle "sans photo"/"sans description"
@@ -4322,6 +4377,88 @@ async function initAnonView() {
 // Parcours en 4 étapes (1 écran par étape)
 //   1 = scan · 2 = porteur · 3 = photos · 4 = description + envoi
 // ------------------------------------------------------------
+// ============================================================
+// Listes du formulaire porteur (mêmes codes dans app.py et la migration SQL)
+// ============================================================
+const REPAIR_TYPE_GROUPS = [
+    { label: 'Couture décousue', items: [['CP001', 'Poche décousue'], ['CP002', 'Ourlet décousu'], ['CP003', 'Bande rétro décousue'], ['CP004', 'Élément décousu'], ['CP005', 'Entrejambe décousue']] },
+    { label: 'Déchirure ou trou', items: [['CR001', 'Lanière arrachée'], ['CR002', 'Trou'], ['CR003', 'Déchirure'], ['CR004', 'Déchirure entrejambe']] },
+    { label: 'Bouton ou fermeture', items: [['CB001', 'Manque bouton'], ['CB002', 'Bouton cassé'], ['CB003', 'Fermeture cassée']] },
+];
+const REPAIR_TYPES = Object.fromEntries(REPAIR_TYPE_GROUPS.flatMap(g => g.items));
+const EMPLACEMENTS = {
+    dos: 'Dos', genoux: 'Genoux', entrejambe: 'Entrejambe',
+    poche_avant: 'Poche avant', poche_arriere: 'Poche arrière', poche_gauche: 'Poche gauche', poche_droite: 'Poche droite',
+    jambe_gauche: 'Jambe gauche', jambe_droite: 'Jambe droite', bras_gauche: 'Bras gauche', bras_droit: 'Bras droit',
+};
+const repairTypeImg = code => `/static/reparations/${code}.jpg`;
+// « Déchirure · Genoux » (vide pour les anciennes demandes)
+function repairSummary(r) {
+    return [REPAIR_TYPES[r?.type_reparation], EMPLACEMENTS[r?.emplacement]].filter(Boolean).join(' · ');
+}
+// Texte court pour les listes : type · emplacement — précisions
+function repairText(r) {
+    return [repairSummary(r), (r?.description || '').trim()].filter(Boolean).join(' — ');
+}
+
+function initAnonRepairFields() {
+    const sel = $('#anon-emplacement');
+    if (sel && sel.options.length < 2) {
+        sel.insertAdjacentHTML('beforeend', Object.entries(EMPLACEMENTS)
+            .map(([v, l]) => `<option value="${v}">${escapeHtml(l)}</option>`).join(''));
+        sel.addEventListener('change', () => { AnonState.emplacement = sel.value; renderAnonRecap(); });
+    }
+}
+
+function openRepairTypeSheet() {
+    closeRepairTypeSheet(true);
+    const wrap = document.createElement('div');
+    wrap.id = 'anon-type-sheet';
+    wrap.innerHTML = `
+        <div class="anon-sheet-back" onclick="closeRepairTypeSheet()"></div>
+        <div class="anon-sheet" role="dialog" aria-modal="true" aria-label="Type de réparation">
+            <header><i></i><b>Type de réparation</b></header>
+            <div class="anon-sheet-list">${REPAIR_TYPE_GROUPS.map(g => `
+                <div class="anon-sheet-group">${escapeHtml(g.label)}</div>
+                ${g.items.map(([code, label]) => `
+                    <button type="button" class="anon-sheet-row${AnonState.typeReparation === code ? ' on' : ''}" onclick="pickRepairType('${code}')">
+                        <img src="${repairTypeImg(code)}" alt="" loading="lazy"><span>${escapeHtml(label)}</span>
+                    </button>`).join('')}`).join('')}
+            </div>
+        </div>`;
+    document.body.appendChild(wrap);
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => requestAnimationFrame(() => wrap.classList.add('anon-sheet-open')));
+    const on = wrap.querySelector('.anon-sheet-row.on');
+    if (on) on.scrollIntoView({ block: 'center' });
+}
+function closeRepairTypeSheet(immediate) {
+    const wrap = $('#anon-type-sheet');
+    if (!wrap) return;
+    document.body.style.overflow = '';
+    if (immediate) return wrap.remove();
+    wrap.classList.remove('anon-sheet-open');
+    setTimeout(() => wrap.remove(), 250);
+}
+function pickRepairType(code) {
+    AnonState.typeReparation = code;
+    const btn = $('#anon-type-btn');
+    btn.textContent = REPAIR_TYPES[code];
+    btn.classList.remove('is-empty');
+    $('#anon-type-picked').innerHTML = `
+        <div class="anon-picked">
+            <img src="${repairTypeImg(code)}" alt="" onclick="openLightbox('${repairTypeImg(code)}')">
+            <div><b>${escapeHtml(REPAIR_TYPES[code])}</b><small>Vérifiez que la photo correspond au défaut</small></div>
+        </div>`;
+    closeRepairTypeSheet();
+    renderAnonRecap();
+    if (!$('#anon-emplacement').value) setTimeout(() => $('#anon-emplacement').focus(), 300);
+}
+window.openRepairTypeSheet = openRepairTypeSheet;
+window.closeRepairTypeSheet = closeRepairTypeSheet;
+window.pickRepairType = pickRepairType;
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#anon-type-sheet')) closeRepairTypeSheet(); });
+
 const ANON_STEPS = { 1: 'anon-step-scan', 2: 'anon-step-porteur', 3: 'anon-step-photos', 4: 'anon-step-desc' };
 
 function goAnonStep(n) {
@@ -4333,7 +4470,9 @@ function goAnonStep(n) {
     $('#public-anon-page').classList.toggle('is-dark', n === 1);
     if (n !== 1) stopAnonScanner();
     if (n === 3) renderAnonPhotos();
+    if (n !== 4) closeRepairTypeSheet(true);
     if (n === 4) {
+        initAnonRepairFields();
         renderAnonRecap();
         // L'étape contenant le reCAPTCHA devient visible → on force son rendu
         setTimeout(() => window.renderCaptchaWidget('anon', true), 150);
@@ -4416,7 +4555,6 @@ function bindAnonHandlers() {
     // Options "sans photo" / "sans description" (si l'entreprise les autorise)
     if (AnonState.optionsFacultatives) {
         $('#anon-no-photo-wrap').style.display = 'flex';
-        $('#anon-no-desc-wrap').style.display = 'flex';
 
         $('#anon-no-photo').addEventListener('change', () => {
             const on = $('#anon-no-photo').checked;
@@ -4616,6 +4754,7 @@ function renderAnonRecap() {
     $('#anon-recap').innerHTML = `
         <div><span>Code-barres</span><b>${escapeHtml(AnonState.barcode || '—')}</b></div>
         <div><span>Porteur</span><b>${escapeHtml($('#anon-porteur').value.trim() || '—')}</b></div>
+        ${AnonState.typeReparation || AnonState.emplacement ? `<div><span>Réparation</span><b>${escapeHtml(repairSummary({ type_reparation: AnonState.typeReparation, emplacement: AnonState.emplacement }))}</b></div>` : ''}
         <div><span>Photos</span>${photos.length
             ? `<span class="anon-recap-thumbs">${photos.slice(0, 5).map(p => `<img src="${p.dataUrl}" alt="">`).join('')}</span>`
             : '<b>Aucune</b>'}</div>
@@ -4632,7 +4771,10 @@ async function submitAnonRequest() {
     if (!AnonState.barcode) return toast("Scannez ou saisissez un code-barres", 'warning');
     if (!porteur)              return toast("Indiquez le nom du porteur", 'warning');
     if (!noPhoto && AnonState.photos.length === 0) return toast("Ajoutez au moins une photo (ou cochez « sans photo »)", 'warning');
-    if (!noDesc && !desc)      return toast("Décrivez le défaut (ou cochez « sans description »)", 'warning');
+    const typeRep = AnonState.typeReparation || '';
+    const emplacement = $('#anon-emplacement')?.value || '';
+    if (!typeRep)     { toast("Choisissez le type de réparation", 'warning'); return openRepairTypeSheet(); }
+    if (!emplacement) { toast("Choisissez l'emplacement", 'warning'); return $('#anon-emplacement').focus(); }
 
     // Vérification reCAPTCHA "Je ne suis pas un robot"
     if (window.recaptchaWidgets.anon !== null && typeof grecaptcha !== 'undefined') {
@@ -4668,6 +4810,8 @@ async function submitAnonRequest() {
                 nom_porteur_source: AnonState.porteurAuto && porteur === AnonState.porteur ? 'auto' :
                                     AnonState.porteurAuto ? 'corrected' : 'manual',
                 description: noDesc ? '' : desc,
+                type_reparation: typeRep,
+                emplacement,
                 photos,
             }),
         });
@@ -4683,7 +4827,7 @@ async function submitAnonRequest() {
         $('#public-anon-page').classList.remove('is-dark');
         $('#anon-success').classList.remove('hidden');
         $('#anon-ticket').textContent = data.ticket_number || (data.id || '').slice(0, 8).toUpperCase();
-        $('#anon-ticket-meta').textContent = [AnonState.barcode, porteur, `${photos.length} photo${photos.length > 1 ? 's' : ''}`].filter(Boolean).join(' · ');
+        $('#anon-ticket-meta').textContent = [AnonState.barcode, porteur, REPAIR_TYPES[typeRep], `${photos.length} photo${photos.length > 1 ? 's' : ''}`].filter(Boolean).join(' · ');
         window.scrollTo(0, 0);
     } catch (err) {
         toast(err.message || "Erreur lors de l'envoi", 'error');
@@ -5614,7 +5758,7 @@ async function loadClientHistory() {
                 <div class="detail-item"><div class="label">Type</div><div class="value">${escapeHtml(r.type_equipement || '—')}</div></div>
             </div>
             <div style="margin: 12px 0; padding: 12px 16px; background: var(--bg); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-muted);">
-                ${escapeHtml((r.description || '').slice(0, 240))}${(r.description || '').length > 240 ? '…' : ''}
+                ${escapeHtml(repairText(r).slice(0, 240))}${repairText(r).length > 240 ? '…' : ''}
             </div>
             ${r.request_images && r.request_images.length ? `
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
@@ -5968,7 +6112,7 @@ function requestRowHtml(r, opts = {}) {
     const role = State.profile?.role;
     const thumb = requestThumb(r);
     const selected = opts.selectable && State.selectedIds.has(r.id);
-    const desc = (r.description || '').trim();
+    const desc = repairText(r);
     let actions = '';
     if (role === 'client' && r.statut === 'en_attente') {
         actions = `
@@ -6319,18 +6463,21 @@ function exportPendingExcel() {
         toast("Aucune demande à exporter", 'warning');
         return;
     }
-    const header = ['Ticket', 'Raison sociale', 'Ville', 'Type de réparation', 'Nom porteur', 'Date', 'Statut'];
+    const header = ['Ticket', 'Raison sociale', 'Ville', 'Code réparation', 'Type de réparation', 'Emplacement', 'Précisions', 'Nom porteur', 'Date', 'Statut'];
     const data = rows.map(r => [
         r.ticket_number || '',
         r.entreprises?.nom || '',
         r.sites?.nom || '',
+        r.type_reparation || '',
+        REPAIR_TYPES[r.type_reparation] || '',
+        EMPLACEMENTS[r.emplacement] || '',
         r.description || '',
         r.nom_porteur || '',
         r.created_at ? new Date(r.created_at).toLocaleString('fr-FR') : '',
         statutLabel(r.statut),
     ]);
     const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
-    ws['!cols'] = [{ wch: 14 }, { wch: 26 }, { wch: 20 }, { wch: 50 }, { wch: 22 }, { wch: 18 }, { wch: 14 }];
+    ws['!cols'] = [{ wch: 14 }, { wch: 26 }, { wch: 20 }, { wch: 10 }, { wch: 22 }, { wch: 16 }, { wch: 40 }, { wch: 22 }, { wch: 18 }, { wch: 14 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Demandes en attente');
     const date = new Date().toISOString().slice(0, 10);
@@ -6376,7 +6523,7 @@ function getFilteredRequests() {
         if (!search) return true;
         const blob = [
             r.ticket_number, r.code_barre, r.nom_porteur,
-            r.description, r.entreprises?.nom, r.entreprises?.code_entreprise, r.sites?.nom
+            r.description, repairSummary(r), r.type_reparation, r.entreprises?.nom, r.entreprises?.code_entreprise, r.sites?.nom
         ].filter(Boolean).join(' ').toLowerCase();
         return blob.includes(search);
     });
@@ -6396,11 +6543,14 @@ function exportRequestsExcel(onlySelected = false) {
         return;
     }
 
-    const header = ['Ticket', 'Raison sociale', 'Ville', 'Type de réparation', 'Nom porteur', 'Date', 'Statut'];
+    const header = ['Ticket', 'Raison sociale', 'Ville', 'Code réparation', 'Type de réparation', 'Emplacement', 'Précisions', 'Nom porteur', 'Date', 'Statut'];
     const data = rows.map(r => [
         r.ticket_number || '',
         r.entreprises?.nom || '',
         r.sites?.nom || '',
+        r.type_reparation || '',
+        REPAIR_TYPES[r.type_reparation] || '',
+        EMPLACEMENTS[r.emplacement] || '',
         r.description || '',
         r.nom_porteur || '',
         r.created_at ? new Date(r.created_at).toLocaleString('fr-FR') : '',
@@ -6408,7 +6558,7 @@ function exportRequestsExcel(onlySelected = false) {
     ]);
 
     const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
-    ws['!cols'] = [{ wch: 14 }, { wch: 26 }, { wch: 20 }, { wch: 50 }, { wch: 22 }, { wch: 18 }, { wch: 14 }];
+    ws['!cols'] = [{ wch: 14 }, { wch: 26 }, { wch: 20 }, { wch: 10 }, { wch: 22 }, { wch: 16 }, { wch: 40 }, { wch: 22 }, { wch: 18 }, { wch: 14 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Demandes');
 
@@ -6570,12 +6720,15 @@ async function viewRequest(id) {
             ${isAdmin ? `
             <div><small>Code client SIS</small><b class="mono">${escapeHtml(r.entreprises?.code_client_sis || '—')}</b></div>
             <div><small>Code livré ATLAS</small><b class="mono">${escapeHtml(r.sites?.code_client_livre || '—')}</b></div>` : ''}
+            ${r.type_reparation || r.emplacement ? `
+            <div><small>Réparation</small><b>${escapeHtml(REPAIR_TYPES[r.type_reparation] || '—')}</b><span class="mono">${escapeHtml(r.type_reparation || '')}</span></div>
+            <div><small>Emplacement</small><b>${escapeHtml(EMPLACEMENTS[r.emplacement] || '—')}</b></div>` : ''}
             <div><small>Statut</small><b>${statusBadge(r.statut)}</b></div>
             <div><small>Reçue le</small><b>${formatDate(r.created_at)}</b></div>
         </div>
         <div class="req-block">
-            <small>Description</small>
-            <p class="${r.description ? '' : 'is-empty'}">${r.description ? escapeHtml(r.description) : 'Pas de description'}</p>
+            <small>${r.type_reparation ? 'Précisions' : 'Description'}</small>
+            <p class="${r.description ? '' : 'is-empty'}">${r.description ? escapeHtml(r.description) : (r.type_reparation ? 'Aucune précision' : 'Pas de description')}</p>
         </div>
         ${garmentHistoryHintHtml(r)}
         ${r.statut === 'cloturee' ? `
@@ -6729,7 +6882,7 @@ async function loadGarmentIndex(force = false) {
     GarmentIndex.loading = (async () => {
         const query = applyRequestScope(
             sb.from('repair_requests')
-              .select('id, ticket_number, code_barre, nom_porteur, statut, description, created_at, entreprise_id, site_id, entreprises(nom, code_entreprise), sites(nom)')
+              .select('id, ticket_number, code_barre, nom_porteur, statut, description, type_reparation, emplacement, created_at, entreprise_id, site_id, entreprises(nom, code_entreprise), sites(nom)')
               .not('code_barre', 'is', null)
               .order('created_at', { ascending: false })
         );
@@ -6975,7 +7128,7 @@ async function openGarmentSheet(key) {
                     ${statusBadge(r.statut)}
                     <button class="btn btn-ghost btn-sm gt-open" onclick="viewRequest('${r.id}')">Détail</button>
                 </div>
-                <div class="gt-desc">${escapeHtml(r.description || 'Sans description')}</div>
+                <div class="gt-desc">${escapeHtml(repairText(r) || 'Sans description')}</div>
                 <div class="gt-meta">Porteur : ${escapeHtml(r.nom_porteur || '—')}${porteurChanged ? ' <span class="badge badge-accent" style="font-size:9px;margin-left:4px;">Nouveau porteur</span>' : ''} · ${escapeHtml(r.sites?.nom || '—')}</div>
                 ${photos ? `<div class="gt-photos">${photos}</div>` : ''}
             </div>

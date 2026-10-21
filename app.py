@@ -376,6 +376,28 @@ def public_ocr_porteur():
         return jsonify({"name": None, "error": str(e)}), 200
 
 
+# Listes du formulaire porteur (mêmes codes que dans index.html et la migration SQL)
+REPAIR_TYPES = {
+    "CP001": "Poche décousue", "CP002": "Ourlet décousu", "CP003": "Bande rétro décousue",
+    "CP004": "Élément décousu", "CP005": "Entrejambe décousue",
+    "CR001": "Lanière arrachée", "CR002": "Trou", "CR003": "Déchirure", "CR004": "Déchirure entrejambe",
+    "CB001": "Manque bouton", "CB002": "Bouton cassé", "CB003": "Fermeture cassée",
+}
+EMPLACEMENTS = {
+    "dos": "Dos", "genoux": "Genoux", "entrejambe": "Entrejambe",
+    "poche_avant": "Poche avant", "poche_arriere": "Poche arrière",
+    "poche_gauche": "Poche gauche", "poche_droite": "Poche droite",
+    "jambe_gauche": "Jambe gauche", "jambe_droite": "Jambe droite",
+    "bras_gauche": "Bras gauche", "bras_droit": "Bras droit",
+}
+
+
+def _repair_summary(req):
+    """« Déchirure · Genoux » (vide pour les anciennes demandes)."""
+    parts = [REPAIR_TYPES.get(req.get("type_reparation") or ""), EMPLACEMENTS.get(req.get("emplacement") or "")]
+    return " · ".join(p for p in parts if p)
+
+
 @app.route("/api/public/submit-request", methods=["POST"])
 def public_submit_request():
     """
@@ -402,6 +424,12 @@ def public_submit_request():
     nom_porteur_source = data.get("nom_porteur_source") or "manual"
     description        = (data.get("description") or "").strip()
     photos             = data.get("photos") or []
+    type_reparation    = (data.get("type_reparation") or "").strip().upper() or None
+    emplacement        = (data.get("emplacement") or "").strip().lower() or None
+    if type_reparation and type_reparation not in REPAIR_TYPES:
+        return jsonify({"error": "Type de réparation inconnu"}), 400
+    if emplacement and emplacement not in EMPLACEMENTS:
+        return jsonify({"error": "Emplacement inconnu"}), 400
 
     if not site_id:        return jsonify({"error": "site_id requis"}), 400
     if not code_barre:     return jsonify({"error": "code_barre requis"}), 400
@@ -424,12 +452,13 @@ def public_submit_request():
         # directement chez NETEXIAL, déjà acceptée (NETEXIAL ne refuse plus).
         auto_validation = bool(ent_obj.get("auto_validation"))
 
-        # Description obligatoire, sauf si l'entreprise autorise l'envoi sans
-        if not description and not sans_obligation:
-            return jsonify({"error": "description requise"}), 400
+        # Il faut au moins savoir ce qui est abîmé : le type de réparation
+        # (nouveau formulaire) ou une description — sauf si l'entreprise autorise l'envoi sans.
+        if not type_reparation and not description and not sans_obligation:
+            return jsonify({"error": "type de réparation requis"}), 400
 
         # 2. Créer la demande
-        req_res = supabase.table("repair_requests").insert({
+        row = {
             "site_id": site_id,
             "entreprise_id": entreprise_id,
             "code_barre": code_barre,
@@ -438,7 +467,21 @@ def public_submit_request():
             "description": description,
             "statut": "acceptee" if auto_validation else "en_attente",
             **({"traite_at": datetime.utcnow().isoformat()} if auto_validation else {}),
-        }).execute()
+            "type_reparation": type_reparation,
+            "emplacement": emplacement,
+        }
+        try:
+            req_res = supabase.table("repair_requests").insert(row).execute()
+        except Exception as e:
+            # Filet de sécurité : si la migration n'a pas encore été passée, on enregistre
+            # quand même la demande et on garde le type/emplacement dans la description.
+            if "type_reparation" not in str(e) and "emplacement" not in str(e):
+                raise
+            print(f"[submit-request] colonnes type/emplacement absentes, repli sur description : {e}")
+            summary = _repair_summary(row)
+            row.pop("type_reparation", None); row.pop("emplacement", None)
+            row["description"] = " — ".join(p for p in (summary, description) if p)
+            req_res = supabase.table("repair_requests").insert(row).execute()
 
         if not req_res.data:
             return jsonify({"error": "Échec création"}), 500
@@ -851,7 +894,11 @@ def _notify_admin_validation(req, validator_profile=None):
     site = req.get("sites") or {}
 
     desc_raw = (req.get("description") or "").strip()
-    desc_html = (desc_raw.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>")) or "—"
+    desc_html = (desc_raw.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>")) or ""
+    summary = _repair_summary(req)
+    if summary:
+        desc_html = f"<strong>{summary}</strong>" + (f"<br>{desc_html}" if desc_html else "")
+    desc_html = desc_html or "—"
 
     # Photos du problème : on récupère les images de la demande, triées par "ordre",
     # et on RETIRE la première (qui est la photo du code-barres, pas le défaut).
@@ -1029,7 +1076,7 @@ def send_confirmation():
             </tr>
             <tr style="background:#ffffff;">
                 <td style="padding:14px 18px;color:#1C3775;font-size:13px;vertical-align:top;">Description</td>
-                <td style="padding:14px 18px;color:#141B4D;font-size:14px;">{(req.get('description') or '')[:300]}</td>
+                <td style="padding:14px 18px;color:#141B4D;font-size:14px;">{' — '.join(p for p in (_repair_summary(req), (req.get('description') or '')[:300]) if p) or '—'}</td>
             </tr>
         </table>
 
@@ -1174,6 +1221,8 @@ def export_pdf(request_id):
         ["Référence",       req.get("reference_produit") or "—"],
         ["N° de série",     req.get("numero_serie") or "—"],
         ["Type",            req.get("type_equipement") or "—"],
+        ["Réparation",      REPAIR_TYPES.get(req.get("type_reparation") or "", "—")],
+        ["Emplacement",     EMPLACEMENTS.get(req.get("emplacement") or "", "—")],
     ]
     detail_table = Table(rows, colWidths=[5 * cm, 11 * cm])
     detail_table.setStyle(TableStyle([
