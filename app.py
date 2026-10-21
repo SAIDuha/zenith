@@ -242,8 +242,20 @@ def send_email(to: str, subject: str, html_body: str) -> bool:
 # ----------------------------------------------------------------------------
 @app.route("/")
 def serve_index():
-    """Sert le fichier index.html à la racine."""
+    """Racine du site.
+    - /?site=XXX (QR code d'un site) → formulaire porteur, page légère declarer.html
+      (les QR codes déjà imprimés gardent la même adresse)
+    - sinon → accueil + espace connecté (index.html)
+    """
+    if request.args.get("site"):
+        return send_from_directory(".", "declarer.html")
     return send_from_directory(".", "index.html")
+
+
+@app.route("/declarer")
+def serve_declarer():
+    """Formulaire porteur (même page que /?site=XXX)."""
+    return send_from_directory(".", "declarer.html")
 
 
 @app.route("/api/health", methods=["GET"])
