@@ -2408,7 +2408,7 @@ a.contact-card:hover {
 .ai-block { margin-top: 14px; padding: 12px 14px; border-radius: 12px; border: 1px dashed rgba(124,92,255,.45); background: rgba(124,92,255,.06); }
 .ai-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
 .ai-head small { display: block; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #6a4fe0; font-weight: 700; }
-.ai-only { font-size: 10px; font-weight: 600; color: var(--text-muted); background: var(--bg-card, #fff); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; }
+.ai-only { font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #6a4fe0; background: rgba(124,92,255,.12); border-radius: 999px; padding: 3px 9px; }
 .ai-row { display: grid; grid-template-columns: 92px 1fr auto; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; border-top: 1px solid rgba(124,92,255,.15); }
 .ai-row:first-of-type { border-top: 0; }
 .ai-lbl { color: var(--text-muted); }
@@ -5498,11 +5498,11 @@ function aiAnalysisHtml(r, ai) {
     const recent = Date.now() - new Date(r.created_at).getTime() < 5 * 60000;
     if (!ai) {
         return recent && r.type_reparation
-            ? `<div class="ai-block"><div class="ai-head"><small>Avis de l'IA</small><span class="ai-only">NETEXIAL uniquement</span></div><p class="ai-wait">Analyse des photos en cours… rouvrez la demande dans un instant.</p></div>`
+            ? `<div class="ai-block"><div class="ai-head"><small>Avis de l'IA</small><span class="ai-only">Bêta</span></div><p class="ai-wait">Analyse des photos en cours… rouvrez la demande dans un instant.</p></div>`
             : '';
     }
     if (ai.erreur) {
-        return `<div class="ai-block"><div class="ai-head"><small>Avis de l'IA</small><span class="ai-only">NETEXIAL uniquement</span></div><p class="ai-wait">L'IA n'a pas pu analyser les photos.</p></div>`;
+        return `<div class="ai-block"><div class="ai-head"><small>Avis de l'IA</small><span class="ai-only">Bêta</span></div><p class="ai-wait">L'IA n'a pas pu analyser les photos.</p></div>`;
     }
     const row = (label, iaCode, iaLabel, conf, porteurCode, porteurLabel) => {
         let verdict;
@@ -5518,7 +5518,7 @@ function aiAnalysisHtml(r, ai) {
     };
     return `
         <div class="ai-block">
-            <div class="ai-head"><small>Avis de l'IA</small><span class="ai-only">NETEXIAL uniquement</span></div>
+            <div class="ai-head"><small>Avis de l'IA</small><span class="ai-only">Bêta</span></div>
             ${row('Type', ai.type_reparation, REPAIR_TYPES[ai.type_reparation], ai.confiance_type, r.type_reparation, REPAIR_TYPES[r.type_reparation])}
             ${row('Emplacement', ai.emplacement, EMPLACEMENTS[ai.emplacement], ai.confiance_emplacement, r.emplacement, EMPLACEMENTS[r.emplacement])}
             ${ai.explication ? `<p class="ai-why">« ${escapeHtml(ai.explication)} »</p>` : ''}
