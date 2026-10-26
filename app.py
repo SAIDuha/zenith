@@ -404,6 +404,104 @@ EMPLACEMENTS = {
 }
 
 
+# ---------------------------------------------------------------------------
+# AVIS DE L'IA sur les photos du défaut (NETEXIAL uniquement)
+# Lancé en arrière-plan après l'envoi : le porteur n'attend pas et ne voit rien.
+# Résultat stocké dans repair_ai_analyses (lisible par les admins seulement).
+# ---------------------------------------------------------------------------
+AI_MAX_PHOTOS = 4
+
+
+def _gemini_json(parts, timeout=40):
+    """Appelle Gemini et renvoie la réponse JSON déjà décodée."""
+    body = {
+        "contents": [{"parts": parts}],
+        "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json"},
+    }
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+    req = urllib.request.Request(url, data=json.dumps(body).encode("utf-8"),
+                                 headers={"Content-Type": "application/json"}, method="POST")
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    return json.loads(data["candidates"][0]["content"]["parts"][0]["text"])
+
+
+def _ai_prompt():
+    types = "\n".join(f"- {c} : {l}" for c, l in REPAIR_TYPES.items())
+    places = "\n".join(f"- {c} : {l}" for c, l in EMPLACEMENTS.items())
+    return (
+        "Tu es expert en réparation de vêtements de travail (EPI, vêtements professionnels).\n"
+        "Les photos montrent le défaut d'UN vêtement à réparer.\n\n"
+        "1) Choisis le TYPE DE RÉPARATION le plus adapté, parmi ces codes uniquement :\n"
+        f"{types}\n\n"
+        "2) Choisis l'EMPLACEMENT du défaut sur le vêtement, parmi ces codes uniquement :\n"
+        f"{places}\n\n"
+        "Si les photos ne permettent pas de trancher (par ex. gros plan sans repère pour l'emplacement), "
+        "mets null plutôt que de deviner.\n"
+        "Donne pour chaque choix une confiance de 0 à 100.\n\n"
+        "RÉPONDS STRICTEMENT en JSON, sans autre texte :\n"
+        '{"type_reparation": "CR003" ou null, "confiance_type": 0-100, '
+        '"emplacement": "genoux" ou null, "confiance_emplacement": 0-100, '
+        '"explication": "une phrase courte en français"}'
+    )
+
+
+def _clamp_pct(v):
+    try:
+        return max(0, min(100, int(round(float(v)))))
+    except (TypeError, ValueError):
+        return None
+
+
+def _run_ai_analysis(req_id, photos):
+    """Analyse les photos du défaut et enregistre l'avis de l'IA. Ne lève jamais d'exception."""
+    row = {"request_id": req_id, "modele": GEMINI_MODEL, "nb_photos": len(photos)}
+    try:
+        parts = [{"text": _ai_prompt()}] + [
+            {"inline_data": {"mime_type": p.get("content_type") or "image/jpeg", "data": p["b64"]}}
+            for p in photos
+        ]
+        res = _gemini_json(parts)
+        t = (res.get("type_reparation") or "").strip().upper() if isinstance(res.get("type_reparation"), str) else ""
+        e = (res.get("emplacement") or "").strip().lower() if isinstance(res.get("emplacement"), str) else ""
+        row.update({
+            "type_reparation": t if t in REPAIR_TYPES else None,
+            "emplacement": e if e in EMPLACEMENTS else None,
+            "confiance_type": _clamp_pct(res.get("confiance_type")) if t in REPAIR_TYPES else None,
+            "confiance_emplacement": _clamp_pct(res.get("confiance_emplacement")) if e in EMPLACEMENTS else None,
+            "explication": str(res.get("explication") or "")[:500] or None,
+        })
+    except urllib.error.HTTPError as ex:
+        row["erreur"] = f"Gemini HTTP {ex.code}"
+        logger.error(f"[IA] {req_id} : Gemini HTTP {ex.code} {ex.read().decode('utf-8', 'ignore')[:200]}")
+    except Exception as ex:
+        row["erreur"] = str(ex)[:300]
+        logger.error(f"[IA] {req_id} : {ex}")
+    try:
+        supabase.table("repair_ai_analyses").upsert(row).execute()
+    except Exception as ex:
+        logger.error(f"[IA] {req_id} : enregistrement impossible (migration passée ?) : {ex}")
+
+
+def _start_ai_analysis(req_id, photos):
+    """Lance l'analyse dans un thread : la réponse au porteur part tout de suite."""
+    if not GEMINI_API_KEY or not supabase:
+        return
+    defect = []
+    for p in photos:
+        if p.get("scan"):        # la photo de l'étiquette ne montre pas le défaut
+            continue
+        b64 = p.get("b64") or ""
+        if b64.startswith("data:"):
+            b64 = b64.split(",", 1)[-1]
+        if b64:
+            defect.append({"b64": b64, "content_type": p.get("content_type") or "image/jpeg"})
+    if not defect:
+        return
+    import threading
+    threading.Thread(target=_run_ai_analysis, args=(req_id, defect[:AI_MAX_PHOTOS]), daemon=True).start()
+
+
 def _repair_summary(req):
     """« Déchirure · Genoux » (vide pour les anciennes demandes)."""
     parts = [REPAIR_TYPES.get(req.get("type_reparation") or ""), EMPLACEMENTS.get(req.get("emplacement") or "")]
@@ -529,7 +627,13 @@ def public_submit_request():
                 logger.error(f"Erreur upload photo {i} : {e_photo}")
                 continue
 
-        # 4. Notification email (best-effort, ne bloque pas si échec)
+        # 4. Avis de l'IA sur les photos (arrière-plan, NETEXIAL uniquement)
+        try:
+            _start_ai_analysis(req_id, photos)
+        except Exception as e_ai:
+            logger.error(f"Erreur lancement analyse IA : {e_ai}")
+
+        # 5. Notification email (best-effort, ne bloque pas si échec)
         try:
             if auto_validation:
                 # La demande est déjà pré-validée → on notifie directement

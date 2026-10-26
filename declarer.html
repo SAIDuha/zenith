@@ -1389,6 +1389,7 @@ async function submitAnonRequest() {
         const photos = await Promise.all(photosSource.map(async p => ({
             b64: (await blobToDataUrl(p.blob)).split(',')[1],
             content_type: 'image/jpeg',
+            scan: p.name === 'scan.jpg',   // photo de l'étiquette (exclue de l'analyse IA)
         })));
 
         // Envoyer la demande au backend (qui bypass RLS avec la clé service-role)
