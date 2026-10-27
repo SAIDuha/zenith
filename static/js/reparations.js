@@ -12,6 +12,7 @@ const EMPLACEMENTS = {
     dos: 'Dos', genoux: 'Genoux', entrejambe: 'Entrejambe',
     poche_avant: 'Poche avant', poche_arriere: 'Poche arrière', poche_gauche: 'Poche gauche', poche_droite: 'Poche droite',
     jambe_gauche: 'Jambe gauche', jambe_droite: 'Jambe droite', bras_gauche: 'Bras gauche', bras_droit: 'Bras droit',
+    ventre: 'Ventre', col: 'Col',
 };
 const repairTypeImg = code => `/static/reparations/${code}.jpg`;
 // « Déchirure · Genoux » (vide pour les anciennes demandes)

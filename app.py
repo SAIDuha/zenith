@@ -401,6 +401,7 @@ EMPLACEMENTS = {
     "poche_gauche": "Poche gauche", "poche_droite": "Poche droite",
     "jambe_gauche": "Jambe gauche", "jambe_droite": "Jambe droite",
     "bras_gauche": "Bras gauche", "bras_droit": "Bras droit",
+    "ventre": "Ventre", "col": "Col",
 }
 
 
